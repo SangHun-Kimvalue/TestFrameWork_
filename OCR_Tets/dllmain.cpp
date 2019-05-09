@@ -58,7 +58,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	// Initialize tesseract-ocr with English, without specifying tessdata path
 	if (api->Init("..\\Libs\\tesseract\\tesseract\\tessdata", "eng")) {
 		fprintf(stderr, "Could not initialize tesseract.\n");
-		exit(1);
+		exit(1);;
 	}
 
 	// Open input image with leptonica library
