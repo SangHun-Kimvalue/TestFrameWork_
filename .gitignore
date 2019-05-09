@@ -1,0 +1,24 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/TestFrameWork/.vs/TestFrameWork/v15
+/TestFrameWork/DLLCallTest/Debug
+/TestFrameWork/OCR_Tets/Debug
+/TestFrameWork/OpenGL/Debug
+/TestFrameWork/OpenGL/x64/Debug/OpenGL.tlog
+/TestFrameWork/Debug
+/TestFrameWork/DllTest/Debug/DllTest.tlog
+/TestFrameWork/DllTest/Debug
+/TestFrameWork/OpenGL/x64/Debug
+/.vs/TestFrameWork/v15/ipch
+/.vs
+/Debug
+/DLLCallTest/Debug/DLLCallTest.tlog
+/DLLCallTest/Debug/vc141.idb
+/DllTest/Debug
+/OCR_Tets/Debug
+/OpenGL/Debug
+/OpenGL/x64/Debug
+/Test/Debug
+/Test/Release/Test.tlog
