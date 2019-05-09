@@ -7,7 +7,7 @@
 
 //Ini 파일로 불러오기 추가		클래스로 하나 만들면 편할듯
 #define DATAPATH "..\\Libs\\tesseract\\tesseract\\tessdata";
-#define IMAGEPATH "..\\Libs\\tesseract\\OCR_Test_Image\\";
+#define IMAGEPATH "..\\Libs\\OCR_Test_Image\\";
 
 //typedef BaseAlertModule* (*TestClass)();
 //
@@ -66,7 +66,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	// Initialize tesseract-ocr with English, without specifying tessdata path
 	std::string datapath = DATAPATH;
 	std::string imagepath = IMAGEPATH;
-	std::string imagename = "ocr.jpg";
+	std::string imagename = "ocr.jpeg";
 	imagepath = imagepath + imagename;
 
 	std::cout << api->Version() << std::endl;
@@ -79,7 +79,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	}
 
 	// Open input image with leptonica library
-	Pix *image = pixRead("../Libs/tesseract/OCR_Test_Image/ocr.jpeg");
+	Pix *image = pixRead(imagepath.c_str());
 	if (image == NULL) {
 		std::cerr << "Not Read. Failed." << std::endl;
 		api->End();
