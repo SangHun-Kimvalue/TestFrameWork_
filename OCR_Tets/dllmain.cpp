@@ -66,19 +66,20 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	// Initialize tesseract-ocr with English, without specifying tessdata path
 	std::string datapath = DATAPATH;
 	std::string imagepath = IMAGEPATH;
-	std::string imagename = "ocr_orig.png";
+	std::string imagename = "ocr.jpg";
 	imagepath = imagepath + imagename;
 
 	std::cout << api->Version() << std::endl;
 	//api->SetVariable();
 
-	if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_DEFAULT)) {
+	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_DEFAULT)) {
+	if (res = api->Init(datapath.c_str(), "eng", tesseract::OEM_DEFAULT)) {
 		fprintf(stderr, "Could not initialize tesseract.\n");
-		exit(1);;
+		exit(1);
 	}
 
 	// Open input image with leptonica library
-	Pix *image = pixRead(imagepath.c_str());
+	Pix *image = pixRead("../Libs/tesseract/OCR_Test_Image/ocr.jpeg");
 	if (image == NULL) {
 		std::cerr << "Not Read. Failed." << std::endl;
 		api->End();
