@@ -1,13 +1,5 @@
+
 #include "OCRClass.h"
-#include "stdafx.h"
-#include <parent.hpp>
-#include <Windows.h>
-#include <iostream>
-
-
-//Ini 파일로 불러오기 추가		클래스로 하나 만들면 편할듯
-#define DATAPATH "..\\Libs\\tesseract\\tesseract\\tessdata";
-#define IMAGEPATH "..\\Libs\\OCR_Test_Image\\";
 
 //typedef BaseAlertModule* (*TestClass)();
 //
@@ -49,56 +41,24 @@
 //	return 0;
 //}
 
-#include <baseapi.h>
-#include <allheaders.h>
-#include <Windows.h>
-#include <renderer.h>
-
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow) {
 
-	char *outText;
-	int res = 0;
 	AllocConsole();
+
 	FILE* cp;
 	freopen_s(&cp, "CONOUT$", "wt", stdout);
+	HWND hwnd = GetDesktopWindow();
 
-	tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
-	// Initialize tesseract-ocr with English, without specifying tessdata path
-	std::string datapath = DATAPATH;
-	std::string imagepath = IMAGEPATH;
-	std::string imagename = "ocr.jpeg";
-	imagepath = imagepath + imagename;
+	GDICaptureClass* Capturer = new GDICaptureClass(hwnd);
+	OCRClass* OCR = new OCRClass(Capturer, 0);
 
-	std::cout << api->Version() << std::endl;
-	//api->SetVariable();
+	//OCR->Test();
 
-	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_DEFAULT)) {
-	if (res = api->Init(datapath.c_str(), "eng", tesseract::OEM_DEFAULT)) {
-		fprintf(stderr, "Could not initialize tesseract.\n");
-		exit(1);
-	}
-
-	// Open input image with leptonica library
-	Pix *image = pixRead(imagepath.c_str());
-	if (image == NULL) {
-		std::cerr << "Not Read. Failed." << std::endl;
-		api->End();
-		pixDestroy(&image);
-		system("pause");
-		FreeConsole();
-		return -1;
-	}
-	//bool succeed = api->ProcessPages(input_image, retry_config, timeout_ms, renderer);
-	api->SetImage(image);
-	// Get OCR result
-	outText = api->GetUTF8Text();
-	printf("OCR output:\n%s", outText);
-
-	
-	pixDestroy(&image);
-
+	system("pause");
 	FreeConsole();
 
+
+	delete OCR;
 	return 0;
 }
 
