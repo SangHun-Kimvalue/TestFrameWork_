@@ -18,7 +18,7 @@ using namespace Gdiplus;
 class OCRClass
 {
 public:
-	OCRClass(); 
+	OCRClass(GDICaptureClass* Cap);
 	OCRClass(GDICaptureClass *Cap, int Select);
 	~OCRClass();
 

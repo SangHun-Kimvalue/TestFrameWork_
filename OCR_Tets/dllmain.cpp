@@ -1,5 +1,6 @@
 
 #include "OCRClass.h"
+#include "TextMatchClass.h"
 
 //typedef BaseAlertModule* (*TestClass)();
 //
@@ -50,46 +51,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	HWND hwnd = GetDesktopWindow();
 
 	GDICaptureClass* Capturer = new GDICaptureClass(hwnd);
-	OCRClass* OCR = new OCRClass(Capturer, 0);
+	OCRClass* OCR = new OCRClass(Capturer);		//1 : from file // 0 : from memory  // non : not thing
+	TextMatchClass* Match = new TextMatchClass();
 
-	//OCR->Test();
+
+
 
 	system("pause");
 	FreeConsole();
 
 
+	delete Match;
+	delete Capturer;
 	delete OCR;
 	return 0;
 }
-
-//#include <allheaders.h>
-//#include <baseapi.h>
-//#include <renderer.h>
-//#include <Windows.h>
-//int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
-//{
-//	const char* input_image = "..\\Libs\\tesseract\\OCR_Test_Image\\ocr_orig.png";
-//	const char* output_base = "my_first_tesseract_pdf";
-//	const char* datapath = "..\\Libs\\tesseract\\tesseract\\tessdata";
-//	int timeout_ms = 5000;
-//	const char* retry_config = nullptr;
-//	bool textonly = false;
-//	int jpg_quality = 92;
-//
-//	tesseract::TessBaseAPI *api = new tesseract::TessBaseAPI();
-//	if (api->Init(datapath, "eng")) {
-//		fprintf(stderr, "Could not initialize tesseract.\n");
-//		exit(1);
-//	}
-//
-//	tesseract::TessPDFRenderer *renderer = new tesseract::TessPDFRenderer(
-//		output_base, api->GetDatapath(), textonly);
-//
-//	bool succeed = api->ProcessPages(input_image, retry_config, timeout_ms, renderer);
-//	if (!succeed) {
-//		fprintf(stderr, "Error during processing.\n");
-//		return EXIT_FAILURE;
-//	}
-//	api->End();
-//	return EXIT_SUCCESS;
-//}

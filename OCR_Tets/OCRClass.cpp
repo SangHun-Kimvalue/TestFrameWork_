@@ -1,14 +1,8 @@
 ﻿#include "OCRClass.h"
 
 
-OCRClass::OCRClass()
+OCRClass::OCRClass(GDICaptureClass* Cap)
 {
-	if (Init() == true) {
-		if (Open() == true)
-			Process();
-		else
-			Release();
-	}
 }
 
 OCRClass::OCRClass(GDICaptureClass* Cap, int Select) : m_Cap(Cap){
