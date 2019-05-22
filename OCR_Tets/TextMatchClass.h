@@ -5,7 +5,8 @@ public:
 	TextMatchClass();
 	~TextMatchClass();
 
-
-	int FMP();
+	bool Han_Delete();
+	bool Find_Base_String();
+	bool Find_Scopte();
 };
 

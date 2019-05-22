@@ -51,7 +51,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	HWND hwnd = GetDesktopWindow();
 
 	GDICaptureClass* Capturer = new GDICaptureClass(hwnd);
-	OCRClass* OCR = new OCRClass(Capturer);		//1 : from file // 0 : from memory  // non : not thing
+	OCRClass* OCR = new OCRClass(Capturer, 1);		//1 : from file // 0 : from memory  // non : not thing
 	TextMatchClass* Match = new TextMatchClass();
 
 

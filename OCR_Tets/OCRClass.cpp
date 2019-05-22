@@ -79,7 +79,6 @@ int OCRClass::converbmptopng() {
 	return 0;
 }
 
-
 bool OCRClass::Test() {
 
 	datapath = DATAPATH;
@@ -146,13 +145,15 @@ bool OCRClass::Init() {
 	imagepath = IMAGEPATH;
 	imagename = "WiDpa.jpeg"; 
 	bmpimagename = "WiDpa.bmp";
-	hangulname = "Korean_Test.PNG";
+	//hangulname = "Text_Color_Test.PNG";
+	//hangulname = "eng+kor2.PNG";
+	hangulname = "Noise_Test.PNG";
 	imagepath = imagepath + hangulname;
 
 	//std::cout << api->Version() << std::endl << "Tesseract Init Success" << std::endl;
 
 	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_DEFAULT)) {
-	if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_LSTM_ONLY)) {			//차이가 얼마나 나는지		트레이닝 데이터는 어디서?
+	if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_DEFAULT)) {			//차이가 얼마나 나는지		트레이닝 데이터는 어디서?
 		fprintf(stderr, "Could not initialize tesseract.\n");
 		return false;
 		//exit(1);
