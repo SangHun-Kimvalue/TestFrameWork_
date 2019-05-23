@@ -5,7 +5,6 @@
 #include "ImageClass.h"
 #include "TextMatchClass.h"
 
-
 class OCRClass
 {
 public:

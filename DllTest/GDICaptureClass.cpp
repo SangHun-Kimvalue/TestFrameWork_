@@ -190,8 +190,8 @@ bool GDICaptureClass::GetScreen() {
 	if (GetDIBits(hCaptureDC, hBitmap, 0, nHeight, src, (BITMAPINFO*)&bmpInfoHeader, DIB_RGB_COLORS)) {
 		//clock_t end_t1 = clock();
 		//printf("DIBit time = %d \n", end_t1 - start_t1);
-		//if (RGBSaveBMP(src) == true) 
-		//	OutputDebugStringA("success\n");
+		if (RGBSaveBMP(src) == true) 
+			OutputDebugStringA("success\n");
 		//Cap_Release();
 		//free(src);
 	}

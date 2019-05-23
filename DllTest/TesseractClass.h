@@ -16,7 +16,7 @@ using namespace Gdiplus;
 #ifdef _DEBUG
 #define DATAPATH "..\\Libs\\tesseract\\tesseract\\tessdata\\tessdata"
 #endif
-#define IMAGEPATH "..\\Libs\\OCR_Test_Image\\";
+#define IMAGEPATH "..\\Libs\\Test_Image\\";
 
 class TesseractClass
 {
