@@ -21,6 +21,21 @@
     <ClCompile Include="DllClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GDICaptureClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCRClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TesseractClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextMatchClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -33,6 +48,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="parent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GDICaptureClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCRClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TesseractClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextMatchClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

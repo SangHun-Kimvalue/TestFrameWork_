@@ -1,12 +1,13 @@
 #pragma once
-#include <parent.hpp>
+
+#include "OCRClass.h"
 
 //#define _API __declspec(dllexport)
 
 #ifdef _EXPORTS
 #define _API __declspec(dllexport)
 #else
-#define _API __declspec(dllimport)
+#define _API __declspec(dllexport)
 #endif
 
 class DllClass : public BaseAlertModule
@@ -39,6 +40,9 @@ public:
 	virtual double ProcessAnalyze(std::shared_ptr<unsigned char[]> img);
 	// 이벤트 발생 이미지를 저장한다.
 	virtual int SaveImage(std::string saveFoler, std::string timestamp);
+
+private:
+	OCRClass* m_OCR;
 
 };
 

@@ -10,7 +10,10 @@ extern "C" {
 
 DllClass::DllClass()
 {
+	HWND hwnd = GetDesktopWindow();
+	m_OCR = new OCRClass(hwnd);
 	std::cout << "Call Instance Seuccess" << std::endl;
+
 	//print();
 	
 	//this->~DllClass();
@@ -19,6 +22,7 @@ DllClass::DllClass()
 DllClass::~DllClass()
 {
 	std::cout << "Call Instance delete" << std::endl;
+	delete m_OCR;
 }
 
 void DllClass::print() {
@@ -53,6 +57,7 @@ void DllClass::PrintModuleInfo() {
 bool DllClass::GetModuleStatus() {
 	return true;
 }
+
 std::string DllClass::GetGUID() {
 
 	std::string temp = "";

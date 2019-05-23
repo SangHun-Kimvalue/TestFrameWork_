@@ -32,11 +32,11 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -76,16 +76,23 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Libs\parentclass;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libs\tesseract\leptonica\include;$(SolutionDir)Libs\tesseract\tesseract\include;$(SolutionDir)Libs\parentclass;$(SolutionDir)Libs\opencv-4.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Users\bjpar\source\repos\TestFrameWork\Libs\parentclass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\bjpar\source\repos\TestFrameWork\Libs\parentclass;$(SolutionDir)Libs\tesseract\tesseract\lib;$(SolutionDir)Libs\tesseract\leptonica\lib;$(SolutionDir)Libs\opencv-4.0.1\lib\32bit;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tesseract50.lib;giflib.lib;libjpeg.lib;libpng.lib;libtiff.lib;libwebp.lib;openjpeg.lib;zlib.lib;leptonica-1.79.0.lib;opencv_world401d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy $(SolutionDir)Libs\opencv-4.0.1\lib\32bit\opencv_world401d.lib $(OutDir)
+copy $(SolutionDir)Libs\opencv-4.0.1\bin\32bit\opencv_world401d.dll $(OutDir)
+
+xcopy "$(SolutionDir)Libs\tesseract\tesseract\tessdata" "$(OutDir)" /e /y
+copy $(SolutionDir)Libs\tesseract\tesseract\bin $(OutDir)
+copy $(SolutionDir)Libs\tesseract\leptonica-1.79.0.lib $(OutDir)
+copy $(SolutionDir)Libs\tesseract\tesseract50.dll $(OutDir)
+copy $(SolutionDir)Libs\tesseract\tesseract50.lib $(OutDir)</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>copy "parent.hpp" "$(SolutionDir)Libs\parentclass"</Command>
@@ -107,11 +114,26 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libs\tesseract\leptonica\include;$(SolutionDir)Libs\opencv-4.0.1\include;$(SolutionDir)Libs\tesseract\tesseract\include;$(SolutionDir)Libs\parentclass;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)Libs\tesseract\leptonica\lib;$(SolutionDir)Libs\tesseract\tesseract\lib;$(SolutionDir)Libs\opencv-4.0.1\lib\32bit;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tesseract50.lib;giflib.lib;libjpeg.lib;libpng.lib;libtiff.lib;libwebp.lib;openjpeg.lib;zlib.lib;leptonica-1.79.0.lib;opencv_world401.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)Libs\opencv-4.0.1\lib\32bit\opencv_world401.lib $(OutDir)
+copy $(SolutionDir)Libs\opencv-4.0.1\bin\32bit\opencv_world401.dll $(OutDir)
+
+xcopy "$(SolutionDir)Libs\tesseract\tesseract\tessdata" "$(OutDir)" /e /y
+xcopy "$(SolutionDir)Libs\tesseract\tesseract\tessdata" "$(SolutionDir)OCR_Tets\" /e /y
+copy $(SolutionDir)Libs\tesseract\tesseract\bin $(OutDir)
+copy $(SolutionDir)Libs\tesseract\leptonica-1.79.0.lib $(OutDir)
+copy $(SolutionDir)Libs\tesseract\tesseract50.dll $(OutDir)
+copy $(SolutionDir)Libs\tesseract\tesseract50.lib $(OutDir)
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -130,12 +152,22 @@
   <ItemGroup>
     <ClCompile Include="DllClass.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="GDICaptureClass.cpp" />
+    <ClCompile Include="ImageClass.cpp" />
+    <ClCompile Include="OCRClass.cpp" />
+    <ClCompile Include="TesseractClass.cpp" />
+    <ClCompile Include="TextMatchClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DllClass.h" />
+    <ClInclude Include="GDICaptureClass.h" />
+    <ClInclude Include="ImageClass.h" />
+    <ClInclude Include="OCRClass.h" />
     <ClInclude Include="parent.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TesseractClass.h" />
+    <ClInclude Include="TextMatchClass.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
