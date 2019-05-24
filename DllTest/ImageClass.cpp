@@ -1,11 +1,59 @@
 #include "ImageClass.h"
 
+bool RGBSaveBMP(BYTE *input, int nWidth, int nHeight) {
+
+	BITMAPFILEHEADER bf;
+	BITMAPINFOHEADER bi;
+	static int i;
+
+	BYTE *image = input;
+	//unsigned char *image = (unsigned char*)malloc(sizeof(unsigned char)*nWidth*nHeight * 3);
+	//memcpy();
+	FILE *file;
+	char title[1024];
+	if (i > 10)
+		i = 0;
+
+	sprintf_s(title, "CCCapture_%d.bmp", i++);
+	fopen_s(&file, title, "wb");
+
+	if (image != NULL)
+	{
+		if (file != NULL)
+		{
+			memset(&bf, 0, sizeof(bf));
+			memset(&bi, 0, sizeof(bi));
+
+			bf.bfType = 'MB';
+			bf.bfSize = sizeof(bf) + sizeof(bi) + nWidth * nHeight * 4;
+			bf.bfOffBits = sizeof(bf) + sizeof(bi);
+			bi.biSize = sizeof(bi);
+			bi.biWidth = nWidth;
+			bi.biHeight = nHeight;
+			bi.biPlanes = 1;
+			bi.biBitCount = 32;
+			bi.biSizeImage = nWidth * nHeight * 4;
+
+			fwrite(&bf, sizeof(bf), 1, file);
+			fwrite(&bi, sizeof(bi), 1, file);
+			fwrite(image, sizeof(unsigned char), nHeight*nWidth * 4, file);
+
+			fclose(file);
+		}
+	}
+	return true;
+}
+
 ImageClass::ImageClass(int wid, int hei, BYTE* src) : nWidth(wid), nHeight(hei), src(src){
 
-	base_height = 150;
-
+	base_height = 75;				// 사용자가 평균적으로 지정한 영역내에서 글자의 높이 비율을 50 ~ 70% 로 분포 되어 있고 
+									// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
 	CV_Init();
-	Refactoring(fix_image);
+	fix_image = Refactoring(fix_image);
+
+	this->src = Mat2Byte(fix_image);
+	RGBSaveBMP(src, c_wid, c_hei);
+	//RGBSaveBMP(src, wid, hei);
 
 }
 
@@ -15,7 +63,7 @@ ImageClass::~ImageClass()
 
 bool ImageClass::CV_Init() {
 
-	c_x = 0; 	c_y = 0;  	c_wid = 100; 	c_hei = 400;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
+	c_x = 0; 	c_y = 0;  	c_wid = 100; 	c_hei = 40;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
 
 	if (c_x + c_wid > nWidth) 
 		std::cerr << "넓이 오류" << std::endl;
@@ -64,19 +112,22 @@ Mat ImageClass::Resize(Mat fix_image) {
 	if (base == 0) {					//절대적인 값 차이가 아니라 퍼센테이지로 높이와 넓이를 계산하면 좋을듯??
 		return fix_image;
 	}
-	else if (base > 0) {			//축소
-		if (c_wid < base) {
+	else if (base > 0) {				//축소
+		if (c_wid <= base) {
 			//이미지가 좌우로 작아지게 되면 더이상 검출이 불가능하다고 판단해 그대로 사용한다.
 			return fix_image;
 		}
 		else if (c_wid > base) {
-			cv::resize(fix_image, re_image, cv::Size(c_wid - base, base_height), 0, 0, INTER_AREA);		//이미지 데시메이션 (보간법의 반대 LowPass 필터도 사용됨)에 선호되는 플레그	
+			if(c_wid - base < c_wid)
+				c_wid = c_wid - base;
+			cv::resize(fix_image, re_image, cv::Size(c_wid, base_height), 0, 0, INTER_AREA);		//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그	
 			// 높이와 최적 높이의 차이만큼 넓이도 같이 줄임.
 			return re_image;
 		}
 	}
 	else if (base < 0) {			//확대
-		cv::resize(fix_image, re_image, cv::Size(c_wid - base, base_height), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
+		c_wid = c_wid - base;
+		cv::resize(fix_image, re_image, cv::Size(c_wid, base_height), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
 		return re_image;
 	}
 
@@ -149,3 +200,12 @@ Mat ImageClass::Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY) {			//시그�
 	return Gasu_image;
 }
 
+BYTE* ImageClass::Mat2Byte(Mat fix_image) {
+
+	int size = fix_image.rows * fix_image.cols;
+
+	std::memcpy(src, fix_image.data, size * sizeof(BYTE));
+
+	return src;
+
+}

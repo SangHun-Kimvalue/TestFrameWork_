@@ -40,7 +40,9 @@ private:
 	Mat Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY);
 	Mat GrayScale(Mat fix_image);
 	Mat Thresholding(Mat fix_image);
-	void ShowImage(Mat image);
+	void ShowImage(Mat showimage);
+	BYTE* Mat2Byte(Mat fix_image);
+
 
 };
 
