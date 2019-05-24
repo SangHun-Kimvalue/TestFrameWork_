@@ -1,11 +1,17 @@
 #include "TesseractClass.h"
 
 
-TesseractClass::TesseractClass()
+TesseractClass::TesseractClass(std::string Base_String)
 {
+	Base_Type[256] = { TNULL };
+	Base_length = FindEachText(Base_String);
+	FindTextType(Base_String);
 }
 
 TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc) : Imagewidth(Iwidth), Imageheight(Iheight), src(Isrc){
+
+	Base_Type[256] = { TNULL };
+	Base_length = 0;
 
 	if (Select == 1) {
 		if (Init() == true) {
@@ -17,6 +23,94 @@ TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc) 
 	}
 	else
 		Test();
+
+}
+
+TesseractClass::~TesseractClass()
+{
+	//Release();
+}
+
+int TesseractClass::FindEachText(std::string Base_String) {
+
+	Base_length = Base_String.length();
+
+	int point = -1;
+	bool detec_han = 0;
+
+	for (int i = 0; i < Base_length; i++) {		//타입 검출
+		point++;
+		if (i > 2 && Base_Type[point - 2] == TNULL && Base_Type[point - 1] == TNULL)
+			break;
+		if (0 >= Base_String.at(i) || 127 < Base_String.at(i)) {		//한글
+			if (detec_han) {
+				point--;
+				detec_han = false;
+				continue;
+			}
+			else {
+				detec_han = true;
+				Base_Type[point] = KOR;
+				continue;
+			}
+		}
+
+		//if (65 <= Base_String.at(i) && Base_String.at(i) <= 90 || (97 <= Base_String.at(i) && Base_String.at(i) <= 122)) {		//영문  한글일 경우 죽음
+		else if (isalpha(Base_String.at(i)) != 0) {		//영문
+			Base_Type[point] = ENG;
+			continue;
+		}
+
+		//else if (48 <= Base_String.at(i) || 57 >= Base_String.at(i)) {		//숫자			//공백 검출 x 
+		else if (isdigit(Base_String.at(i)) != 0) {		//숫자
+			Base_Type[point] = NUM;
+			continue;
+		}
+		else
+			Base_Type[point] = TNULL;
+	}
+
+	return Base_length;
+}
+
+std::string TesseractClass::FindTextType(std::string Base_String) {
+
+	/*while(1) {						//공백 제거 알고리즘
+
+		size_t temp = Base_String.find(" ", 0);
+		if (temp == std::string::npos)
+			break;
+
+		Base_String.erase(temp, 1);
+	}*/
+
+	int Engchecker = 0;
+	int Korchecker = 0;
+	int Numchecker = 0;
+
+	for (int i = 0; i < Base_length; i++) {
+		switch (Base_Type[i])
+		{
+		case TNULL:
+			break;
+		case KOR:
+			Korchecker++;
+			break;
+		case ENG:
+			Engchecker++;
+			break;
+		case NUM:
+			Numchecker++;
+			break;
+		default:
+			break;
+		}
+
+	}
+
+
+
+	return Base_String;
 
 }
 
@@ -205,8 +299,3 @@ void TesseractClass::Process() {
 
 }
 
-
-TesseractClass::~TesseractClass()
-{
-	Release();
-}
