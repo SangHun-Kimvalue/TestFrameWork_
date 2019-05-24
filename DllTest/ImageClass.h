@@ -34,12 +34,15 @@ private:
 
 
 	bool CV_Init();
-	void Refactoring();
-	bool Bilinear_Interpolation();
-	bool Gaussian_Blur();
-	bool GrayScale();
-	bool Thresholding();
-	void ShowImage(Mat image);
+	Mat Resize(Mat fix_image);
+	Mat Refactoring(Mat fix_image);
+	Mat Bilinear_Interpolation(Mat fix_image);
+	Mat Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY);
+	Mat GrayScale(Mat fix_image);
+	Mat Thresholding(Mat fix_image);
+	void ShowImage(Mat showimage);
+	BYTE* Mat2Byte(Mat fix_image);
+
 
 };
 
