@@ -79,5 +79,21 @@ void ImageClass::Refactoring() {
 	return ;
 }
 
+bool ImageClass::Bilinear_Interpolation() {
+	
+	return true;
 
+}
+
+bool ImageClass::Gaussian_Blur() {
+
+	//void GaussianBlur(InputArray src, OutputArray dst, Size ksize, double sigmaX, double sigmaY=0, int borderType=BORDER_DEFAULT )
+	// GaussianBlur( src, dst, Size( i, i ), 0, 0 );
+
+
+
+
+
+	return true;
+}
 
