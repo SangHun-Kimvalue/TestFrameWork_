@@ -1,14 +1,18 @@
 ﻿#include "OCRClass.h"
 
 
-enum {UMEMORY, UFILE};
+enum {USEMEMORY, USEFILE};
 
 OCRClass::OCRClass(HWND hwnd) : m_hwnd(hwnd)
 {
+	std::string Test_String = "!@ #$ %^& *()_+=`   ~12/*-+3  ";
+
 
 	Capturer = new GDICaptureClass(m_hwnd);
-	ImageCV = new ImageClass(Capturer->nWidth, Capturer->nHeight, Capturer->src);
-	//Tesseract = new TesseractClass(UFILE, ImageCV->nWidth, ImageCV->nHeight, ImageCV->src);		//1 : from file // 0 : from memory  // non : not thing
+	//ImageCV = new ImageClass(Capturer->nWidth, Capturer->nHeight, Capturer->src);
+	Tesseract = new TesseractClass(Test_String);
+	//Tesseract = new TesseractClass(USEFILE, ImageCV->nWidth, ImageCV->nHeight, ImageCV->src, Test_String);		
+	//1 : from file // 0 : from memory  // non : not thing
 	//Match = new TextMatchClass();
 
 }
