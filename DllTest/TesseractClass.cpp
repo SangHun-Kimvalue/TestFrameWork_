@@ -25,19 +25,23 @@ inline int Delete_SPEC(std::string Base_String, int Base_length, TYPE Base_Type[
 	return atoi(temp.c_str());
 }
 
-TesseractClass::TesseractClass(std::string Base_string) : Base_String(Base_string)
+TesseractClass::TesseractClass() {}
+
+TesseractClass::TesseractClass(std::string Base_string, TYPE InputType) : Base_String(Base_string), String_Type(InputType)
 {
 	Base_Num = 0;
 	Base_Type[256] = { TNULL };
-	String_Type = TNULL;
 
 	Base_length = FindEachText(Base_String);
 	String_Type = FindTextType(Base_String);
+
+	Init();
 }
 
-TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_String) 
-	: Imagewidth(Iwidth), Imageheight(Iheight), src(Isrc), Base_String(Base_String) {
+TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_String, TYPE InputType)
+	: Imagewidth(Iwidth), Imageheight(Iheight), src(Isrc), Base_String(Base_String), String_Type(InputType) {
 
+	Base_Num = 0;
 	Base_Type[256] = { TNULL };
 	Base_length = 0;
 
@@ -56,7 +60,7 @@ TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, 
 
 TesseractClass::~TesseractClass()
 {
-	//Release();
+	Release();
 }
 
 //Base_String 길이를 반환
@@ -119,7 +123,6 @@ int TesseractClass::FindEachText(std::string Base_String) {
 TYPE TesseractClass::FindTextType(std::string Base_String) {
 
 	bool Numchecker = 0;
-	String_Type = TNULL;
 
 	for (int i = 0; i < Base_length; i++) {
 		switch (Base_Type[i])
@@ -131,10 +134,9 @@ TYPE TesseractClass::FindTextType(std::string Base_String) {
 				return String_Type;
 			}
 			continue;
-		case TNULL :
 		case NUM :
 			Numchecker = true;
-			if (i == Base_length - 1 && String_Type == TNULL) {
+			if (i == Base_length - 1 && (String_Type == TNULL || String_Type == NUM)) {
 				String_Type = NUM;
 				Base_Num = atoi(Base_String.c_str());
 				return NUM;
@@ -146,6 +148,7 @@ TYPE TesseractClass::FindTextType(std::string Base_String) {
 		case ENG :
 			String_Type = ENG;
 			return String_Type;
+		case TNULL:
 		default:
 			break;
 		}

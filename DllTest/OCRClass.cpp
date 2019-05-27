@@ -9,10 +9,12 @@ OCRClass::OCRClass(HWND hwnd) : m_hwnd(hwnd)
 
 
 	Capturer = new GDICaptureClass(m_hwnd);
-	//ImageCV = new ImageClass(Capturer->nWidth, Capturer->nHeight, Capturer->src);
-	Tesseract = new TesseractClass(Test_String);
+	Tesseract = new TesseractClass(Test_String, TNULL);	
 	//Tesseract = new TesseractClass(USEFILE, ImageCV->nWidth, ImageCV->nHeight, ImageCV->src, Test_String);		
 	//1 : from file // 0 : from memory  // non : not thing
+	
+	ImageCV = new ImageClass(Capturer->nWidth, Capturer->nHeight, Capturer->src, Tesseract->String_Type, Tesseract->Base_length);
+	
 	//Match = new TextMatchClass();
 
 }

@@ -14,7 +14,8 @@ class ImageClass
 {
 public:
 
-	ImageClass(int wid, int hei, BYTE* src);
+	ImageClass();
+	ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_length);
 	~ImageClass();
 
 	GDICaptureClass* m_Cap;
@@ -30,11 +31,16 @@ private:
 	int c_hei;
 	Mat ori_image;
 	Mat fix_image;
-	int base_height;
 
+	int base_height;
+	int base_width;
+
+	int Base_length;
+	int String_Type;
 
 	bool CV_Init();
-	Mat Resize(Mat fix_image);
+	Mat Resize_Num(Mat fix_image);
+	Mat Resize_String(Mat fix_image);
 	Mat Refactoring(Mat fix_image);
 	Mat Bilinear_Interpolation(Mat fix_image);
 	Mat Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY);

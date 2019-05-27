@@ -23,11 +23,15 @@ typedef enum TextType { TNULL, ENG, KOR, NUM, SPACE, SPEC } TYPE;
 class TesseractClass
 {
 public:
-	TesseractClass(std::string Base_string);
-	TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string);
+	TesseractClass();
+	TesseractClass(std::string Base_string, TYPE InputType);
+	TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string, TYPE InputType);
 	~TesseractClass();
 
 	bool Test();
+
+	TYPE String_Type;
+	int Base_length;
 
 
 private:
@@ -56,10 +60,8 @@ private:
 	std::string hangulname;
 
 	std::string Base_String;
-	TYPE Base_Type[256];
-	TYPE String_Type;
 	int Base_Num;
-	int Base_length;
+	TYPE Base_Type[256];
 	bool DetectKor;
 	bool DetectEng;
 
