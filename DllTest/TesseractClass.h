@@ -24,11 +24,11 @@ class TesseractClass
 {
 public:
 	TesseractClass();
-	TesseractClass(std::string Base_string, TYPE InputType);
+	TesseractClass(std::string Base_string, TYPE InputType, int wid, int hei, BYTE* src);
 	TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string, TYPE InputType);
 	~TesseractClass();
 
-	bool Test();
+	bool Test(int wid, int hei);
 
 	TYPE String_Type;
 	int Base_length;

@@ -27,7 +27,8 @@ inline int Delete_SPEC(std::string Base_String, int Base_length, TYPE Base_Type[
 
 TesseractClass::TesseractClass() {}
 
-TesseractClass::TesseractClass(std::string Base_string, TYPE InputType) : Base_String(Base_string), String_Type(InputType)
+TesseractClass::TesseractClass(std::string Base_string, TYPE InputType, int wid, int hei, BYTE* src) 
+	: Base_String(Base_string), String_Type(InputType), Imagewidth(wid), Imageheight(hei), src(src)
 {
 	Base_Num = 0;
 	Base_Type[256] = { TNULL };
@@ -35,7 +36,8 @@ TesseractClass::TesseractClass(std::string Base_string, TYPE InputType) : Base_S
 	Base_length = FindEachText(Base_String);
 	String_Type = FindTextType(Base_String);
 
-	Init();
+	//Init();
+	//Test();
 }
 
 TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_String, TYPE InputType)
@@ -54,7 +56,7 @@ TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, 
 		}
 	}
 	else
-		Test();
+		Test(Iwidth, Iheight);
 
 }
 
@@ -203,12 +205,12 @@ int TesseractClass::converbmptopng() {
 
 	CLSID   encoderClsid;
 	Gdiplus::Status  stat;
-	Gdiplus::Image*   image = new Gdiplus::Image(L"capture_0.bmp");
+	Gdiplus::Image*   image = new Gdiplus::Image(L"CCapture_5.bmp");
 
 	// Get the CLSID of the PNG encoder.
 	GetEncoderClsid(L"image/png", &encoderClsid);
 
-	stat = image->Save(L"Bird.png", &encoderClsid, NULL);
+	stat = image->Save(L"CCapture_5.png", &encoderClsid, NULL);
 
 	if (stat == Gdiplus::Ok)
 		printf("Bird.png was saved successfully\n");
@@ -222,15 +224,16 @@ int TesseractClass::converbmptopng() {
 }
 
 //테스트 호출용
-bool TesseractClass::Test() {
+bool TesseractClass::Test(int wid, int hei) {
 
 	Init();
 
-	//converbmptopng();
+	converbmptopng();
 	//image = pixRead("Bird.png");
 
-	image = pixCreate(Imagewidth, Imageheight, 32);
+	image = pixCreate(wid, hei, 32);
 	pixSetData(image, (l_uint32*)src);
+	//pixSetData
 
 	api->SetImage(image);
 
@@ -299,7 +302,8 @@ bool TesseractClass::Init() {
 
 void TesseractClass::Release() {
 
-	api->End();
+	if(api != NULL)
+		api->End();
 	//pixDestroy(&image);				//??왜
 
 }
@@ -356,8 +360,7 @@ std::string TesseractClass::UniToANSI(char* outText) {
 void TesseractClass::Process() {
 
 	api->SetImage(image);
-	//api->SetImage(m_image->GetPixels(), m_image->GetWidth(), m_image->GetHeight(), m_image->GetBytesPerPixel(), m_image->GetBytesPerScanLine());
-	// Get OCR result
+
 	outText = api->GetUTF8Text();
 	OutPutstr = UniToANSI(outText);
 

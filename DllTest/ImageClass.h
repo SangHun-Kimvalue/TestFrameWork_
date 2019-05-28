@@ -23,12 +23,14 @@ public:
 	int nHeight;
 	BYTE *src;
 
+	int c_wid;
+	int c_hei;
+
 private:
 
 	int c_x;
 	int c_y;
-	int c_wid;
-	int c_hei;
+
 	Mat ori_image;
 	Mat fix_image;
 
@@ -38,7 +40,7 @@ private:
 	int Base_length;
 	int String_Type;
 
-	bool CV_Init();
+	Mat CV_Init();
 	Mat Resize_Num(Mat fix_image);
 	Mat Resize_String(Mat fix_image);
 	Mat Refactoring(Mat fix_image);
@@ -46,7 +48,7 @@ private:
 	Mat Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY);
 	Mat GrayScale(Mat fix_image);
 	Mat Thresholding(Mat fix_image);
-	void ShowImage(Mat showimage);
+	void ShowImage(Mat showimage, int wid, int hei);
 	BYTE* Mat2Byte(Mat fix_image);
 
 

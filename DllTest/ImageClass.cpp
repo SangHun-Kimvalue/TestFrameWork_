@@ -1,20 +1,21 @@
 #include "ImageClass.h"
 
-bool RGBSaveBMP(BYTE *input, int nWidth, int nHeight) {
+bool RGBSaveBMP(BYTE *input, int nWidth, int nHeight, int index) {
 
 	BITMAPFILEHEADER bf;
 	BITMAPINFOHEADER bi;
-	static int i;
 
 	BYTE *image = input;
 	//unsigned char *image = (unsigned char*)malloc(sizeof(unsigned char)*nWidth*nHeight * 3);
 	//memcpy();
 	FILE *file;
 	char title[1024];
-	if (i > 10)
+
+	int i = index;
+	if ( i > 10)
 		i = 0;
 
-	sprintf_s(title, "CCCapture_%d.bmp", i++);
+	sprintf_s(title, "CCapture_%d.bmp", i++);
 	fopen_s(&file, title, "wb");
 
 	if (image != NULL)
@@ -53,12 +54,35 @@ ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_le
 									// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
 	base_width = 100;
 
-	CV_Init();
-	fix_image = Refactoring(fix_image);
+	
+	ori_image = CV_Init();
+	//bitwise_not(ori_image, ori_image);
 
-	this->src = Mat2Byte(fix_image);
-	RGBSaveBMP(src, c_wid, c_hei);
-	//RGBSaveBMP(src, wid, hei);
+	ShowImage(ori_image, c_wid, c_hei);
+
+	fix_image = ori_image.clone();
+	//fix_image = Refactoring(ori_image);
+	
+	Rect rect(c_x, c_y, c_wid, c_hei);		// x,y ,wid, hei
+
+	//fix_image
+
+	(ori_image(rect)).copyTo(fix_image);			//rect 만큼 crop
+	ShowImage(fix_image, c_wid, c_hei);
+
+	//fix_image = GrayScale(ori_image);			//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)
+	//ShowImage(fix_image);
+
+	//Thresholding(fix_image);
+	//ShowImage(fix_image);
+
+	//this->src = Mat2Byte(ori_image);
+	
+	this->src = (BYTE*)fix_image.data;
+	RGBSaveBMP(this->src, wid, hei, 5);
+	
+	this->src = (BYTE*)ori_image.data;
+	RGBSaveBMP(this->src, wid, hei, 6);
 
 }
 
@@ -66,9 +90,9 @@ ImageClass::~ImageClass()
 {
 }
 
-bool ImageClass::CV_Init() {
+Mat ImageClass::CV_Init() {
 
-	c_x = 0; 	c_y = 0;  	c_wid = 100; 	c_hei = 40;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
+	c_x = 0; 	c_y = 0;  	c_wid = 400; 	c_hei = 400;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
 
 	if (c_x + c_wid > nWidth) 
 		std::cerr << "넓이 오류" << std::endl;
@@ -78,21 +102,28 @@ bool ImageClass::CV_Init() {
 	// Read the image file
 	//std::string imagepath = IMAGEPATH;
 	//std::string filename = imagepath + "Lady with a Guitar.PNG";
+	
+	//ori_image.create(nWidth, nHeight, CV_8UC(4));
+	//ori_image.data = src;
 
-	ori_image = Mat(nWidth, nHeight, CV_8UC4, src);
+	//ori_image.at();
+
+	ori_image = Mat(nWidth, nHeight, CV_8UC(4), src);
+	//ori_image.resize();
 	if (ori_image.empty()){
 		std::cout << "Could not open or find the image" << std::endl;
 		std::cin.get(); //wait for any key press
-		return false;
+		return ori_image;
 	}
+	//ShowImage(ori_image, nWidth, nHeight);
 
-	return true;
+	return ori_image;
 }
 
-void ImageClass::ShowImage(Mat Image) {
+void ImageClass::ShowImage(Mat Image, int wid, int hei) {
 
 	//imshow("sub", cropimage);				//Show image
-	namedWindow("main");					// Create a window
+	namedWindow("main", WINDOW_AUTOSIZE);					// Create a window
 	imshow("main", Image);				// Show our image inside the created window.
 	waitKey(0);								// Wait for any keystroke in the window
 
@@ -121,7 +152,7 @@ Mat ImageClass::Resize_Num(Mat fix_image) {
 	}
 	else if (base > 0) {				//축소
 		
-		float percent = c_wid - base / c_wid;
+		float percent = (float)c_wid - (float)base / (float)c_wid;
 		int temp_hei = c_hei * percent;
 		int temp_wid = c_wid - base;
 		
@@ -140,7 +171,7 @@ Mat ImageClass::Resize_Num(Mat fix_image) {
 	}
 	else if (base < 0) {			//확대
 
-		float percent = c_wid - base / c_wid;
+		float percent = (float)c_wid - (float)base / (float)c_wid;
 		int temp_hei = c_hei * percent;
 		int temp_wid = c_wid - base;
 
@@ -176,7 +207,7 @@ Mat ImageClass::Resize_String(Mat fix_image) {
 		if (c_hei - base < base_height || (c_wid - base < base_width))	
 			return fix_image;
 		else {
-			float percent = c_hei - base / c_hei;
+			float percent = (float)c_hei - (float)base / (float)c_hei;
 			int temp_wid = c_wid * percent;
 			int temp_hei = c_hei - base;
 
@@ -190,7 +221,8 @@ Mat ImageClass::Resize_String(Mat fix_image) {
 	}
 	else if (base < 0) {			//확대
 
-		float percent = c_hei - base / c_hei;
+		float percent = ((float)c_hei - (float)base) / (float)c_hei;
+
 		int temp_wid = c_wid * percent;
 		int temp_hei = c_hei - base;
 
@@ -227,26 +259,46 @@ Mat ImageClass::Resize_String(Mat fix_image) {
 	return re_image;
 }
 
-Mat ImageClass::Refactoring(Mat fix_image) {
+Mat ImageClass::Refactoring(Mat ori_image) {
 
 
-	Rect rect(c_x, c_y, c_wid, c_hei);		// x,y ,wid, hei
+	Rect rect(c_x, c_y, c_wid, c_hei);		// x, y ,wid, hei
 
 	fix_image = ori_image(rect);			//rect 만큼 crop
-	ShowImage(fix_image);
+	ShowImage(fix_image, c_wid, c_hei);
 
 	if(String_Type == 4)
 		fix_image = Resize_Num(fix_image);
 	else 
 		fix_image = Resize_String(fix_image);
-	ShowImage(fix_image);
+	ShowImage(fix_image, c_wid, c_hei);
 
 	//std::cout << "현재 길이 및 높이" << c_wid - base << " " << base_height << std::endl;
 
 	//보간 추가
 
-	fix_image = Gaussian_Blur(fix_image, 3, 3);
-	ShowImage(fix_image);
+	//fix_image = Gaussian_Blur(fix_image, 3, 3);
+
+	//Canny(fix_image, fix_image, 50, 200);           // 외곽선 추출도 해보고.
+
+	return fix_image;
+}
+
+Mat ImageClass::GrayScale(Mat fix_image) {
+
+	Mat GrayImage;
+	
+	cv::cvtColor(fix_image, GrayImage, COLOR_RGB2GRAY);
+
+	return GrayImage;
+}
+
+Mat ImageClass::Thresholding(Mat fix_image) {
+
+	Mat ThreshImage;
+
+
+
 
 	return fix_image;
 }
@@ -299,8 +351,12 @@ BYTE* ImageClass::Mat2Byte(Mat fix_image) {				//수정
 
 	int size = fix_image.rows * fix_image.cols;
 
-	std::memcpy(src, fix_image.data, size * sizeof(BYTE));
+	src = /*(BYTE*)*/fix_image.data;
+
+	//std::memcpy(src, fix_image.data, size * sizeof(BYTE));
+
+	//imencode(".png", fix_image, src, src);
+
 
 	return src;
-
 }

@@ -12,7 +12,7 @@ DllClass::DllClass()
 {
 	HWND hwnd = GetDesktopWindow();
 	m_OCR = new OCRClass(hwnd);
-	std::cout << "Call Instance Seuccess" << std::endl;
+	//std::cout << "Call Instance Seuccess" << std::endl;
 
 	//print();
 	
@@ -21,7 +21,7 @@ DllClass::DllClass()
 
 DllClass::~DllClass()
 {
-	std::cout << "Call Instance delete" << std::endl;
+	//std::cout << "Call Instance delete" << std::endl;
 	delete m_OCR;
 }
 
@@ -50,7 +50,7 @@ bool DllClass::UpdateModule(ModuleInfo info) {
 // for debug
 void DllClass::PrintModuleInfo() {
 
-	std::cout << "MpduleInfo" << std::endl;
+	//std::cout << "MpduleInfo" << std::endl;
 
 }
 

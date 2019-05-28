@@ -9,6 +9,11 @@ GDICaptureClass::GDICaptureClass() : select(3)
 GDICaptureClass::GDICaptureClass(HWND hwnd) : m_hWndCopy(hwnd), select(1)
 {
 
+	nWidth = 600;
+	nHeight = 800;
+	nposx = 0;
+	nposy = 0;
+
 	Get_Monitors();
 	GetClientRect(m_hWndCopy, &ImageRect);									//윈도우 핸들 추가
 
@@ -23,7 +28,6 @@ GDICaptureClass::GDICaptureClass(HWND hwnd) : m_hWndCopy(hwnd), select(1)
 	res = Cap_Init();
 	if (!res)
 		return;
-
 
 	GetScreen();
 	//Roop();
@@ -117,10 +121,8 @@ bool GDICaptureClass::Get_Monitors() {
 
 	//nWidth = dev.dmPelsWidth;
 	//nHeight = dev.dmPelsHeight;
-	nWidth = 500;
-	nHeight = 500;
-	nposx = dev.dmPosition.x;
-	nposy = dev.dmPosition.y;
+	//nposx = dev.dmPosition.x;
+	//nposy = dev.dmPosition.y;
 
 	//EnumDisplaySettingsW(L"\\\\.\\Display2", ENUM_CURRENT_SETTINGS, &dev);
 	//printf("Display%d (%d * %d) (%d, %d)\n", 2, dev.dmPelsWidth, dev.dmPelsHeight, dev.dmPosition.x, dev.dmPosition.y);
@@ -190,7 +192,7 @@ bool GDICaptureClass::GetScreen() {
 	if (GetDIBits(hCaptureDC, hBitmap, 0, nHeight, src, (BITMAPINFO*)&bmpInfoHeader, DIB_RGB_COLORS)) {
 		//clock_t end_t1 = clock();
 		//printf("DIBit time = %d \n", end_t1 - start_t1);
-		if (RGBSaveBMP(src) == true) 
+		//if (RGBSaveBMP(src) == true) 
 			OutputDebugStringA("success\n");
 		//Cap_Release();
 		//free(src);
