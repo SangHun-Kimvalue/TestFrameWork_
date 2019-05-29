@@ -50,7 +50,8 @@ private:
 	Mat GrayScale(Mat fix_image);
 	Mat Thresholding(Mat fix_image);
 	void ShowImage(Mat showimage);
-	BYTE* Mat2Byte(Mat fix_image, int index);
+	BYTE* Mat2Byte(Mat fix_image, int index, int depth);
+	BYTE* Mat2Byte(Mat fix_image, int index, int depth, int save);
 
 
 };

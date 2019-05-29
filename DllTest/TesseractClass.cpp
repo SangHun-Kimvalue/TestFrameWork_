@@ -210,7 +210,7 @@ int TesseractClass::converbmptopng() {
 	// Get the CLSID of the PNG encoder.
 	GetEncoderClsid(L"image/png", &encoderClsid);
 
-	stat = image->Save(L"CCapture_5.png", &encoderClsid, NULL);
+	stat = image->Save(L"CCapture_1.png", &encoderClsid, NULL);
 
 	if (stat == Gdiplus::Ok)
 		printf( "" /*"Bird.png was saved successfully\n"*/);
@@ -228,7 +228,7 @@ bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 
 	Init();
 
-	converbmptopng();
+	//converbmptopng();
 	//image = pixRead("Bird.png");
 
 	image = pixCreate(wid, hei, 32);

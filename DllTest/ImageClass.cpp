@@ -1,6 +1,6 @@
 #include "ImageClass.h"
 
-bool RGBSaveBMP(BYTE *input, int nWidth, int nHeight, int index) {
+bool RGBSaveBMP(BYTE *input, int nWidth, int nHeight, int index, int depth) {
 
 	BITMAPFILEHEADER bf;
 	BITMAPINFOHEADER bi;
@@ -26,18 +26,18 @@ bool RGBSaveBMP(BYTE *input, int nWidth, int nHeight, int index) {
 			memset(&bi, 0, sizeof(bi));
 
 			bf.bfType = 'MB';
-			bf.bfSize = sizeof(bf) + sizeof(bi) + nWidth * nHeight * 4;
+			bf.bfSize = sizeof(bf) + sizeof(bi) + nWidth * nHeight * depth;
 			bf.bfOffBits = sizeof(bf) + sizeof(bi);
 			bi.biSize = sizeof(bi);
 			bi.biWidth = nWidth;
 			bi.biHeight = nHeight;
 			bi.biPlanes = 1;
-			bi.biBitCount = 32;
-			bi.biSizeImage = nWidth * nHeight * 4;
+			bi.biBitCount = depth * 8;
+			bi.biSizeImage = nWidth * nHeight * depth;
 
 			fwrite(&bf, sizeof(bf), 1, file);
 			fwrite(&bi, sizeof(bi), 1, file);
-			fwrite(image, sizeof(unsigned char), nHeight*nWidth * 4, file);
+			fwrite(image, sizeof(unsigned char), nHeight*nWidth * depth, file);
 
 			fclose(file);
 		}
@@ -67,14 +67,17 @@ ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_le
 
 	fix_image = Refactoring(ori_image);				//리사이즈 까지는 패스
 
-	fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)
+	//fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)
+	//ShowImage(fix_image);
+	
+	//fix_image = Thresholding(fix_image);
+	//ShowImage(fix_image);
+	
+	fix_image = Gaussian_Blur(fix_image, 3, 3);
 	ShowImage(fix_image);
 
-	//Thresholding(fix_image);
-	//ShowImage(fix_image);
-
-	this->src = Mat2Byte(ori_image, 0);
-	this->src = Mat2Byte(fix_image, 1);
+	this->src = Mat2Byte(ori_image, 0, 4, 1);
+	this->src = Mat2Byte(fix_image, 1, 1);
 	
 }
 
@@ -84,7 +87,7 @@ ImageClass::~ImageClass()
 
 Mat ImageClass::CV_Ini_t() {
 
-	c_x = 0; 	c_y = 0;  	c_wid = 150; 	c_hei = 40;
+	c_x = 44; 	c_y = 0;  	c_wid = 150; 	c_hei = 40;
 
 	std::string Ipath = IMAGEPATH;
 	Ipath  = Ipath  + "ocr.bmp";
@@ -284,6 +287,7 @@ Mat ImageClass::Refactoring(Mat ori_image) {
 	//fix_image = ori_image(rect);			//rect 만큼 crop
 	ShowImage(fix_image);
 
+	//cv::cvtColor(fix_image, fix_image, COLOR_BGRA2BGR);
 
 	if(String_Type == 4)
 		fix_image = Resize_Num(fix_image);
@@ -306,8 +310,9 @@ Mat ImageClass::GrayScale(Mat fix_image) {
 
 	Mat GrayImage;
 	
-	cv::cvtColor(fix_image, GrayImage, COLOR_RGB2GRAY);
-
+	cv::cvtColor(fix_image, GrayImage, COLOR_BGR2GRAY);
+	//cv::cvtColor(fix_image, GrayImage, COLOR_BGRA2GRAY);
+	
 	return GrayImage;
 }
 
@@ -315,10 +320,10 @@ Mat ImageClass::Thresholding(Mat fix_image) {
 
 	Mat ThreshImage;
 
+	//threshold(fix_image, ThreshImage, 127, 255, THRESH_BINARY);
+	adaptiveThreshold(fix_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 5, 10);
 
-
-
-	return fix_image;
+	return ThreshImage;
 }
 
 Mat ImageClass::Bilinear_Interpolation(Mat fix_image){
@@ -365,7 +370,7 @@ Mat ImageClass::Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY) {			//시그�
 	return Gasu_image;
 }
 
-BYTE* ImageClass::Mat2Byte(Mat input_image, int index) {				//수정
+BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth) {				//수정
 
 	int size = input_image.rows * input_image.cols;
 	
@@ -373,7 +378,20 @@ BYTE* ImageClass::Mat2Byte(Mat input_image, int index) {				//수정
 	//imencode(".png", fix_image, src, src);
 
 	this->src = (BYTE*)input_image.data;
-	RGBSaveBMP(this->src, input_image.rows, input_image.cols, index);
+	//RGBSaveBMP(this->src, input_image.rows, input_image.cols, index, depth);
+
+	return src;
+}
+
+BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth, int save) {				//수정
+
+	int size = input_image.rows * input_image.cols;
+
+	//std::memcpy(src, fix_image.data, size * sizeof(BYTE));
+	//imencode(".png", fix_image, src, src);
+
+	this->src = (BYTE*)input_image.data;
+	RGBSaveBMP(this->src, input_image.rows, input_image.cols, index, depth);
 
 	return src;
 }
