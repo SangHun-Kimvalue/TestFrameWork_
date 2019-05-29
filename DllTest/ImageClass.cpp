@@ -62,12 +62,13 @@ ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_le
 	// 6. 파일로 Mat 만들어서 해봐야할듯				>>안됨 벡터를 사용하라는데?		//채널수떄문에 꼬이는듯?
 
 	ori_image = CV_Ini_t();
+	ShowImage(ori_image);
 	//bitwise_not(ori_image, ori_image);			//픽셀 반전
 
-	fix_image = Refactoring(ori_image);
+	fix_image = Refactoring(ori_image);				//리사이즈 까지는 패스
 
-	//fix_image = GrayScale(ori_image);			//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)
-	//ShowImage(fix_image);
+	fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)
+	ShowImage(fix_image);
 
 	//Thresholding(fix_image);
 	//ShowImage(fix_image);
@@ -83,7 +84,7 @@ ImageClass::~ImageClass()
 
 Mat ImageClass::CV_Ini_t() {
 
-	c_x = 0; 	c_y = 0;  	c_wid = 500; 	c_hei = 500;
+	c_x = 0; 	c_y = 0;  	c_wid = 150; 	c_hei = 40;
 
 	std::string Ipath = IMAGEPATH;
 	Ipath  = Ipath  + "ocr.bmp";
@@ -99,10 +100,7 @@ Mat ImageClass::CV_Ini_t() {
 	//Mat DecodeImg = imdecode(ori_image, IMREAD_COLOR);
 
 	//ori_image = imread(Ipath.c_str(), IMREAD_COLOR);			//BGR로 들어옴(파일 로드)
-	ShowImage(ori_image);
-
-
-
+	
 	return ori_image;
 }
 
@@ -115,7 +113,6 @@ Mat ImageClass::CV_Init() {
 	else if(c_y + c_hei > nHeight)
 		std::cerr << "높이 오류" << std::endl;
 
-	
 	//ori_image.create(nWidth, nHeight, CV_8UC(4));
 	//ori_image.data = src;
 
@@ -136,8 +133,8 @@ Mat ImageClass::CV_Init() {
 void ImageClass::ShowImage(Mat Image) {
 
 	//imshow("sub", cropimage);				//Show image
-	//namedWindow("main", WINDOW_AUTOSIZE);					// Create a window
-	namedWindow("main", WINDOW_NORMAL);					// Create a window
+	namedWindow("main", WINDOW_AUTOSIZE);					// Create a window
+	//namedWindow("main", WINDOW_NORMAL);					// Create a window
 	imshow("main", Image);				// Show our image inside the created window.
 	waitKey(0);								// Wait for any keystroke in the window
 
@@ -161,18 +158,25 @@ Mat ImageClass::Resize_Num(Mat fix_image) {
 
 	int base = c_wid - base_width;
 
+	float percent = (float)c_wid - (float)base / (float)c_wid;
+	int temp_hei = c_hei * percent;
+	int temp_wid = c_wid - base;
+
 	if (base == 0) {					//절대적인 값 차이가 아니라 퍼센테이지로 높이와 넓이를 계산하면 좋을듯??
 		return fix_image;
 	}
 	else if (base > 0) {				//축소
 		
-		float percent = (float)c_wid - (float)base / (float)c_wid;
-		int temp_hei = c_hei * percent;
-		int temp_wid = c_wid - base;
-		
-		//이미지가 기준치 보다 더 작아지게 되면 더이상 검출이 불가능하다고 판단해 그대로 사용한다.
-		if ((temp_hei < base_height) || (temp_wid < base_width))
-			return fix_image;
+		//이미지가 기준치 보다 더 작아지게 안됨으로 기준 수치를 한번 더 더해 사용한다.
+		if (temp_hei < base_height || (temp_wid < base_width)) {
+			temp_hei = temp_hei + base_height;
+			temp_wid = temp_wid + base_width;
+			cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
+			//ShowImage(re_image);
+			c_wid = temp_wid;
+			c_hei = temp_hei;
+			return re_image;
+		}
 
 		else {
 			//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그		//INTER_AREA >> Bilinear_Interpolation에 자세히
@@ -184,10 +188,6 @@ Mat ImageClass::Resize_Num(Mat fix_image) {
 		}
 	}
 	else if (base < 0) {			//확대
-
-		float percent = (float)c_wid - (float)base / (float)c_wid;
-		int temp_hei = c_hei * percent;
-		int temp_wid = c_wid - base;
 
 		cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
 		c_wid = temp_wid;
@@ -212,18 +212,26 @@ Mat ImageClass::Resize_String(Mat fix_image) {
 	//INTER_LINEAR (가장 빠르지 만 적당히 괜찮아 보입니다) 또는 INTER_CUBIC (느림)로 가장 잘 보입니다.
 	
 	int base = c_hei - base_height;
+	float percent = ((float)c_hei - (float)base) / (float)c_hei;
+
+	int temp_wid = c_wid * percent;
+	int temp_hei = c_hei - base;
 
 	if (base == 0) {					//절대적인 값 차이가 아니라 퍼센테이지로 높이와 넓이를 계산하면 좋을듯??
 		return fix_image;
 	}
 	else if (base > 0) {				//축소
-		//이미지가 기준치 보다 더 작아지게 되면 더이상 검출이 불가능하다고 판단해 그대로 사용한다.
-		if (c_hei - base < base_height || (c_wid - base < base_width))	
-			return fix_image;
+		//이미지가 기준치 보다 더 작아지게 안됨으로 기준 수치를 한번 더 더해 사용한다.
+		if (temp_hei < base_height || (temp_wid < base_width)) {
+			temp_hei = temp_hei + base_height;
+			temp_wid = temp_wid + base_width;
+			cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
+			//ShowImage(re_image);
+			c_wid = temp_wid;
+			c_hei = temp_hei;
+			return re_image;
+		}
 		else {
-			float percent = (float)c_hei - (float)base / (float)c_hei;
-			int temp_wid = c_wid * percent;
-			int temp_hei = c_hei - base;
 
 			//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그		//INTER_AREA >> Bilinear_Interpolation에 자세히
 			cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
@@ -234,11 +242,6 @@ Mat ImageClass::Resize_String(Mat fix_image) {
 		}
 	}
 	else if (base < 0) {			//확대
-
-		float percent = ((float)c_hei - (float)base) / (float)c_hei;
-
-		int temp_wid = c_wid * percent;
-		int temp_hei = c_hei - base;
 
 		cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
 		c_wid = temp_wid;
@@ -282,11 +285,11 @@ Mat ImageClass::Refactoring(Mat ori_image) {
 	ShowImage(fix_image);
 
 
-	//if(String_Type == 4)
-	//	fix_image = Resize_Num(fix_image);
-	//else 
-	//	fix_image = Resize_String(fix_image);
-	//ShowImage(fix_image);
+	if(String_Type == 4)
+		fix_image = Resize_Num(fix_image);
+	else 
+		fix_image = Resize_String(fix_image);
+	ShowImage(fix_image);
 
 	//std::cout << "현재 길이 및 높이" << c_wid - base << " " << base_height << std::endl;
 

@@ -205,7 +205,7 @@ int TesseractClass::converbmptopng() {
 
 	CLSID   encoderClsid;
 	Gdiplus::Status  stat;
-	Gdiplus::Image*   image = new Gdiplus::Image(L"CCapture_5.bmp");
+	Gdiplus::Image*   image = new Gdiplus::Image(L"CCapture_1.bmp");
 
 	// Get the CLSID of the PNG encoder.
 	GetEncoderClsid(L"image/png", &encoderClsid);
