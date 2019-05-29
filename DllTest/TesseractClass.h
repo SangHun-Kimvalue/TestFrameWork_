@@ -28,8 +28,8 @@ public:
 	TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string, TYPE InputType);
 	~TesseractClass();
 
-	bool Test(int wid, int hei);
-
+	bool Test(int wid, int hei, BYTE* src);
+	
 	TYPE String_Type;
 	int Base_length;
 

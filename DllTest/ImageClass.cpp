@@ -54,21 +54,17 @@ ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_le
 									// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
 	base_width = 100;
 
-	
-	ori_image = CV_Init();
-	//bitwise_not(ori_image, ori_image);
+	// 1. 이미지의 크기나 색을 변경했을 떄 BYTE로 변경하면 이상해짐.							
+	// 2. 높이와 너비가 같지 않을 때 그림이 겹침(linesize 가 문제이거나 imshow가 이상)	
+	// 3. BYTE로 변경하는 다른 방법을 찾아바야할듯.(api 가 아닌 직접변환해야할듯)			>> 
+	// 4. 그레이 이미지 채널수 이상한듯(1개가 정상)
+	// 5. Tesseract DPI 가 0이라고 자꾸 나옴
+	// 6. 파일로 Mat 만들어서 해봐야할듯				>>안됨 벡터를 사용하라는데?		//채널수떄문에 꼬이는듯?
 
-	ShowImage(ori_image, c_wid, c_hei);
+	ori_image = CV_Ini_t();
+	//bitwise_not(ori_image, ori_image);			//픽셀 반전
 
-	fix_image = ori_image.clone();
-	//fix_image = Refactoring(ori_image);
-	
-	Rect rect(c_x, c_y, c_wid, c_hei);		// x,y ,wid, hei
-
-	//fix_image
-
-	(ori_image(rect)).copyTo(fix_image);			//rect 만큼 crop
-	ShowImage(fix_image, c_wid, c_hei);
+	fix_image = Refactoring(ori_image);
 
 	//fix_image = GrayScale(ori_image);			//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)
 	//ShowImage(fix_image);
@@ -76,32 +72,49 @@ ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_le
 	//Thresholding(fix_image);
 	//ShowImage(fix_image);
 
-	//this->src = Mat2Byte(ori_image);
+	this->src = Mat2Byte(ori_image, 0);
+	this->src = Mat2Byte(fix_image, 1);
 	
-	this->src = (BYTE*)fix_image.data;
-	RGBSaveBMP(this->src, wid, hei, 5);
-	
-	this->src = (BYTE*)ori_image.data;
-	RGBSaveBMP(this->src, wid, hei, 6);
-
 }
 
 ImageClass::~ImageClass()
 {
 }
 
+Mat ImageClass::CV_Ini_t() {
+
+	c_x = 0; 	c_y = 0;  	c_wid = 500; 	c_hei = 500;
+
+	std::string Ipath = IMAGEPATH;
+	Ipath  = Ipath  + "ocr.bmp";
+
+	ori_image = Mat(nWidth, nHeight, CV_8UC(4), src);
+	
+	//Mat DecodeImg = ori_image; // imdecode(ori_image, IMREAD_COLOR);
+	std::vector<uchar> OutBuffer;
+	OutBuffer.push_back((uchar)src);
+	bool res = imencode(".bmp", ori_image, OutBuffer);
+
+	//ori_image = Mat(1, OutBuffer.size(), CV_8UC4, OutBuffer.data());
+	//Mat DecodeImg = imdecode(ori_image, IMREAD_COLOR);
+
+	//ori_image = imread(Ipath.c_str(), IMREAD_COLOR);			//BGR로 들어옴(파일 로드)
+	ShowImage(ori_image);
+
+
+
+	return ori_image;
+}
+
 Mat ImageClass::CV_Init() {
 
-	c_x = 0; 	c_y = 0;  	c_wid = 400; 	c_hei = 400;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
+	c_x = 0; 	c_y = 0;  	c_wid = 500; 	c_hei = 500;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
 
 	if (c_x + c_wid > nWidth) 
 		std::cerr << "넓이 오류" << std::endl;
 	else if(c_y + c_hei > nHeight)
 		std::cerr << "높이 오류" << std::endl;
 
-	// Read the image file
-	//std::string imagepath = IMAGEPATH;
-	//std::string filename = imagepath + "Lady with a Guitar.PNG";
 	
 	//ori_image.create(nWidth, nHeight, CV_8UC(4));
 	//ori_image.data = src;
@@ -120,10 +133,11 @@ Mat ImageClass::CV_Init() {
 	return ori_image;
 }
 
-void ImageClass::ShowImage(Mat Image, int wid, int hei) {
+void ImageClass::ShowImage(Mat Image) {
 
 	//imshow("sub", cropimage);				//Show image
-	namedWindow("main", WINDOW_AUTOSIZE);					// Create a window
+	//namedWindow("main", WINDOW_AUTOSIZE);					// Create a window
+	namedWindow("main", WINDOW_NORMAL);					// Create a window
 	imshow("main", Image);				// Show our image inside the created window.
 	waitKey(0);								// Wait for any keystroke in the window
 
@@ -261,17 +275,18 @@ Mat ImageClass::Resize_String(Mat fix_image) {
 
 Mat ImageClass::Refactoring(Mat ori_image) {
 
+	Rect rect(c_x, c_y, c_wid, c_hei);							// x, y ,wid, hei
 
-	Rect rect(c_x, c_y, c_wid, c_hei);		// x, y ,wid, hei
+	(ori_image(rect)).copyTo(fix_image);						//rect 만큼 crop
+	//fix_image = ori_image(rect);			//rect 만큼 crop
+	ShowImage(fix_image);
 
-	fix_image = ori_image(rect);			//rect 만큼 crop
-	ShowImage(fix_image, c_wid, c_hei);
 
-	if(String_Type == 4)
-		fix_image = Resize_Num(fix_image);
-	else 
-		fix_image = Resize_String(fix_image);
-	ShowImage(fix_image, c_wid, c_hei);
+	//if(String_Type == 4)
+	//	fix_image = Resize_Num(fix_image);
+	//else 
+	//	fix_image = Resize_String(fix_image);
+	//ShowImage(fix_image);
 
 	//std::cout << "현재 길이 및 높이" << c_wid - base << " " << base_height << std::endl;
 
@@ -347,16 +362,15 @@ Mat ImageClass::Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY) {			//시그�
 	return Gasu_image;
 }
 
-BYTE* ImageClass::Mat2Byte(Mat fix_image) {				//수정
+BYTE* ImageClass::Mat2Byte(Mat input_image, int index) {				//수정
 
-	int size = fix_image.rows * fix_image.cols;
-
-	src = /*(BYTE*)*/fix_image.data;
-
+	int size = input_image.rows * input_image.cols;
+	
 	//std::memcpy(src, fix_image.data, size * sizeof(BYTE));
-
 	//imencode(".png", fix_image, src, src);
 
+	this->src = (BYTE*)input_image.data;
+	RGBSaveBMP(this->src, input_image.rows, input_image.cols, index);
 
 	return src;
 }

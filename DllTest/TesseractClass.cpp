@@ -56,7 +56,7 @@ TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, 
 		}
 	}
 	else
-		Test(Iwidth, Iheight);
+		Test(Iwidth, Iheight, Isrc);
 
 }
 
@@ -213,7 +213,7 @@ int TesseractClass::converbmptopng() {
 	stat = image->Save(L"CCapture_5.png", &encoderClsid, NULL);
 
 	if (stat == Gdiplus::Ok)
-		printf("Bird.png was saved successfully\n");
+		printf( "" /*"Bird.png was saved successfully\n"*/);
 	else
 		printf("Failure: stat = %d\n", stat);
 
@@ -224,7 +224,7 @@ int TesseractClass::converbmptopng() {
 }
 
 //테스트 호출용
-bool TesseractClass::Test(int wid, int hei) {
+bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 
 	Init();
 

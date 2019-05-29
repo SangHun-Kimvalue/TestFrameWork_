@@ -8,6 +8,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	//HRESULT rs;
 
 	AllocConsole();
+	HWND m_Console = GetConsoleWindow();
+	SetWindowPos(m_Console, 0, 800, 400, 0, 0, SWP_NOSIZE);
+
 	FILE* cp;
 	freopen_s(&cp, "CONOUT$", "wt", stdout);
 

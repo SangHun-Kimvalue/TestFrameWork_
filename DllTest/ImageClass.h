@@ -41,6 +41,7 @@ private:
 	int String_Type;
 
 	Mat CV_Init();
+	Mat CV_Ini_t();
 	Mat Resize_Num(Mat fix_image);
 	Mat Resize_String(Mat fix_image);
 	Mat Refactoring(Mat fix_image);
@@ -48,8 +49,8 @@ private:
 	Mat Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY);
 	Mat GrayScale(Mat fix_image);
 	Mat Thresholding(Mat fix_image);
-	void ShowImage(Mat showimage, int wid, int hei);
-	BYTE* Mat2Byte(Mat fix_image);
+	void ShowImage(Mat showimage);
+	BYTE* Mat2Byte(Mat fix_image, int index);
 
 
 };

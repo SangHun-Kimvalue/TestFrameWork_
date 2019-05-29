@@ -9,10 +9,10 @@ GDICaptureClass::GDICaptureClass() : select(3)
 GDICaptureClass::GDICaptureClass(HWND hwnd) : m_hWndCopy(hwnd), select(1)
 {
 
-	nWidth = 600;
-	nHeight = 800;
-	nposx = 0;
-	nposy = 0;
+	nWidth = 1000;
+	nHeight = 1000;
+	//nposx = 0;
+	//nposy = 0;
 
 	Get_Monitors();
 	GetClientRect(m_hWndCopy, &ImageRect);									//윈도우 핸들 추가
@@ -121,8 +121,8 @@ bool GDICaptureClass::Get_Monitors() {
 
 	//nWidth = dev.dmPelsWidth;
 	//nHeight = dev.dmPelsHeight;
-	//nposx = dev.dmPosition.x;
-	//nposy = dev.dmPosition.y;
+	nposx = dev.dmPosition.x;
+	nposy = dev.dmPosition.y;
 
 	//EnumDisplaySettingsW(L"\\\\.\\Display2", ENUM_CURRENT_SETTINGS, &dev);
 	//printf("Display%d (%d * %d) (%d, %d)\n", 2, dev.dmPelsWidth, dev.dmPelsHeight, dev.dmPosition.x, dev.dmPosition.y);
