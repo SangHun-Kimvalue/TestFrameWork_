@@ -1,6 +1,6 @@
 #include "TextMatchClass.h"
 
-TextMatchClass::TextMatchClass() : Find_String(""), threshold(0), fomula("EQUAL") {
+TextMatchClass::TextMatchClass() : Base_String(""), threshold(0), Fomula("EQUAL"), Match(false) {
 
 	Detect = false;
 
@@ -8,7 +8,7 @@ TextMatchClass::TextMatchClass() : Find_String(""), threshold(0), fomula("EQUAL"
 
 //std::string input_string, std::string find_string, int type, int threshold, std::string fomula
 TextMatchClass::TextMatchClass(std::string input_string, std::string find_string, int type, int threshold, std::string fomula)
-	: Base_String(input_string), Type((INTYPE)type), Find_String(find_string), threshold(threshold), fomula(fomula)
+	: Input_String(input_string), Type((INTYPE)type), Base_String(find_string), threshold(threshold), Fomula(fomula), Match(false)
 {
 	Detect = false;
 
@@ -63,7 +63,7 @@ bool TextMatchClass::Han_Delete(std::string input_string) {
 
 bool TextMatchClass::Find_Base_String(std::string input_string) {
 
-	if (strstr(input_string.c_str(), Find_String.c_str()) != NULL) {
+	if (strstr(input_string.c_str(), Base_String.c_str()) != NULL) {
 		return true;
 	}
 
@@ -78,21 +78,21 @@ bool TextMatchClass::Find_Scope(std::string input_string) {
 
 	Base_int = atoi(input_string.c_str());
 
-	if (strstr(fomula.c_str(), "EQUAL") != NULL ) {
+	if (strstr(Fomula.c_str(), "EQUAL") != NULL ) {
 
 		if (Base_int == threshold) {
 			return true;
 		}
 		return false;
 	}
-	else if (strstr(fomula.c_str(), "LESSTHAN") != NULL ) {
+	else if (strstr(Fomula.c_str(), "LESSTHAN") != NULL ) {
 		
 		if (Base_int < threshold) {
 			return true;
 		}
 		return false;
 	}
-	else if (strstr(fomula.c_str(), "MORETHAN") != NULL ) {
+	else if (strstr(Fomula.c_str(), "MORETHAN") != NULL ) {
 		
 		if (Base_int > threshold) {
 			return true;

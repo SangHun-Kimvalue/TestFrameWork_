@@ -18,9 +18,10 @@ public:
 private:
 
 	const int threshold;
-	std::string Base_String;
-	const std::string Find_String;
-	const std::string fomula;
+	std::string Input_String;
+	const std::string Base_String;
+	const bool Match;
+	const std::string Fomula;
 
 	INTYPE Type;
 
