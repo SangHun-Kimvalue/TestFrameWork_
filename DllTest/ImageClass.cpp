@@ -63,26 +63,48 @@ ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_le
 
 	ori_image = CV_Init(wid, hei, 44, 0, 150, 40);			//높이 넓이 다르면 깨짐
 	//ori_image = CV_Init(wid, hei, 44, 0, 800, 800);			//높이 넓이 다르면 깨짐
-
+	
 	fix_image = Crop(ori_image);
 
 	fix_image = Resize(fix_image, String_Type);
 
 	fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)  해결
-	
+
 	fix_image = Gaussian_Blur(fix_image, 3, 3);
-	
+
 	ShowImage(fix_image);
 
 	//Save2png(ori_image, "ori");
 	Save2png(fix_image, "Thresh");
 
 	this->src = Mat2Byte(fix_image, 1, 4);
+
 }
 
 ImageClass::~ImageClass()
 {
 }
+
+bool ImageClass::Process(int String_Type) {
+
+	fix_image = Crop(ori_image);
+
+	fix_image = Resize(fix_image, String_Type);
+
+	fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)  해결
+
+	fix_image = Gaussian_Blur(fix_image, 3, 3);
+
+	ShowImage(fix_image);
+
+	//Save2png(ori_image, "ori");
+	Save2png(fix_image, "Thresh");
+
+	this->src = Mat2Byte(fix_image, 1, 4);
+
+	return true;
+}
+
 
 Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) {
 
@@ -252,7 +274,7 @@ Mat ImageClass::Resize(Mat ori_image, int String_Type) {
 
 	Mat resize_image;
 
-	if(String_Type == 4)
+	if(String_Type == 3)
 		resize_image = Resize_Num(ori_image);
 	else 
 		resize_image = Resize_String(ori_image);

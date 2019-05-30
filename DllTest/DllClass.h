@@ -1,6 +1,9 @@
 #pragma once
 
-#include "OCRClass.h"
+#include "stdafx.h"
+#include "TesseractClass.h"
+#include "ImageClass.h"
+#include "TextMatchClass.h"
 
 //#define _API __declspec(dllexport)
 
@@ -9,6 +12,8 @@
 #else
 #define _API __declspec(dllexport)
 #endif
+
+enum { USEMEMORY, USEFILE };
 
 class DllClass : public BaseAlertModule
 {
@@ -42,7 +47,12 @@ public:
 	virtual int SaveImage(std::string saveFoler, std::string timestamp);
 
 private:
-	OCRClass* m_OCR;
+
+	GDICaptureClass* Capturer;
+	ImageClass* ImageCV;
+	TesseractClass* Tesseract;
+	TextMatchClass* Match;
+	HWND m_hwnd;
 
 };
 

@@ -1,30 +1,5 @@
 #include "TesseractClass.h"
 
-//안쓸듯
-inline int Delete_SPEC(std::string Base_String, int Base_length, TYPE Base_Type[]) {
-
-	int Base_int = 0;
-	std::string temp = "";
-
-	/*숫자 추출 알고리즘
-	for (int i = 0; i < Base_length; i++) {
-		if (Base_Type[i] == NUM) {
-			temp = temp + Base_String.at(i);
-		}
-	}*/
-
-	/*while(1) {						//공백 제거 알고리즘
-
-	size_t temp = Base_String.find(" ", 0);
-	if (temp == std::string::npos)
-		break;
-
-	Base_String.erase(temp, 1);
-	}*/
-
-	return atoi(temp.c_str());
-}
-
 TesseractClass::TesseractClass() {}
 
 TesseractClass::TesseractClass(std::string Base_string, TYPE InputType, int wid, int hei, BYTE* src) 

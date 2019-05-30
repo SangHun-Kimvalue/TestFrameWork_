@@ -26,21 +26,23 @@ public:
 	int c_hei;
 	BYTE *src;
 
+	Mat ori_image;
+	Mat fix_image;
+
 	Mat CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei);
+	bool Process(int String_Type);
+
+private:
+
+	int base_height;
+	int base_width;
+	int base_length;
+	
 	Mat Resize(Mat fix_image, int String_Type);
 	Mat Crop(Mat fix_image);
 	Mat Bilinear_Interpolation(Mat fix_image);
 	Mat Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY);
 	Mat GrayScale(Mat fix_image);
-	
-private:
-
-	Mat ori_image;
-	Mat fix_image;
-
-	int base_height;
-	int base_width;
-	int base_length;
 
 	Mat Resize_Num(Mat fix_image);
 	Mat Resize_String(Mat fix_image);

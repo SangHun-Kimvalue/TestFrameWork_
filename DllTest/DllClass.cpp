@@ -10,19 +10,37 @@ extern "C" {
 
 DllClass::DllClass()
 {
-	HWND hwnd = GetDesktopWindow();
-	m_OCR = new OCRClass(hwnd);
-	//std::cout << "Call Instance Seuccess" << std::endl;
-
-	//print();
+	m_hwnd = GetDesktopWindow();
 	
-	//this->~DllClass();
+	std::string Test_String = "Improve";
+
+	Capturer = new GDICaptureClass(m_hwnd);
+
+	Tesseract = new TesseractClass(Test_String, TNULL, Capturer->nWidth, Capturer->nHeight, Capturer->src);
+	//Tesseract = new TesseractClass(USEFILE, Capturer->nWidth, Capturer->nHeight, Capturer->src, Test_String, ENG);
+	//1 : from file // 0 : from memory  // non : not thing
+
+	//ImageCV = new ImageClass();
+	ImageCV = new ImageClass(Capturer->nWidth, Capturer->nHeight, Capturer->src, Tesseract->String_Type, Tesseract->Base_length);
+	//ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, 44, 0, 150, 40);			//³ôÀÌ ³ÐÀÌ ´Ù¸£¸é ±úÁü
+
+
+	Tesseract->Test(ImageCV->c_wid, ImageCV->c_hei, ImageCV->src);
+	Tesseract->String_Type;
+
+	//Match = new TextMatchClass("asdf", "df", (INTYPE)Tesseract->String_Type, 0);
+	//std::string input_string, std::string find_string, int type, int threshold, std::string fomula
+	Match = new TextMatchClass("qwertyuiopasdfghjklzxcvbnm", "zxcv", 1, 3, "EQUAL");
+
+
 }
 
 DllClass::~DllClass()
 {
 	//std::cout << "Call Instance delete" << std::endl;
-	delete m_OCR;
+	delete Match;
+	delete Capturer;
+	delete Tesseract;
 }
 
 void DllClass::print() {
@@ -39,6 +57,24 @@ void DllClass::test() {
 
 
 bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
+
+	//std::string Test_String = "Improve";
+
+	//Capturer = new GDICaptureClass(m_hwnd);
+	//
+	//Tesseract = new TesseractClass(Test_String, TNULL, Capturer->nWidth, Capturer->nHeight, Capturer->src);
+	////Tesseract = new TesseractClass(USEFILE, Capturer->nWidth, Capturer->nHeight, Capturer->src, Test_String, ENG);
+	////1 : from file // 0 : from memory  // non : not thing
+	//
+	//ImageCV = new ImageClass();
+	////ImageCV = new ImageClass(Capturer->nWidth, Capturer->nHeight, Capturer->src, Tesseract->String_Type, Tesseract->Base_length);
+	//ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, 44, 0, 150, 40);			//³ôÀÌ ³ÐÀÌ ´Ù¸£¸é ±úÁü
+	//
+	//
+	//Tesseract->Test(ImageCV->c_wid, ImageCV->c_hei, ImageCV->src);
+	//Tesseract->String_Type;
+	//
+	//Match = new TextMatchClass("asdf", (INTYPE)Tesseract->String_Type);
 
 	return true;
 }
@@ -117,6 +153,17 @@ void DllClass::StopModule() {
 
 double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 	
+	//ImageCV->Process(1);
+	//Tesseract->Test(ImageCV->c_wid, ImageCV->c_hei, ImageCV->src);
+	//
+	//
+	//if (Tesseract->String_Type) {
+	//
+	//
+	//}
+	//
+
+
 	return 0;
 }
 
