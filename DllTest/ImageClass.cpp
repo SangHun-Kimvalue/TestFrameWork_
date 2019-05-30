@@ -327,11 +327,11 @@ Mat ImageClass::Thresholding(Mat fix_image) {
 	//기음	상수는 평균 또는 가중 평균에서 뺍니다(아래 세부 정보 참조).일반적으로 양수이지만 0 또는 음수 일 수 있습니다.
 
 	//threshold(fix_image, ThreshImage, 127, 255, THRESH_BINARY);
-	adaptiveThreshold(fix_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 5, 10);
+	adaptiveThreshold(fix_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 7, 5);
 	cvtColor(ThreshImage, fix_image, COLOR_GRAY2BGRA);
 
 
-	return ThreshImage;
+	return fix_image;
 }
 
 Mat ImageClass::Bilinear_Interpolation(Mat fix_image){
