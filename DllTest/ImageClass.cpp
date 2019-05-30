@@ -100,7 +100,7 @@ Mat ImageClass::CV_Ini_t(int x, int y, int wid, int hei) {
 	std::string Ipath = IMAGEPATH;
 	Ipath  = Ipath  + "ocr.bmp";
 
-	ori_image = Mat(nWidth, nHeight, CV_8UC(4), src);
+	ori_image = Mat(nHeight, nWidth, CV_8UC(4), src);
 	
 	//Mat DecodeImg = ori_image; // imdecode(ori_image, IMREAD_COLOR);
 	std::vector<uchar> OutBuffer;
@@ -129,7 +129,7 @@ Mat ImageClass::CV_Init() {
 
 	//ori_image.at();
 
-	ori_image = Mat(nWidth, nHeight, CV_8UC(4), src);
+	ori_image = Mat(nHeight, nWidth, CV_8UC(4), src);
 	//ori_image.resize();
 	if (ori_image.empty()){
 		std::cout << "Could not open or find the image" << std::endl;

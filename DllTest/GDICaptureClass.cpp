@@ -9,8 +9,8 @@ GDICaptureClass::GDICaptureClass() : select(3)
 GDICaptureClass::GDICaptureClass(HWND hwnd) : m_hWndCopy(hwnd), select(1)
 {
 
-	nWidth = 1000;
-	nHeight = 1000;
+	nWidth = 1920;
+	nHeight = 1080;
 	//nposx = 0;
 	//nposy = 0;
 
