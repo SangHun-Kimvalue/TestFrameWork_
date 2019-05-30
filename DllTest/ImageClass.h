@@ -19,35 +19,31 @@ public:
 	~ImageClass();
 
 	GDICaptureClass* m_Cap;
-	int nWidth;
-	int nHeight;
-	BYTE *src;
-
-	int c_wid;
-	int c_hei;
-
-private:
 
 	int c_x;
 	int c_y;
+	int c_wid;
+	int c_hei;
+	BYTE *src;
+
+	Mat CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei);
+	Mat Resize(Mat fix_image, int String_Type);
+	Mat Crop(Mat fix_image);
+	Mat Bilinear_Interpolation(Mat fix_image);
+	Mat Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY);
+	Mat GrayScale(Mat fix_image);
+	
+private:
 
 	Mat ori_image;
 	Mat fix_image;
 
 	int base_height;
 	int base_width;
+	int base_length;
 
-	int Base_length;
-	int String_Type;
-
-	Mat CV_Init(int x, int y, int wid, int hei);
 	Mat Resize_Num(Mat fix_image);
-	Mat Resize(Mat fix_image);
 	Mat Resize_String(Mat fix_image);
-	Mat Crop(Mat fix_image);
-	Mat Bilinear_Interpolation(Mat fix_image);
-	Mat Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY);
-	Mat GrayScale(Mat fix_image);
 	Mat Thresholding(Mat fix_image);
 	void ShowImage(Mat showimage);
 	BYTE* Mat2Byte(Mat fix_image, int index, int depth);

@@ -55,52 +55,50 @@ void Save2png(Mat inputimage, std::string name) {
 ImageClass::ImageClass(){}
 
 ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_length) 
-	: nWidth(wid), nHeight(hei), src(src), String_Type(String_Type), Base_length(Base_length){
-
-	base_height = 75;				// 사용자가 평균적으로 지정한 영역내에서 글자의 높이 비율을 50 ~ 70% 로 분포 되어 있고 
-	base_width = 100;				// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
+	: src(src), base_length(Base_length) {
 
 	//속도 개션 가능성 >> 다시 4채널로 변환하는게 아닌 tesseract 에서 1채널로 설정해줄수없나?
-	
-	ori_image = CV_Init(44, 0, 150, 40);			//높이 넓이 다르면 깨짐
-	ShowImage(ori_image);
-	//bitwise_not(ori_image, ori_image);			//픽셀 반전
+	//Base length에 맞게 Resize 수정 필요함.
+	//가우시안이 너무 흐린느낌이 있음.
+
+	ori_image = CV_Init(wid, hei, 44, 0, 150, 40);			//높이 넓이 다르면 깨짐
+	//ori_image = CV_Init(wid, hei, 44, 0, 800, 800);			//높이 넓이 다르면 깨짐
 
 	fix_image = Crop(ori_image);
 
-	fix_image = Resize(fix_image);
+	fix_image = Resize(fix_image, String_Type);
 
 	fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)  해결
 	
-	fix_image = Thresholding(fix_image);
-	
 	fix_image = Gaussian_Blur(fix_image, 3, 3);
+	
 	ShowImage(fix_image);
 
 	//Save2png(ori_image, "ori");
-	Save2png(fix_image, "fix");
+	Save2png(fix_image, "Thresh");
 
 	this->src = Mat2Byte(fix_image, 1, 4);
-	
 }
 
 ImageClass::~ImageClass()
 {
 }
 
-Mat ImageClass::CV_Init(int x, int y, int wid, int hei) {
+Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) {
 
 	std::string Ipath = IMAGEPATH;
 	Ipath = Ipath + "ocr.bmp";
-	
+	base_height = 75;											// 사용자가 평균적으로 지정한 영역내에서 글자의 높이 비율을 50 ~ 70% 로 분포 되어 있고 
+	base_width = 100;											// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
+																
 	c_x = x; 	c_y = y;  	c_wid = wid; 	c_hei = hei;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
-
-	if (c_x + c_wid > nWidth) 
+															
+	if (c_x + c_wid > ori_wid) 
 		std::cerr << "넓이 오류" << std::endl;
-	else if(c_y + c_hei > nHeight)
+	else if(c_y + c_hei > ori_hei)
 		std::cerr << "높이 오류" << std::endl;
 
-	ori_image = Mat(nHeight, nWidth, CV_8UC(4), src);
+	ori_image = Mat(ori_hei, ori_wid, CV_8UC(4), src);
 	if (ori_image.empty()) {
 		std::cout << "Could not open or find the image" << std::endl;
 		std::cin.get(); //wait for any key press
@@ -250,7 +248,7 @@ Mat ImageClass::Crop(Mat ori_image) {
 }
 
 //이미지 사이즈 변경			String_Type에 맞게 메서드 호출
-Mat ImageClass::Resize(Mat ori_image) {
+Mat ImageClass::Resize(Mat ori_image, int String_Type) {
 
 	Mat resize_image;
 
@@ -264,18 +262,22 @@ Mat ImageClass::Resize(Mat ori_image) {
 	return resize_image;
 }
 
-//그레이 이미지 변경 >> BGRA 4채널에서 1채널로 변경됨 주의.
+//그레이 이미지 변경 >> BGRA 4채널에서 1채널로 변경되기 때문에 다시 4채널 BGRA로 변경 작업 포함.
 Mat ImageClass::GrayScale(Mat ori_image) {
 
 	Mat GrayImage;
-	
+	Mat Thresholding_Image;
+
 	GrayImage = Mat(ori_image.size(), CV_8UC4);
 	cvtColor(ori_image, GrayImage, COLOR_BGRA2GRAY);
 	
-	return GrayImage;
+	Thresholding_Image = Thresholding(GrayImage);
+	cvtColor(Thresholding_Image, ori_image, COLOR_GRAY2BGRA);
+
+	return ori_image;//ThreshImage를 다시 4채널로 변경하는 과정에서 ori_image를 dst로 설정했음.
 }
 
-// 1채널 그레이 이미지만 매개변수로 받아들이기 때문에 다시 4채널 BGRA로 변경 작업 포함.
+// 1채널 그레이 이미지만 매개변수로 받아들임 때문에 다시 4채널 BGRA로 변경 작업 포함.
 Mat ImageClass::Thresholding(Mat ori_image) {
 
 	Mat ThreshImage;			//매개변수 src에 반드시 그레이 이미지가와야함 안그러면 터짐.
@@ -290,10 +292,8 @@ Mat ImageClass::Thresholding(Mat ori_image) {
 
 	//threshold(fix_image, ThreshImage, 127, 255, THRESH_BINARY);
 	adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 7, 5);
-	cvtColor(ThreshImage, ori_image, COLOR_GRAY2BGRA);
 
-
-	return ori_image;		//ThreshImage를 다시 4채널로 변경하는 과정에서 ori_image를 dst로 설정했음.
+	return ThreshImage;		
 }
 
 //설명용..   양선형 보간법이 이미 Resize에서 적용되어 있어 필요가 없어짐.
