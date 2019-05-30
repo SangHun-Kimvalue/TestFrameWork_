@@ -45,6 +45,12 @@ bool RGBSaveBMP(BYTE *input, int nWidth, int nHeight, int index, int depth) {
 	return true;
 }
 
+void Save2png(Mat inputimage) {
+
+	imwrite("fix.png", inputimage);
+
+}
+
 ImageClass::ImageClass(){}
 
 ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_length) 
@@ -54,30 +60,31 @@ ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_le
 									// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
 	base_width = 100;
 
-	// 1. 이미지의 크기나 색을 변경했을 떄 BYTE로 변경하면 이상해짐.							
-	// 2. 높이와 너비가 같지 않을 때 그림이 겹침(linesize 가 문제이거나 imshow가 이상)	
-	// 3. BYTE로 변경하는 다른 방법을 찾아바야할듯.(api 가 아닌 직접변환해야할듯)			>> 
-	// 4. 그레이 이미지 채널수 이상한듯(1개가 정상)
-	// 5. Tesseract DPI 가 0이라고 자꾸 나옴
-	// 6. 파일로 Mat 만들어서 해봐야할듯				>>안됨 벡터를 사용하라는데?		//채널수떄문에 꼬이는듯?
+	// 1. 높이와 너비가 같지 않을 때 그림이 겹침(linesize 가 문제 인듯)
+	// 2. 그레이 이미지만 하면 테서렉에서 인식을 못함	>> 채널수 이상한듯(1개가 정상)(BGRA >> GRAY)(채널)		//tesseract 에서 1채널로 설정해줄수없나?
+	// 2.2 그레이 이미지까지는 패스  >> 스레쉬 홀드에서 1채널 이미지를 다시 4채널로 만들어줘야함.
 
-	ori_image = CV_Ini_t();
+	ori_image = CV_Ini_t(44, 0, 150, 40);			//높이 넓이 다르면 깨짐
 	ShowImage(ori_image);
 	//bitwise_not(ori_image, ori_image);			//픽셀 반전
 
-	fix_image = Refactoring(ori_image);				//리사이즈 까지는 패스
+	fix_image = Refactoring(ori_image);	
 
-	//fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)
-	//ShowImage(fix_image);
+	fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)  해결
 	
-	//fix_image = Thresholding(fix_image);
-	//ShowImage(fix_image);
+	fix_image = Thresholding(fix_image);
+	ShowImage(fix_image);
 	
 	fix_image = Gaussian_Blur(fix_image, 3, 3);
 	ShowImage(fix_image);
 
-	this->src = Mat2Byte(ori_image, 0, 4, 1);
-	this->src = Mat2Byte(fix_image, 1, 1);
+	//Canny(fix_image, fix_image, 50, 200);           // 외곽선 추출도 해보고.
+
+	Save2png(ori_image);
+	Save2png(fix_image);
+
+	//this->src = Mat2Byte(ori_image, 0, 4);
+	this->src = Mat2Byte(fix_image, 1, 4);
 	
 }
 
@@ -85,9 +92,10 @@ ImageClass::~ImageClass()
 {
 }
 
-Mat ImageClass::CV_Ini_t() {
-
-	c_x = 44; 	c_y = 0;  	c_wid = 150; 	c_hei = 40;
+Mat ImageClass::CV_Ini_t(int x, int y, int wid, int hei) {
+	
+	
+	c_x = x; 	c_y = y;  	c_wid = wid; 	c_hei = hei;
 
 	std::string Ipath = IMAGEPATH;
 	Ipath  = Ipath  + "ocr.bmp";
@@ -201,7 +209,7 @@ Mat ImageClass::Resize_Num(Mat fix_image) {
 	return re_image;
 }
 
-Mat ImageClass::Resize_String(Mat fix_image) {
+Mat ImageClass::Resize_String(Mat ori_image) {
 	
 	Mat re_image;
 
@@ -221,14 +229,14 @@ Mat ImageClass::Resize_String(Mat fix_image) {
 	int temp_hei = c_hei - base;
 
 	if (base == 0) {					//절대적인 값 차이가 아니라 퍼센테이지로 높이와 넓이를 계산하면 좋을듯??
-		return fix_image;
+		return ori_image;
 	}
 	else if (base > 0) {				//축소
 		//이미지가 기준치 보다 더 작아지게 안됨으로 기준 수치를 한번 더 더해 사용한다.
 		if (temp_hei < base_height || (temp_wid < base_width)) {
 			temp_hei = temp_hei + base_height;
 			temp_wid = temp_wid + base_width;
-			cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
+			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
 			//ShowImage(re_image);
 			c_wid = temp_wid;
 			c_hei = temp_hei;
@@ -237,7 +245,7 @@ Mat ImageClass::Resize_String(Mat fix_image) {
 		else {
 
 			//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그		//INTER_AREA >> Bilinear_Interpolation에 자세히
-			cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
+			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
 			c_wid = temp_wid;
 			c_hei = temp_hei;
 
@@ -246,14 +254,12 @@ Mat ImageClass::Resize_String(Mat fix_image) {
 	}
 	else if (base < 0) {			//확대
 
-		cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
+		cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
 		c_wid = temp_wid;
 		c_hei = temp_hei;
 
 		return re_image;
 	}
-
-
 
 	/*else if (base > 0) {				//축소
 		if (c_wid <= base) {
@@ -285,23 +291,14 @@ Mat ImageClass::Refactoring(Mat ori_image) {
 
 	(ori_image(rect)).copyTo(fix_image);						//rect 만큼 crop
 	//fix_image = ori_image(rect);			//rect 만큼 crop
-	ShowImage(fix_image);
-
-	//cv::cvtColor(fix_image, fix_image, COLOR_BGRA2BGR);
 
 	if(String_Type == 4)
 		fix_image = Resize_Num(fix_image);
 	else 
 		fix_image = Resize_String(fix_image);
-	ShowImage(fix_image);
 
 	//std::cout << "현재 길이 및 높이" << c_wid - base << " " << base_height << std::endl;
 
-	//보간 추가
-
-	//fix_image = Gaussian_Blur(fix_image, 3, 3);
-
-	//Canny(fix_image, fix_image, 50, 200);           // 외곽선 추출도 해보고.
 
 	return fix_image;
 }
@@ -310,8 +307,9 @@ Mat ImageClass::GrayScale(Mat fix_image) {
 
 	Mat GrayImage;
 	
-	cv::cvtColor(fix_image, GrayImage, COLOR_BGR2GRAY);
-	//cv::cvtColor(fix_image, GrayImage, COLOR_BGRA2GRAY);
+	GrayImage = Mat(fix_image.size(), CV_8UC4);
+	cvtColor(fix_image, GrayImage, COLOR_BGRA2GRAY);
+	
 	
 	return GrayImage;
 }
@@ -320,8 +318,18 @@ Mat ImageClass::Thresholding(Mat fix_image) {
 
 	Mat ThreshImage;
 
+	//src	소스 8 비트 단일 채널 이미지.
+	//DST	src와 같은 크기 및 동일한 유형의 대상 이미지.
+	//maxValue	조건이 만족되는 픽셀에 할당 된 0이 아닌 값
+	//적응 형 방법	적응 형 thresholding 알고리즘을 사용합니다.	//	ADAPTIVE_THRESH_MEAN_C / ADAPTIVE_THRESH_GAUSSIAN_C
+	//임계 값 유형	thresholding 타입은 THRESH_BINARY 또는 THRESH_BINARY_INV가 아니면 안된다 .
+	//blockSize	픽셀의 임계 값을 계산하는 데 사용되는 픽셀 인접 영역의 크기 : 3, 5, 7 등.
+	//기음	상수는 평균 또는 가중 평균에서 뺍니다(아래 세부 정보 참조).일반적으로 양수이지만 0 또는 음수 일 수 있습니다.
+
 	//threshold(fix_image, ThreshImage, 127, 255, THRESH_BINARY);
 	adaptiveThreshold(fix_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 5, 10);
+	cvtColor(ThreshImage, fix_image, COLOR_GRAY2BGRA);
+
 
 	return ThreshImage;
 }
@@ -391,7 +399,7 @@ BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth, int save) {			
 	//imencode(".png", fix_image, src, src);
 
 	this->src = (BYTE*)input_image.data;
-	RGBSaveBMP(this->src, input_image.rows, input_image.cols, index, depth);
+	RGBSaveBMP(this->src, 1000, 1000, index, depth);
 
 	return src;
 }

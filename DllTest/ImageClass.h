@@ -41,7 +41,7 @@ private:
 	int String_Type;
 
 	Mat CV_Init();
-	Mat CV_Ini_t();
+	Mat CV_Ini_t(int x, int y, int wid, int hei);
 	Mat Resize_Num(Mat fix_image);
 	Mat Resize_String(Mat fix_image);
 	Mat Refactoring(Mat fix_image);
