@@ -45,10 +45,11 @@ bool RGBSaveBMP(BYTE *input, int nWidth, int nHeight, int index, int depth) {
 	return true;
 }
 
-void Save2png(Mat inputimage) {
+void Save2png(Mat inputimage, std::string name) {
 
-	imwrite("fix.png", inputimage);
+	std::string temp = name + ".png";
 
+	imwrite(temp.c_str(), inputimage);
 }
 
 ImageClass::ImageClass(){}
@@ -57,33 +58,28 @@ ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_le
 	: nWidth(wid), nHeight(hei), src(src), String_Type(String_Type), Base_length(Base_length){
 
 	base_height = 75;				// 사용자가 평균적으로 지정한 영역내에서 글자의 높이 비율을 50 ~ 70% 로 분포 되어 있고 
-									// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
-	base_width = 100;
+	base_width = 100;				// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
 
-	// 1. 높이와 너비가 같지 않을 때 그림이 겹침(linesize 가 문제 인듯)
-	// 2. 그레이 이미지만 하면 테서렉에서 인식을 못함	>> 채널수 이상한듯(1개가 정상)(BGRA >> GRAY)(채널)		//tesseract 에서 1채널로 설정해줄수없나?
-	// 2.2 그레이 이미지까지는 패스  >> 스레쉬 홀드에서 1채널 이미지를 다시 4채널로 만들어줘야함.
-
-	ori_image = CV_Ini_t(44, 0, 150, 40);			//높이 넓이 다르면 깨짐
+	//속도 개션 가능성 >> 다시 4채널로 변환하는게 아닌 tesseract 에서 1채널로 설정해줄수없나?
+	
+	ori_image = CV_Init(44, 0, 150, 40);			//높이 넓이 다르면 깨짐
 	ShowImage(ori_image);
 	//bitwise_not(ori_image, ori_image);			//픽셀 반전
 
-	fix_image = Refactoring(ori_image);	
+	fix_image = Crop(ori_image);
+
+	fix_image = Resize(fix_image);
 
 	fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)  해결
 	
 	fix_image = Thresholding(fix_image);
-	ShowImage(fix_image);
 	
 	fix_image = Gaussian_Blur(fix_image, 3, 3);
 	ShowImage(fix_image);
 
-	//Canny(fix_image, fix_image, 50, 200);           // 외곽선 추출도 해보고.
+	//Save2png(ori_image, "ori");
+	Save2png(fix_image, "fix");
 
-	Save2png(ori_image);
-	Save2png(fix_image);
-
-	//this->src = Mat2Byte(ori_image, 0, 4);
 	this->src = Mat2Byte(fix_image, 1, 4);
 	
 }
@@ -92,55 +88,34 @@ ImageClass::~ImageClass()
 {
 }
 
-Mat ImageClass::CV_Ini_t(int x, int y, int wid, int hei) {
-	
-	
-	c_x = x; 	c_y = y;  	c_wid = wid; 	c_hei = hei;
+Mat ImageClass::CV_Init(int x, int y, int wid, int hei) {
 
 	std::string Ipath = IMAGEPATH;
-	Ipath  = Ipath  + "ocr.bmp";
-
-	ori_image = Mat(nHeight, nWidth, CV_8UC(4), src);
+	Ipath = Ipath + "ocr.bmp";
 	
-	//Mat DecodeImg = ori_image; // imdecode(ori_image, IMREAD_COLOR);
-	std::vector<uchar> OutBuffer;
-	OutBuffer.push_back((uchar)src);
-	bool res = imencode(".bmp", ori_image, OutBuffer);
-
-	//ori_image = Mat(1, OutBuffer.size(), CV_8UC4, OutBuffer.data());
-	//Mat DecodeImg = imdecode(ori_image, IMREAD_COLOR);
-
-	//ori_image = imread(Ipath.c_str(), IMREAD_COLOR);			//BGR로 들어옴(파일 로드)
-	
-	return ori_image;
-}
-
-Mat ImageClass::CV_Init() {
-
-	c_x = 0; 	c_y = 0;  	c_wid = 500; 	c_hei = 500;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
+	c_x = x; 	c_y = y;  	c_wid = wid; 	c_hei = hei;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
 
 	if (c_x + c_wid > nWidth) 
 		std::cerr << "넓이 오류" << std::endl;
 	else if(c_y + c_hei > nHeight)
 		std::cerr << "높이 오류" << std::endl;
 
-	//ori_image.create(nWidth, nHeight, CV_8UC(4));
-	//ori_image.data = src;
-
-	//ori_image.at();
-
 	ori_image = Mat(nHeight, nWidth, CV_8UC(4), src);
-	//ori_image.resize();
-	if (ori_image.empty()){
+	if (ori_image.empty()) {
 		std::cout << "Could not open or find the image" << std::endl;
 		std::cin.get(); //wait for any key press
 		return ori_image;
 	}
-	//ShowImage(ori_image, nWidth, nHeight);
+
+	//Mat DecodeImg = ori_image; // imdecode(ori_image, IMREAD_COLOR);
+	std::vector<uchar> OutBuffer;
+	OutBuffer.push_back((uchar)src);
+	bool res = imencode(".bmp", ori_image, OutBuffer);
 
 	return ori_image;
 }
 
+//이미지를 보여주는 디버그용 
 void ImageClass::ShowImage(Mat Image) {
 
 	//imshow("sub", cropimage);				//Show image
@@ -152,11 +127,10 @@ void ImageClass::ShowImage(Mat Image) {
 	destroyWindow("main");					//destroy the created window
 }
 
-Mat ImageClass::Resize_Num(Mat fix_image) {
+//String_Type이 Num일때 넓이를 중심으로 변환
+Mat ImageClass::Resize_Num(Mat ori_image) {
 
 	Mat re_image;
-
-	//std::cout << "현재 길이 및 높이" << c_wid << " " << c_hei << std::endl;
 
 	//CV_EXPORTS_W void resize(InputArray src, OutputArray dst,
 	//	Size dsize, double fx = 0, double fy = 0,
@@ -174,7 +148,7 @@ Mat ImageClass::Resize_Num(Mat fix_image) {
 	int temp_wid = c_wid - base;
 
 	if (base == 0) {					//절대적인 값 차이가 아니라 퍼센테이지로 높이와 넓이를 계산하면 좋을듯??
-		return fix_image;
+		return ori_image;
 	}
 	else if (base > 0) {				//축소
 		
@@ -182,7 +156,7 @@ Mat ImageClass::Resize_Num(Mat fix_image) {
 		if (temp_hei < base_height || (temp_wid < base_width)) {
 			temp_hei = temp_hei + base_height;
 			temp_wid = temp_wid + base_width;
-			cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
+			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
 			//ShowImage(re_image);
 			c_wid = temp_wid;
 			c_hei = temp_hei;
@@ -191,7 +165,7 @@ Mat ImageClass::Resize_Num(Mat fix_image) {
 
 		else {
 			//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그		//INTER_AREA >> Bilinear_Interpolation에 자세히
-			cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
+			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
 			c_wid = temp_wid;
 			c_hei = temp_hei;
 
@@ -200,7 +174,7 @@ Mat ImageClass::Resize_Num(Mat fix_image) {
 	}
 	else if (base < 0) {			//확대
 
-		cv::resize(fix_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
+		cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
 		c_wid = temp_wid;
 		c_hei = temp_hei;
 
@@ -209,11 +183,10 @@ Mat ImageClass::Resize_Num(Mat fix_image) {
 	return re_image;
 }
 
-Mat ImageClass::Resize_String(Mat ori_image) {
+//String_Type이 문자일때 높이를 중심으로 변환		//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
+Mat ImageClass::Resize_String(Mat ori_image) {				//버그의 여지가 쬐큼 있긴있음.		>> 모든 경우의 수를 생각해봐야함/
 	
 	Mat re_image;
-
-	//std::cout << "현재 길이 및 높이" << c_wid << " " << c_hei << std::endl;
 
 	//CV_EXPORTS_W void resize(InputArray src, OutputArray dst,
 	//	Size dsize, double fx = 0, double fy = 0,
@@ -261,62 +234,51 @@ Mat ImageClass::Resize_String(Mat ori_image) {
 		return re_image;
 	}
 
-	/*else if (base > 0) {				//축소
-		if (c_wid <= base) {
-			//이미지가 좌우로 작아지게 되면 더이상 검출이 불가능하다고 판단해 그대로 사용한다.
-			return fix_image;
-		}
-		else if (c_wid > base) {
-			if(c_wid - base < c_wid)
-				c_wid = c_wid - base;
-			cv::resize(fix_image, re_image, cv::Size(c_wid, base_height), 0, 0, INTER_AREA);		//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그	
-			// 높이와 최적 높이의 차이만큼 넓이도 같이 줄임.
-			return re_image;
-		}
-	}
-
-	else if (base < 0) {			//확대
-		cv::resize(fix_image, re_image, cv::Size(c_wid + base, c_hei + base), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
-		c_wid = c_wid + base;
-		c_hei = c_hei + base;
-		return re_image;
-	}*/
-
 	return re_image;
 }
 
-Mat ImageClass::Refactoring(Mat ori_image) {
+//이미지 자르기
+Mat ImageClass::Crop(Mat ori_image) {
 
+	Mat crop_image;
 	Rect rect(c_x, c_y, c_wid, c_hei);							// x, y ,wid, hei
 
-	(ori_image(rect)).copyTo(fix_image);						//rect 만큼 crop
+	(ori_image(rect)).copyTo(crop_image);						//rect 만큼 crop
 	//fix_image = ori_image(rect);			//rect 만큼 crop
 
+	return crop_image;
+}
+
+//이미지 사이즈 변경			String_Type에 맞게 메서드 호출
+Mat ImageClass::Resize(Mat ori_image) {
+
+	Mat resize_image;
+
 	if(String_Type == 4)
-		fix_image = Resize_Num(fix_image);
+		resize_image = Resize_Num(ori_image);
 	else 
-		fix_image = Resize_String(fix_image);
+		resize_image = Resize_String(ori_image);
 
 	//std::cout << "현재 길이 및 높이" << c_wid - base << " " << base_height << std::endl;
 
-
-	return fix_image;
+	return resize_image;
 }
 
-Mat ImageClass::GrayScale(Mat fix_image) {
+//그레이 이미지 변경 >> BGRA 4채널에서 1채널로 변경됨 주의.
+Mat ImageClass::GrayScale(Mat ori_image) {
 
 	Mat GrayImage;
 	
-	GrayImage = Mat(fix_image.size(), CV_8UC4);
-	cvtColor(fix_image, GrayImage, COLOR_BGRA2GRAY);
-	
+	GrayImage = Mat(ori_image.size(), CV_8UC4);
+	cvtColor(ori_image, GrayImage, COLOR_BGRA2GRAY);
 	
 	return GrayImage;
 }
 
-Mat ImageClass::Thresholding(Mat fix_image) {
+// 1채널 그레이 이미지만 매개변수로 받아들이기 때문에 다시 4채널 BGRA로 변경 작업 포함.
+Mat ImageClass::Thresholding(Mat ori_image) {
 
-	Mat ThreshImage;
+	Mat ThreshImage;			//매개변수 src에 반드시 그레이 이미지가와야함 안그러면 터짐.
 
 	//src	소스 8 비트 단일 채널 이미지.
 	//DST	src와 같은 크기 및 동일한 유형의 대상 이미지.
@@ -327,14 +289,15 @@ Mat ImageClass::Thresholding(Mat fix_image) {
 	//기음	상수는 평균 또는 가중 평균에서 뺍니다(아래 세부 정보 참조).일반적으로 양수이지만 0 또는 음수 일 수 있습니다.
 
 	//threshold(fix_image, ThreshImage, 127, 255, THRESH_BINARY);
-	adaptiveThreshold(fix_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 7, 5);
-	cvtColor(ThreshImage, fix_image, COLOR_GRAY2BGRA);
+	adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 7, 5);
+	cvtColor(ThreshImage, ori_image, COLOR_GRAY2BGRA);
 
 
-	return fix_image;
+	return ori_image;		//ThreshImage를 다시 4채널로 변경하는 과정에서 ori_image를 dst로 설정했음.
 }
 
-Mat ImageClass::Bilinear_Interpolation(Mat fix_image){
+//설명용..   양선형 보간법이 이미 Resize에서 적용되어 있어 필요가 없어짐.
+Mat ImageClass::Bilinear_Interpolation(Mat ori_image){
 	
 
 	//INTER_AREA에 대해.
@@ -350,17 +313,18 @@ Mat ImageClass::Bilinear_Interpolation(Mat fix_image){
 	//cv::resize(fix_image, fix_image, cv::Size(c_wid - base, base_height), 0, 0, INTER_LINEAR); 에서 이미 적용 되어있음.
 
 
-	return fix_image;
+	return ori_image;
 
 }
 
-Mat ImageClass::Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY) {			//시그마가 0이면 자동으로 계산됨(MASK 자동계산)
+//가우시안 흐림 효과
+Mat ImageClass::Gaussian_Blur(Mat ori_image, int sigmaX, int sigmaY) {			//시그마가 0이면 자동으로 계산됨(MASK 자동계산)
 
 	Mat Gasu_image;
 
 	//void GaussianBlur(InputArray src, OutputArray dst, Size ksize, double sigmaX, double sigmaY=0, int borderType=BORDER_DEFAULT )
 	// GaussianBlur( src, dst, Size( i, i ), 0, 0 );				//거리에 따른 가중치 마스크값
-	GaussianBlur(fix_image, Gasu_image, Size(sigmaX, sigmaX), 1.5);
+	GaussianBlur(ori_image, Gasu_image, Size(sigmaX, sigmaX), 1.5);
 	
 	//엣지 보존 스무딩		거리 및 픽셀의 밝기차에 따른 가중치 마스크값
 	//void bilateralFilter(InputArray src, OutputArray dst, int d, double sigmaColor, double sigmaSpace, int borderType=BORDER_DEFAULT )
@@ -378,6 +342,7 @@ Mat ImageClass::Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY) {			//시그�
 	return Gasu_image;
 }
 
+//이미지를 다시 BYTE 형으로 변경 (저장x)
 BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth) {				//수정
 
 	int size = input_image.rows * input_image.cols;
@@ -391,6 +356,7 @@ BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth) {				//수정
 	return src;
 }
 
+//이미지를 다시 BYTE 형으로 변경 (저장o)
 BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth, int save) {				//수정
 
 	int size = input_image.rows * input_image.cols;

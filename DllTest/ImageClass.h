@@ -40,11 +40,11 @@ private:
 	int Base_length;
 	int String_Type;
 
-	Mat CV_Init();
-	Mat CV_Ini_t(int x, int y, int wid, int hei);
+	Mat CV_Init(int x, int y, int wid, int hei);
 	Mat Resize_Num(Mat fix_image);
+	Mat Resize(Mat fix_image);
 	Mat Resize_String(Mat fix_image);
-	Mat Refactoring(Mat fix_image);
+	Mat Crop(Mat fix_image);
 	Mat Bilinear_Interpolation(Mat fix_image);
 	Mat Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY);
 	Mat GrayScale(Mat fix_image);
