@@ -84,11 +84,11 @@ ImageClass::~ImageClass()
 {
 }
 
-bool ImageClass::Process(int* String_Type) {
+bool ImageClass::PreImageProcess(int String_Type, int String_length) {
 
 	fix_image = Crop(ori_image);
 
-	fix_image = Resize(fix_image, *String_Type);
+	fix_image = Resize(fix_image, String_Type, String_length);
 
 	fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)  해결
 
@@ -203,7 +203,7 @@ Mat ImageClass::Resize_Num(Mat ori_image) {
 }
 
 //String_Type이 문자일때 높이를 중심으로 변환		//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
-Mat ImageClass::Resize_String(Mat ori_image) {				//버그의 여지가 쬐큼 있긴있음.		>> 모든 경우의 수를 생각해봐야함/
+Mat ImageClass::Resize_String(Mat ori_image, int String_length) {				//버그의 여지가 쬐큼 있긴있음.		>> 모든 경우의 수를 생각해봐야함/
 	
 	Mat re_image;
 
@@ -269,14 +269,14 @@ Mat ImageClass::Crop(Mat ori_image) {
 }
 
 //이미지 사이즈 변경			String_Type에 맞게 메서드 호출
-Mat ImageClass::Resize(Mat ori_image, int String_Type) {
+Mat ImageClass::Resize(Mat ori_image, int String_Type, int String_length) {
 
 	Mat resize_image;
 
 	if(String_Type == 3)
 		resize_image = Resize_Num(ori_image);
 	else 
-		resize_image = Resize_String(ori_image);
+		resize_image = Resize_String(ori_image, String_length);
 
 	//std::cout << "현재 길이 및 높이" << c_wid - base << " " << base_height << std::endl;
 
@@ -360,6 +360,8 @@ Mat ImageClass::Gaussian_Blur(Mat ori_image, int sigmaX, int sigmaY) {			//시그�
 	//Bilateral.create(fix_image, CV_8UC3);
 	//bilateralFilter(fix_image, Bilateral, 3, 15, 15);			//CV_8UC1 이나 3을 써야되는데 4를 쓰고있어서 쓰려면 변환이 필요.
 
+	ShowImage(Gasu_image);
+
 	return Gasu_image;
 }
 
@@ -375,6 +377,14 @@ BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth) {				//수정
 	//RGBSaveBMP(this->src, input_image.rows, input_image.cols, index, depth);
 
 	return src;
+}
+
+std::shared_ptr<unsigned char[]> ImageClass::MattoByte(uchar* input_image) {				//수정
+
+
+	std::shared_ptr<unsigned char[]> temp ((unsigned char*)input_image);
+
+	return temp;
 }
 
 //이미지를 다시 BYTE 형으로 변경 (저장o)

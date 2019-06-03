@@ -7,24 +7,23 @@ class TextMatchClass
 {
 public:
 	TextMatchClass();
-	TextMatchClass(std::string input_string, std::string find_string, int type, int threshold, std::string fomula);
+	TextMatchClass(std::string find_string, int type, int Base_Num, std::string fomula, bool Consistent);
+	TextMatchClass(std::string input_string, std::string find_string, int type, int Base_Num, std::string fomula, bool Consistent);
 	~TextMatchClass();
 
 	bool Han_Delete(std::string input_string);
 	bool Find_Base_String(std::string input_string);
-	bool Find_Scope(std::string input_string);
-
+	bool Find_Scope(int Input_Num);
+	
+	bool Detect;
 
 private:
 
-	const int threshold;
+	const int Base_Num;
 	std::string Input_String;
 	const std::string Base_String;
-	const bool Match;
 	const std::string Fomula;
+	const bool Consistent;
 
-	int Type;
-
-	bool Detect;
 };
 

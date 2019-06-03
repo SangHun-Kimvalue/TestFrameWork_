@@ -42,9 +42,9 @@ GDICaptureClass::~GDICaptureClass()
 
 bool GDICaptureClass::Cap_Release() {
 
-	if (src != NULL) {
-		free(src);
-	}
+	//if (src != NULL) {
+	//	free(src);
+	//}
 
 	return true;
 }

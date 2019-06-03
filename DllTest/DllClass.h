@@ -13,8 +13,6 @@
 #define _API __declspec(dllexport)
 #endif
 
-enum { USEMEMORY, USEFILE };
-
 class DllClass : public BaseAlertModule
 {
 public:
@@ -54,9 +52,15 @@ private:
 	TextMatchClass* Match;
 	HWND m_hwnd;
 
+	unsigned char* PreImageProcess(int String_Type, int String_length);
+	std::string GetText(int wid, int hei, unsigned char* src);
+	bool CompareText(std::string OutText, int Base_Num);
+
 	std::string Base_String;
 	int Base_Num;
 	std::string String_Type;
+	int String_Type_Num;
+	std::shared_ptr<unsigned char[]> img;
 
 };
 

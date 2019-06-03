@@ -21,16 +21,12 @@ DllClass::DllClass()
 	rect.right = 150;
 	rect.bottom = 40;
 	RECT* displayrect = &rect;
-
 	//rect(44, 0, 150, 40);
 
-	Base_String = "Improve";
-	Base_Num = 70;
-	String_Type = "String";
-
-
 	InitModule(info, displayrect);
-	//ProcessAnalyze(std::shared_ptr<unsigned char[]> img);
+
+	ProcessAnalyze(img);
+
 
 	/*std::string Test_String = "Improve";
 
@@ -58,10 +54,71 @@ DllClass::DllClass()
 DllClass::~DllClass()
 {
 	//std::cout << "Call Instance delete" << std::endl;
+
 	delete Match;
 	delete Capturer;
 	delete Tesseract;
 }
+
+uchar* DllClass::PreImageProcess(int String_Type, int String_length) {
+
+	ImageCV->fix_image = ImageCV->Crop(ImageCV->ori_image);
+
+	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_Type, String_length);
+
+	ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);
+
+	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image, 3, 3);
+
+	//ImageCV->MattoByte(fix_image, 1, 4);
+	//ImageCV->MattoByte(fix_image.data);
+
+	return ImageCV->fix_image.data;
+}
+
+double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
+
+	//std::shared_ptr<unsigned char[]> temp = PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
+	unsigned char* src = PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
+	
+	std::string OutText = GetText(ImageCV->c_wid, ImageCV->c_hei, src);
+
+	bool res = CompareText(OutText, Base_Num);
+
+	if (res)
+		return 1;
+	else
+		return 0;
+}
+
+bool DllClass::CompareText(std::string OutText, int Base_Num) {
+
+	bool res = false;
+
+	switch (String_Type_Num) 
+	{
+	case 1:		//ENG
+		res = Match->Find_Base_String(OutText);
+		break;
+	case 2:		//KOR
+		res = Match->Han_Delete(OutText);
+		break;
+	case 3:		//NUM
+		res = Match->Find_Scope(Base_Num);
+		break;
+	default:
+		std::cout << "Text_Match_Class : 알수없는 형태가 들어옴" << std::endl;
+		break;
+	}
+
+	return res;
+}
+
+std::string DllClass::GetText(int wid, int hei, unsigned char* src) {
+
+	return Tesseract->GetTextUTF8(wid, hei, src);
+}
+
 
 void DllClass::print() {
 
@@ -78,15 +135,30 @@ void DllClass::test() {
 
 bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
+	std::string Formula = "EQUAL";
+	Base_String = "Improve";
+	Base_Num = 70;
+	String_Type = "String";		//임시 타입 변수
+	int Type = 1;
+	bool Consistent = true;
+
 	Capturer = new GDICaptureClass(m_hwnd);
+
+	unsigned char* temp = (unsigned char*)Capturer->src;						//테스트용
+	img = std::shared_ptr<unsigned char[]>(temp);
+
 	ImageCV = new ImageClass();
-	Tesseract = new TesseractClass(Base_String, Capturer->nWidth, Capturer->nHeight, Capturer->src);
-	Match = new TextMatchClass();
+	Tesseract = new TesseractClass(Base_String);
+	//Tesseract = new TesseractClass(Base_String, Capturer->nWidth, Capturer->nHeight, Capturer->src);
+
+	Match = new TextMatchClass(Base_String, Type, Base_Num, Formula, Consistent);
+	//(std::string find_string, int type, int Base_Num, std::string fomula, bool Consistent)
 
 	ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,
-		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top, Capturer->src);
+		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top, img.get());
 	Tesseract->Init(String_Type);
 
+	String_Type_Num = (int)Tesseract->String_Type;
 	//Tesseract->Test(ImageCV->c_wid, ImageCV->c_hei, ImageCV->src);
 	//Match = new TextMatchClass("qwertyuiopasdfghjklzxcvbnm", "zxcv", (int)Tesseract->String_Type, 3, "EQUAL");
 
@@ -163,22 +235,6 @@ int DllClass::GetModuleSenderInfo(ModuleSenderInfo &info) {
 // 업데이트 되거나 변경될때 강제 종료를 위함.
 void DllClass::StopModule() {
 
-}
-
-double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
-	
-	//ImageCV->Process(1);
-	//Tesseract->Test(ImageCV->c_wid, ImageCV->c_hei, ImageCV->src);
-	//
-	//
-	//if (Tesseract->String_Type) {
-	//
-	//
-	//}
-	//
-
-
-	return 0;
 }
 
 // 이벤트 발생 이미지를 저장한다.

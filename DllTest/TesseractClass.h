@@ -25,11 +25,13 @@ class TesseractClass
 public:
 	TesseractClass();
 	TesseractClass(std::string Base_string, int wid, int hei, BYTE* src);
+	TesseractClass(std::string Base_string);
 	TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string, int InputType);
 	~TesseractClass();
 
 	bool Test(int wid, int hei, BYTE* src);
 	bool Init(std::string InputType);
+	std::string GetTextUTF8(int wid, int hei, BYTE* src);
 
 	TextType String_Type;
 	int Base_length;
@@ -47,10 +49,6 @@ private:
 	int res = 0;
 	char *outText;
 	std::string OutPutstr;
-
-	int Imagewidth;
-	int Imageheight;
-	BYTE* src;
 
 	std::string datapath;
 	std::string imagepath;

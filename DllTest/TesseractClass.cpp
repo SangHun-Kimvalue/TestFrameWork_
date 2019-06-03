@@ -2,19 +2,21 @@
 
 TesseractClass::TesseractClass(): Base_String("") {}
 
-TesseractClass::TesseractClass(std::string Base_string, int wid, int hei, BYTE* src)
-	: Base_String(Base_string), String_Type(TNULL), Imagewidth(wid), Imageheight(hei), src(src)
+TesseractClass::TesseractClass(std::string Base_string)
+	: Base_String(Base_string), Base_Num(0), String_Type(TNULL) 
 {
-	Base_Num = 0;
-	
-	//Init(InputType);
+}
 
+TesseractClass::TesseractClass(std::string Base_string, int wid, int hei, BYTE* src)
+	: Base_String(Base_string), Base_Num(0), String_Type(TNULL)
+{
+	//Init(InputType);
 	//Init();
-	//Test();
+	//Test(wid, hei, src);
 }
 
 TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_String, int InputType)
-	: Imagewidth(Iwidth), Imageheight(Iheight), src(Isrc), Base_String(Base_String), String_Type((TextType)InputType) {
+	: Base_String(Base_String), String_Type((TextType)InputType) {
 
 	Base_Num = 0;
 	Base_length = 0;
@@ -228,6 +230,27 @@ bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 	return true;
 }
 
+std::string TesseractClass::GetTextUTF8(int wid, int hei, BYTE* src) {
+
+	//converbmptopng();
+	//image = pixRead("Bird.png");
+
+	image = pixCreate(wid, hei, 32);
+	pixSetData(image, (l_uint32*)src);
+	//pixSetData
+
+	api->SetImage(image);
+
+	outText = api->GetUTF8Text();
+	std::string temp = UniToANSI(outText);
+	std::cout << temp << std::endl;
+
+	//delete m_Test;
+
+	return temp;
+}
+
+
 bool TesseractClass::Init(std::string InputType) {
 
 	api = new tesseract::TessBaseAPI();
@@ -347,6 +370,8 @@ void TesseractClass::Process() {
 	OutPutstr = UniToANSI(outText);
 
 	std::cout << OutPutstr << std::endl;
+
+
 
 }
 
