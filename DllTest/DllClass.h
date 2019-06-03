@@ -54,6 +54,10 @@ private:
 	TextMatchClass* Match;
 	HWND m_hwnd;
 
+	std::string Base_String;
+	int Base_Num;
+	std::string String_Type;
+
 };
 
 extern "C" _API DllClass* _GetInstance();

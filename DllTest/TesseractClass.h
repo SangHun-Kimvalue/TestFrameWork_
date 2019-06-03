@@ -24,19 +24,18 @@ class TesseractClass
 {
 public:
 	TesseractClass();
-	TesseractClass(std::string Base_string, std::string InputType, int wid, int hei, BYTE* src);
+	TesseractClass(std::string Base_string, int wid, int hei, BYTE* src);
 	TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string, int InputType);
 	~TesseractClass();
 
 	bool Test(int wid, int hei, BYTE* src);
+	bool Init(std::string InputType);
 
 	TextType String_Type;
 	int Base_length;
 
-
 private:
-
-	bool Init();
+	
 	void Process();
 	bool Open();
 	void Release();
@@ -59,14 +58,14 @@ private:
 	std::string bmpimagename;
 	std::string hangulname;
 
-	std::string Base_String;
+	const std::string Base_String;
 	int Base_Num;
-	int Base_Type[256];
+
 	bool DetectKor;
 	bool DetectEng;
 
-	TextType FindTextType(std::string Base_String);
-	int FindEachText(std::string Base_String);
+	TextType FindTextType(std::string Base_String, int Base_Type[256]);
+	int FindEachText(std::string Base_String, std::string InputType);
 	INT GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
 	int converbmptopng();
 

@@ -1,16 +1,13 @@
 #include "TesseractClass.h"
 
-TesseractClass::TesseractClass() {}
+TesseractClass::TesseractClass(): Base_String("") {}
 
-TesseractClass::TesseractClass(std::string Base_string, std::string InputType, int wid, int hei, BYTE* src)
+TesseractClass::TesseractClass(std::string Base_string, int wid, int hei, BYTE* src)
 	: Base_String(Base_string), String_Type(TNULL), Imagewidth(wid), Imageheight(hei), src(src)
 {
 	Base_Num = 0;
-	Base_Type[256] = {};
-
-	Base_length = FindEachText(Base_String);
-	String_Type = FindTextType(Base_String);
-	Init();
+	
+	//Init(InputType);
 
 	//Init();
 	//Test();
@@ -20,11 +17,10 @@ TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, 
 	: Imagewidth(Iwidth), Imageheight(Iheight), src(Isrc), Base_String(Base_String), String_Type((TextType)InputType) {
 
 	Base_Num = 0;
-	Base_Type[256] = {};
 	Base_length = 0;
 
 	if (Select == 1) {
-		if (Init() == true) {
+		if (Init("") == true) {
 			if (Open() == true)
 				Process();
 			else
@@ -32,7 +28,7 @@ TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, 
 		}
 	}
 	else {
-		Init();
+		Init("");
 		Test(Iwidth, Iheight, Isrc);
 	}
 }
@@ -43,12 +39,23 @@ TesseractClass::~TesseractClass()
 }
 
 //Base_String 길이를 반환
-int TesseractClass::FindEachText(std::string Base_String) {		
+int TesseractClass::FindEachText(std::string Base_String, std::string InputType) {
 
 	Base_length = Base_String.length();
+	//int *Base_Type = (int *)malloc(sizeof(int)*Base_length);
 
 	int point = -1;
 	bool detec_han = 0;
+
+	if (strstr(InputType.c_str(), "NUM")) {
+		//for (int i = 0; i < Base_length; i++)
+		//	Base_Type[i] == NUM;
+		String_Type = NUM;
+		Base_Num = atoi(Base_String.c_str());
+		return Base_length;
+	}
+
+	int* Base_Type = new int[Base_length];
 
 	for (int i = 0; i < Base_length; i++) {		//타입 검출
 		point++;
@@ -95,44 +102,44 @@ int TesseractClass::FindEachText(std::string Base_String) {
 			Base_Type[point] = TNULL;
 	}
 
+	String_Type = FindTextType(Base_String, Base_Type);
+
+	delete Base_Type;
+
 	return Base_length;
 }
 
 //Base_String 타입을 반환
-TextType TesseractClass::FindTextType(std::string Base_String) {
-
-	bool Numchecker = 0;
+TextType TesseractClass::FindTextType(std::string Base_String, int Base_Type[256]) {
 
 	for (int i = 0; i < Base_length; i++) {
 		switch (Base_Type[i])
 		{
 		case SPACE :
 		case SPEC :
+		case NUM :
+		case TNULL :
+		default :
 			if (i == Base_length - 1 && String_Type == TNULL) {
 				String_Type = ENG;
 				return String_Type;
 			}
 			continue;
-		case NUM :
-			Numchecker = true;
-			if (i == Base_length - 1 && (String_Type == TNULL || String_Type == NUM)) {
-				String_Type = NUM;
-				Base_Num = atoi(Base_String.c_str());
-				return NUM;
-			}
-			break;
+		//case NUM :
+		//	Numchecker = true;
+		//	if (i == Base_length - 1 && (String_Type == TNULL || String_Type == NUM)) {
+		//		String_Type = NUM;
+		//		Base_Num = atoi(Base_String.c_str());
+		//		return NUM;
+		//	}
+		//	break;
 		case KOR :
 			String_Type = KOR;
 			return String_Type;
 		case ENG :
 			String_Type = ENG;
 			return String_Type;
-		case TNULL:
-		default:
-			break;
 		}
-		if (String_Type != TNULL && Numchecker == false)
-			break;
 	}
 	
 	return String_Type;
@@ -203,8 +210,6 @@ int TesseractClass::converbmptopng() {
 //테스트 호출용
 bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 
-
-
 	//converbmptopng();
 	//image = pixRead("Bird.png");
 
@@ -223,18 +228,18 @@ bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 	return true;
 }
 
-bool TesseractClass::Init() {
+bool TesseractClass::Init(std::string InputType) {
 
 	api = new tesseract::TessBaseAPI();
-	// Initialize tesseract-ocr with English, without specifying tessdata path
+
 	datapath = DATAPATH;
-	imagepath = IMAGEPATH;
-	imagename = "WiDpa.jpeg";
-	bmpimagename = "WiDpa.bmp";
+	//imagepath = IMAGEPATH;
+	//imagename = "WiDpa.jpeg";
+	//bmpimagename = "WiDpa.bmp";
 	//hangulname = "Text_Color_Test.PNG";
 	//hangulname = "eng+kor2.PNG";
-	hangulname = "Noise_Test.PNG";
-	imagepath = imagepath + hangulname;
+	//hangulname = "Noise_Test.PNG";
+	//imagepath = imagepath + hangulname;
 	TCHAR sPath[MAX_PATH] = { 0, };
 
 	::GetCurrentDirectory(MAX_PATH, sPath);
@@ -249,6 +254,7 @@ bool TesseractClass::Init() {
 	datapath = DATAPATH;
 #endif
 
+	Base_length = FindEachText(Base_String, InputType);
 
 	std::string Init_Type = "";
 	if (String_Type == KOR) {
@@ -281,7 +287,6 @@ void TesseractClass::Release() {
 
 	if(api != NULL)
 		api->End();
-	//pixDestroy(&image);				//??왜
 
 }
 

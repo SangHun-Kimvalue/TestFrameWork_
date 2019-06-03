@@ -11,8 +11,28 @@ extern "C" {
 DllClass::DllClass()
 {
 	m_hwnd = GetDesktopWindow();
-	
-	std::string Test_String = "Improve";
+
+	ModuleInfo info;
+
+	RECT rect;
+
+	rect.left = 44;
+	rect.top = 0;
+	rect.right = 150;
+	rect.bottom = 40;
+	RECT* displayrect = &rect;
+
+	//rect(44, 0, 150, 40);
+
+	Base_String = "Improve";
+	Base_Num = 70;
+	String_Type = "String";
+
+
+	InitModule(info, displayrect);
+	//ProcessAnalyze(std::shared_ptr<unsigned char[]> img);
+
+	/*std::string Test_String = "Improve";
 
 	Capturer = new GDICaptureClass(m_hwnd);
 
@@ -31,7 +51,7 @@ DllClass::DllClass()
 	//Match = new TextMatchClass("asdf", "df", (INTYPE)Tesseract->String_Type, 0);
 	//std::string input_string, std::string find_string, int type, int threshold, std::string fomula
 	
-	Match = new TextMatchClass("qwertyuiopasdfghjklzxcvbnm", "zxcv", (int)Tesseract->String_Type, 3, "EQUAL");
+	Match = new TextMatchClass("qwertyuiopasdfghjklzxcvbnm", "zxcv", (int)Tesseract->String_Type, 3, "EQUAL");*/
 
 }
 
@@ -58,23 +78,17 @@ void DllClass::test() {
 
 bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
-	//std::string Test_String = "Improve";
+	Capturer = new GDICaptureClass(m_hwnd);
+	ImageCV = new ImageClass();
+	Tesseract = new TesseractClass(Base_String, Capturer->nWidth, Capturer->nHeight, Capturer->src);
+	Match = new TextMatchClass();
 
-	//Capturer = new GDICaptureClass(m_hwnd);
-	//
-	//Tesseract = new TesseractClass(Test_String, TNULL, Capturer->nWidth, Capturer->nHeight, Capturer->src);
-	////Tesseract = new TesseractClass(USEFILE, Capturer->nWidth, Capturer->nHeight, Capturer->src, Test_String, ENG);
-	////1 : from file // 0 : from memory  // non : not thing
-	//
-	//ImageCV = new ImageClass();
-	////ImageCV = new ImageClass(Capturer->nWidth, Capturer->nHeight, Capturer->src, Tesseract->String_Type, Tesseract->Base_length);
-	//ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, 44, 0, 150, 40);			//³ôÀÌ ³ÐÀÌ ´Ù¸£¸é ±úÁü
-	//
-	//
+	ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,
+		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top, Capturer->src);
+	Tesseract->Init(String_Type);
+
 	//Tesseract->Test(ImageCV->c_wid, ImageCV->c_hei, ImageCV->src);
-	//Tesseract->String_Type;
-	//
-	//Match = new TextMatchClass("asdf", (INTYPE)Tesseract->String_Type);
+	//Match = new TextMatchClass("qwertyuiopasdfghjklzxcvbnm", "zxcv", (int)Tesseract->String_Type, 3, "EQUAL");
 
 	return true;
 }
