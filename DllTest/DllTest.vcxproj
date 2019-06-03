@@ -134,6 +134,9 @@ copy $(SolutionDir)Libs\tesseract\tesseract50.dll $(OutDir)
 copy $(SolutionDir)Libs\tesseract\tesseract50.lib $(OutDir)
 </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>copy "parent.hpp" "$(SolutionDir)Libs\parentclass"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

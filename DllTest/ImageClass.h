@@ -30,7 +30,7 @@ public:
 	Mat fix_image;
 
 	Mat CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei);
-	bool Process(int String_Type);
+	bool Process(int* String_Type);
 
 private:
 

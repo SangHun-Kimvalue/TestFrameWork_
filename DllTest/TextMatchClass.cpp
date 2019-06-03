@@ -8,19 +8,19 @@ TextMatchClass::TextMatchClass() : Base_String(""), threshold(0), Fomula("EQUAL"
 
 //std::string input_string, std::string find_string, int type, int threshold, std::string fomula
 TextMatchClass::TextMatchClass(std::string input_string, std::string find_string, int type, int threshold, std::string fomula)
-	: Input_String(input_string), Type((INTYPE)type), Base_String(find_string), threshold(threshold), Fomula(fomula), Match(false)
+	: Input_String(input_string), Type(type), Base_String(find_string), threshold(threshold), Fomula(fomula), Match(false)
 {
 	Detect = false;
 
 	switch (Type) {
 
-	case TENG :
+	case 1 :
 		Detect = Find_Base_String(input_string);
 		break;
-	case TKOR :
+	case 2 :
 		Detect = Han_Delete(input_string);
 		break;
-	case TNUM :
+	case 3 :
 		Detect = Find_Scope(input_string);
 		break;
 	default:

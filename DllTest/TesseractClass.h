@@ -18,19 +18,19 @@ using namespace Gdiplus;
 #endif
 #define IMAGEPATH "..\\Libs\\Test_Image\\";
 
-typedef enum TextType { TNULL, ENG, KOR, NUM, SPACE, SPEC } TYPE;
+extern enum TextType { TNULL, ENG, KOR, NUM, SPACE, SPEC };
 
 class TesseractClass
 {
 public:
 	TesseractClass();
-	TesseractClass(std::string Base_string, TYPE InputType, int wid, int hei, BYTE* src);
-	TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string, TYPE InputType);
+	TesseractClass(std::string Base_string, std::string InputType, int wid, int hei, BYTE* src);
+	TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string, int InputType);
 	~TesseractClass();
 
 	bool Test(int wid, int hei, BYTE* src);
-	
-	TYPE String_Type;
+
+	TextType String_Type;
 	int Base_length;
 
 
@@ -61,11 +61,11 @@ private:
 
 	std::string Base_String;
 	int Base_Num;
-	TYPE Base_Type[256];
+	int Base_Type[256];
 	bool DetectKor;
 	bool DetectEng;
 
-	TYPE FindTextType(std::string Base_String);
+	TextType FindTextType(std::string Base_String);
 	int FindEachText(std::string Base_String);
 	INT GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
 	int converbmptopng();

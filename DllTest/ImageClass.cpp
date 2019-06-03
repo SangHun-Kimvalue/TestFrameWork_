@@ -85,11 +85,11 @@ ImageClass::~ImageClass()
 {
 }
 
-bool ImageClass::Process(int String_Type) {
+bool ImageClass::Process(int* String_Type) {
 
 	fix_image = Crop(ori_image);
 
-	fix_image = Resize(fix_image, String_Type);
+	fix_image = Resize(fix_image, *String_Type);
 
 	fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)  해결
 

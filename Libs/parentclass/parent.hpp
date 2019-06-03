@@ -6,6 +6,8 @@
 #include <memory>
 #include <string>
 
+
+
 enum ModuleType
 {
 	AREA, COLOR, OCR

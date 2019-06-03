@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 
-typedef enum { TENG = 1, TKOR = 2, TNUM = 3}INTYPE;
+//typedef enum { TENG = 1, TKOR = 2, TNUM = 3}INTYPE;
 
 class TextMatchClass
 {
@@ -23,7 +23,7 @@ private:
 	const bool Match;
 	const std::string Fomula;
 
-	INTYPE Type;
+	int Type;
 
 	bool Detect;
 };

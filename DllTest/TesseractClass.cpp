@@ -2,24 +2,25 @@
 
 TesseractClass::TesseractClass() {}
 
-TesseractClass::TesseractClass(std::string Base_string, TYPE InputType, int wid, int hei, BYTE* src) 
-	: Base_String(Base_string), String_Type(InputType), Imagewidth(wid), Imageheight(hei), src(src)
+TesseractClass::TesseractClass(std::string Base_string, std::string InputType, int wid, int hei, BYTE* src)
+	: Base_String(Base_string), String_Type(TNULL), Imagewidth(wid), Imageheight(hei), src(src)
 {
 	Base_Num = 0;
-	Base_Type[256] = { TNULL };
+	Base_Type[256] = {};
 
 	Base_length = FindEachText(Base_String);
 	String_Type = FindTextType(Base_String);
+	Init();
 
 	//Init();
 	//Test();
 }
 
-TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_String, TYPE InputType)
-	: Imagewidth(Iwidth), Imageheight(Iheight), src(Isrc), Base_String(Base_String), String_Type(InputType) {
+TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_String, int InputType)
+	: Imagewidth(Iwidth), Imageheight(Iheight), src(Isrc), Base_String(Base_String), String_Type((TextType)InputType) {
 
 	Base_Num = 0;
-	Base_Type[256] = { TNULL };
+	Base_Type[256] = {};
 	Base_length = 0;
 
 	if (Select == 1) {
@@ -30,9 +31,10 @@ TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, 
 				Release();
 		}
 	}
-	else
+	else {
+		Init();
 		Test(Iwidth, Iheight, Isrc);
-
+	}
 }
 
 TesseractClass::~TesseractClass()
@@ -97,7 +99,7 @@ int TesseractClass::FindEachText(std::string Base_String) {
 }
 
 //Base_String 타입을 반환
-TYPE TesseractClass::FindTextType(std::string Base_String) {
+TextType TesseractClass::FindTextType(std::string Base_String) {
 
 	bool Numchecker = 0;
 
@@ -201,7 +203,7 @@ int TesseractClass::converbmptopng() {
 //테스트 호출용
 bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 
-	Init();
+
 
 	//converbmptopng();
 	//image = pixRead("Bird.png");
