@@ -19,6 +19,8 @@ public:
 
 private:
 
+	std::string Delete_Enter(std::string input_string);
+
 	const int Base_Num;
 	std::string Input_String;
 	const std::string Base_String;

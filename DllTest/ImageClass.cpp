@@ -322,8 +322,16 @@ Mat ImageClass::GrayScale(Mat ori_image) {
 
 	GrayImage = Mat(ori_image.size(), CV_8UC4);
 	cvtColor(ori_image, GrayImage, COLOR_BGRA2GRAY);
-	
+	ShowImage(GrayImage);
+
+	//GrayImage = C_Canny(GrayImage);
+	//std::vector<std::vector<cv::Point>> contours;
+	//cv::findContours(GrayImage,
+	//	contours,    // ¿Ü°û¼± º¤ÅÍ 
+	//	RETR_EXTERNAL,  // ¿ÜºÎ ¿Ü°û¼± °Ë»ö
+	//	CHAIN_APPROX_NONE); // °¢ ¿Ü°û¼±ÀÇ ¸ðµç È­¼Ò Å½»ö
 	//ShowImage(GrayImage);
+
 	Thresholding_Image = Thresholding(GrayImage);
 	//cvtColor(Thresholding_Image, ori_image, COLOR_GRAY2BGRA);					
 
