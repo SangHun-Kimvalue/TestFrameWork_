@@ -56,7 +56,6 @@ bool TextMatchClass::Han_Delete(std::string input_string) {
 	
 }
 
-
 bool TextMatchClass::Find_Base_String(std::string input_string) {
 
 	if (strstr(input_string.c_str(), Base_String.c_str()) != NULL) {
@@ -70,7 +69,6 @@ bool TextMatchClass::Find_Base_String(std::string input_string) {
 
 	return false;
 }
-
 
 bool TextMatchClass::Find_Scope(int Input_Num) {
 

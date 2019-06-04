@@ -1,7 +1,5 @@
 #include "GDICaptureClass.h"
 
-static int i = 0;
-
 GDICaptureClass::GDICaptureClass() : select(3)
 {
 }
@@ -243,10 +241,8 @@ bool GDICaptureClass::RGBSaveBMP(BYTE *input) {
 	//memcpy();
 	FILE *file;
 	char title[1024];
-	if (i > 10)
-		i = 0;
 
-	sprintf_s(title, "capture_%d.bmp", i++);
+	sprintf_s(title, "capture_%d.bmp", 1);
 	fopen_s(&file, title, "wb");
 
 	if (image != NULL)

@@ -29,17 +29,18 @@ public:
 	Mat ori_image;
 	Mat fix_image;
 
-	Mat CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei, BYTE* src);
-	bool PreImageProcess(int String_Type, int String_length);
+	Mat CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei, unsigned char* src);
 	Mat Resize(Mat fix_image, int String_Type, int String_length);
 	Mat Crop(Mat fix_image);
 	Mat Bilinear_Interpolation(Mat fix_image);
-	Mat Gaussian_Blur(Mat fix_image, int sigmaX, int sigmaY);
+	Mat Gaussian_Blur(Mat fix_image);
 	Mat GrayScale(Mat fix_image);
+	Mat C_Canny(Mat ori_image);
+
+	void Release();
 
 	void ShowImage(Mat showimage);
 	BYTE* Mat2Byte(Mat fix_image, int index, int depth);
-	std::shared_ptr<unsigned char[]> MattoByte(uchar* input_image);
 
 
 private:
@@ -47,8 +48,6 @@ private:
 	int base_height;
 	int base_width;
 	int base_length;
-	
-	
 
 	Mat Resize_Num(Mat fix_image);
 	Mat Resize_String(Mat fix_image, int String_length);

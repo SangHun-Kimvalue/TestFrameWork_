@@ -62,39 +62,45 @@ DllClass::~DllClass()
 	//{
 	//	delete[] data;
 	//}
-	_CrtDumpMemoryLeaks();
+	
+	//_CrtDumpMemoryLeaks();
 
 	delete Match;
 	delete Capturer;
 	delete Tesseract;
 }
 
-uchar* DllClass::PreImageProcess(int String_Type, int String_length) {
+size_t DllClass::PreImageProcess(int String_Type, int String_length) {
 
 	ImageCV->fix_image = ImageCV->Crop(ImageCV->ori_image);
 
 	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_Type, String_length);
 
 	ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);
+	ImageCV->ShowImage(ImageCV->fix_image);
 
-	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image, 3, 3);
+	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image);
+	
+	//int temp2 = ImageCV->fix_image.channels();
 
-	//ImageCV->MattoByte(fix_image, 1, 4);
-	//ImageCV->MattoByte(fix_image.data);
+	data = ImageCV->fix_image.data;
 
-	return ImageCV->fix_image.data;
+	return ImageCV->fix_image.step1();
 }
 
 double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 
 	//std::shared_ptr<unsigned char[]> temp = PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
-	data = PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
 	
-	std::string OutText = GetText(ImageCV->c_wid, ImageCV->c_hei, data);
+	size_t Image_step = PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
+	
+	std::string OutText = GetText(ImageCV->c_wid, ImageCV->c_hei, data, Image_step);
 
 	bool res = CompareText(OutText, Base_Num);
 
 	std::cout << res << std::endl;
+
+	ImageCV->Release();
 
 	if (res)
 		return 1;
@@ -125,9 +131,9 @@ bool DllClass::CompareText(std::string OutText, int Base_Num) {
 	return res;
 }
 
-std::string DllClass::GetText(int wid, int hei, unsigned char* src) {
+std::string DllClass::GetText(int wid, int hei, unsigned char* src, size_t Image_step) {
 
-	return Tesseract->GetTextUTF8(wid, hei, src);
+	return Tesseract->GetTextUTF8(wid, hei, src, Image_step);
 }
 
 
@@ -163,7 +169,7 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,
 		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top, img.get());
 	Tesseract->Init(String_Type);
-	//
+	
 	
 	String_Type_Num = (int)Tesseract->String_Type;
 	//Tesseract->Test(ImageCV->c_wid, ImageCV->c_hei, ImageCV->src);

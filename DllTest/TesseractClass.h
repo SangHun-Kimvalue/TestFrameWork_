@@ -18,7 +18,7 @@ using namespace Gdiplus;
 #endif
 #define IMAGEPATH "..\\Libs\\Test_Image\\";
 
-extern enum TextType { TNULL, ENG, KOR, NUM, SPACE, SPEC };
+enum TextType { TNULL, ENG, KOR, NUM, SPACE, SPEC };
 
 class TesseractClass
 {
@@ -31,14 +31,13 @@ public:
 
 	bool Test(int wid, int hei, BYTE* src);
 	bool Init(std::string InputType);
-	std::string GetTextUTF8(int wid, int hei, BYTE* src);
+	std::string GetTextUTF8(int wid, int hei, unsigned char* src, size_t step);
 
 	TextType String_Type;
 	int Base_length;
 
 private:
 	
-	void Process();
 	bool Open();
 	void Release();
 	std::string UniToANSI(char* outText);
@@ -47,7 +46,7 @@ private:
 	tesseract::TessBaseAPI *api;
 	Pix *image;
 	int res = 0;
-	char *outText;
+
 	std::string OutPutstr;
 
 	std::string datapath;

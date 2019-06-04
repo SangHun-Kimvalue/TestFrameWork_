@@ -8,7 +8,7 @@ TesseractClass::TesseractClass(std::string Base_string)
 }
 
 TesseractClass::TesseractClass(std::string Base_string, int wid, int hei, BYTE* src)
-	: Base_String(Base_string), Base_Num(0), String_Type(TNULL)
+	: Base_String(Base_string), Base_Num(0), String_Type(TNULL)						//지금 베이스 넘버는 인트로 들어오는 것을 고려해야되는데 스트링에 맞춰져있음.
 {
 	//Init(InputType);
 	//Init();
@@ -16,23 +16,8 @@ TesseractClass::TesseractClass(std::string Base_string, int wid, int hei, BYTE* 
 }
 
 TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_String, int InputType)
-	: Base_String(Base_String), String_Type((TextType)InputType) {
+	: Base_String(Base_String), String_Type((TextType)InputType), Base_Num(0) {
 
-	Base_Num = 0;
-	Base_length = 0;
-
-	if (Select == 1) {
-		if (Init("") == true) {
-			if (Open() == true)
-				Process();
-			else
-				Release();
-		}
-	}
-	else {
-		Init("");
-		Test(Iwidth, Iheight, Isrc);
-	}
 }
 
 TesseractClass::~TesseractClass()
@@ -210,6 +195,7 @@ int TesseractClass::converbmptopng() {
 //테스트 호출용
 bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 
+	char *outText;
 	//converbmptopng();
 	//image = pixRead("Bird.png");
 
@@ -227,12 +213,13 @@ bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 	return true;
 }
 
-std::string TesseractClass::GetTextUTF8(int wid, int hei, BYTE* src) {
+std::string TesseractClass::GetTextUTF8(int wid, int hei, unsigned char* src, size_t step) {
 
-	image = pixCreate(wid, hei, 32);
-	pixSetData(image, (l_uint32*)src);
+	char *outText;
+	//image = pixCreate(wid, hei, 32);
+	//pixSetData(image, (l_uint32*)src);
 
-	api->SetImage(image);
+	api->SetImage((unsigned char*)src, wid, hei, 1, step);		//src, wid, hei, channels(), step1()
 
 	outText = api->GetUTF8Text();
 	
@@ -350,15 +337,3 @@ std::string TesseractClass::UniToANSI(char* outText) {
 
 	return temp;
 }
-
-void TesseractClass::Process() {
-
-	api->SetImage(image);
-
-	outText = api->GetUTF8Text();
-	OutPutstr = UniToANSI(outText);
-
-	std::cout << OutPutstr << std::endl;
-
-}
-
