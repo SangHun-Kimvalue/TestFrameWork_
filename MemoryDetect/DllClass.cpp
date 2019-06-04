@@ -1,13 +1,6 @@
 #include "DllClass.h"
 #include <iostream>
 
-
-extern "C" {
-	_API DllClass* _GetInstance() {
-		return new DllClass;
-	}
-}
-
 DllClass::DllClass()
 {
 
@@ -62,11 +55,16 @@ DllClass::~DllClass()
 	//{
 	//	delete[] data;
 	//}
-	_CrtDumpMemoryLeaks();
 
+
+	DestroyWindow(m_hwnd);
+	Base_String = "";
+
+	delete ImageCV;
 	delete Match;
 	delete Capturer;
 	delete Tesseract;
+
 }
 
 uchar* DllClass::PreImageProcess(int String_Type, int String_length) {
@@ -163,7 +161,6 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,
 		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top, img.get());
 	Tesseract->Init(String_Type);
-	//
 	
 	String_Type_Num = (int)Tesseract->String_Type;
 	//Tesseract->Test(ImageCV->c_wid, ImageCV->c_hei, ImageCV->src);

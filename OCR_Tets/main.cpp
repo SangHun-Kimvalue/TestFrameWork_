@@ -1,3 +1,16 @@
+
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC  
+#include <stdlib.h>  
+#include <crtdbg.h> 
+
+#define DEBUG_NEW new(_CLIENT_BLOCK, __FILE__, __LINE__ )
+// Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
+// allocations to be of _CLIENT_BLOCK type
+#else
+#define DBG_NEW new
+#endif
+
 #include <Windows.h>
 #include "parent.hpp"
 
@@ -5,7 +18,8 @@ typedef BaseAlertModule* (*TestClass)();
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow) {
 
-	//HRESULT rs;
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	//_CrtSetBreakAlloc(171);
 
 	AllocConsole();
 	HWND m_Console = GetConsoleWindow();
@@ -33,15 +47,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 
 	BaseAlertModule* dllclass = fptr();
 
-	dllclass->PrintModuleInfo();
-
+	system("pause");
 
 	delete dllclass;
 
-
-	system("pause");
+	fclose(cp);
 	FreeLibrary(hDLL);
 	FreeConsole();
+	DestroyWindow(m_Console);
 
 	return 0;
 }

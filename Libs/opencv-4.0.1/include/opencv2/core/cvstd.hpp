@@ -131,7 +131,7 @@ public:
 
     pointer allocate(size_type count, const void* =0) { return reinterpret_cast<pointer>(fastMalloc(count * sizeof (_Tp))); }
     void deallocate(pointer p, size_type) { fastFree(p); }
-
+#undef new
     void construct(pointer p, const _Tp& v) { new(static_cast<void*>(p)) _Tp(v); }
     void destroy(pointer p) { p->~_Tp(); }
 

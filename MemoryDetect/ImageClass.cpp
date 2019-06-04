@@ -131,6 +131,7 @@ Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei
 	OutBuffer.push_back((uchar)src);
 	bool res = imencode(".bmp", ori_image, OutBuffer);
 
+
 	OutBuffer.clear();
 
 	return ori_image;

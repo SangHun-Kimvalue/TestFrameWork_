@@ -147,65 +147,65 @@ TextType TesseractClass::FindTextType(std::string Base_String, int Base_Type[256
 }
 
 //UTF 8 -> 16 변환
-INT TesseractClass::GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
-
-	UINT  num = 0;          // number of image encoders
-	UINT  size = 0;         // size of the image encoder array in bytes
-
-	Gdiplus::ImageCodecInfo* pImageCodecInfo = NULL;
-
-	Gdiplus::GetImageEncodersSize(&num, &size);
-	if (size == 0)
-		return -1;  // Failure
-
-	pImageCodecInfo = (Gdiplus::ImageCodecInfo*)(malloc(size));
-	if (pImageCodecInfo == NULL)
-		return -1;  // Failure
-
-	GetImageEncoders(num, size, pImageCodecInfo);
-
-	for (UINT j = 0; j < num; ++j)
-	{
-		if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
-		{
-			*pClsid = pImageCodecInfo[j].Clsid;
-			free(pImageCodecInfo);
-			return j;  // Success
-		}
-	}
-
-	free(pImageCodecInfo);
-	return -1;  // Failure
-
-}
-
+//INT TesseractClass::GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
+//
+//	UINT  num = 0;          // number of image encoders
+//	UINT  size = 0;         // size of the image encoder array in bytes
+//
+//	Gdiplus::ImageCodecInfo* pImageCodecInfo = NULL;
+//
+//	Gdiplus::GetImageEncodersSize(&num, &size);
+//	if (size == 0)
+//		return -1;  // Failure
+//
+//	pImageCodecInfo = (Gdiplus::ImageCodecInfo*)(malloc(size));
+//	if (pImageCodecInfo == NULL)
+//		return -1;  // Failure
+//
+//	GetImageEncoders(num, size, pImageCodecInfo);
+//
+//	for (UINT j = 0; j < num; ++j)
+//	{
+//		if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+//		{
+//			*pClsid = pImageCodecInfo[j].Clsid;
+//			free(pImageCodecInfo);
+//			return j;  // Success
+//		}
+//	}
+//
+//	free(pImageCodecInfo);
+//	return -1;  // Failure
+//
+//}
+//
 //테스트용 bmp to png
-int TesseractClass::converbmptopng() {
-
-	// Initialize GDI+.
-	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR gdiplusToken;
-	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-	CLSID   encoderClsid;
-	Gdiplus::Status  stat;
-	Gdiplus::Image*   image = new Gdiplus::Image(L"CCapture_1.bmp");
-
-	// Get the CLSID of the PNG encoder.
-	GetEncoderClsid(L"image/png", &encoderClsid);
-
-	stat = image->Save(L"CCapture_1.png", &encoderClsid, NULL);
-
-	if (stat == Gdiplus::Ok)
-		printf( "" /*"Bird.png was saved successfully\n"*/);
-	else
-		printf("Failure: stat = %d\n", stat);
-
-	delete image;
-	Gdiplus::GdiplusShutdown(gdiplusToken);
-
-	return 0;
-}
+//int TesseractClass::converbmptopng() {
+//
+//	// Initialize GDI+.
+//	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+//	ULONG_PTR gdiplusToken;
+//	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+//
+//	CLSID   encoderClsid;
+//	Gdiplus::Status  stat;
+//	Gdiplus::Image*   image = new Gdiplus::Image(L"CCapture_1.bmp");
+//
+//	// Get the CLSID of the PNG encoder.
+//	GetEncoderClsid(L"image/png", &encoderClsid);
+//
+//	stat = image->Save(L"CCapture_1.png", &encoderClsid, NULL);
+//
+//	if (stat == Gdiplus::Ok)
+//		printf( "" /*"Bird.png was saved successfully\n"*/);
+//	else
+//		printf("Failure: stat = %d\n", stat);
+//
+//	delete image;
+//	Gdiplus::GdiplusShutdown(gdiplusToken);
+//
+//	return 0;
+//}
 
 //테스트 호출용
 bool TesseractClass::Test(int wid, int hei, BYTE* src) {
@@ -215,6 +215,7 @@ bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 
 	image = pixCreate(wid, hei, 32);
 	pixSetData(image, (l_uint32*)src);
+	//pixSetData
 
 	api->SetImage(image);
 
@@ -229,26 +230,42 @@ bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 
 std::string TesseractClass::GetTextUTF8(int wid, int hei, BYTE* src) {
 
+	//converbmptopng();
+	//image = pixRead("Bird.png");
+
 	image = pixCreate(wid, hei, 32);
 	pixSetData(image, (l_uint32*)src);
+	//pixSetData
 
 	api->SetImage(image);
 
 	outText = api->GetUTF8Text();
-	
 	std::string temp = UniToANSI(outText);
 	std::cout << temp << std::endl;
 
-	//pixDestroy(&image);
+	pixDestroy(&image);
+	//delete m_Test;
+	
 
 	return temp;
 }
+
 
 bool TesseractClass::Init(std::string InputType) {
 
 	api = new tesseract::TessBaseAPI();
 
+	bool DetectKor;
+	bool DetectEng;
+
 	datapath = DATAPATH;
+	//imagepath = IMAGEPATH;
+	//imagename = "WiDpa.jpeg";
+	//bmpimagename = "WiDpa.bmp";
+	//hangulname = "Text_Color_Test.PNG";
+	//hangulname = "eng+kor2.PNG";
+	//hangulname = "Noise_Test.PNG";
+	//imagepath = imagepath + hangulname;
 	TCHAR sPath[MAX_PATH] = { 0, };
 
 	::GetCurrentDirectory(MAX_PATH, sPath);
@@ -257,6 +274,7 @@ bool TesseractClass::Init(std::string InputType) {
 	temp2.assign(temp.begin(), temp.end());
 
 	datapath = temp2 + datapath;
+	//std::cout << datapath << std::endl;
 
 #ifdef _DEBUG
 	datapath = DATAPATH;
@@ -271,16 +289,16 @@ bool TesseractClass::Init(std::string InputType) {
 	else if (String_Type == ENG || String_Type == NUM) {
 		Init_Type = "eng";
 	}
-	//else if (DetectKor == true && DetectEng == true) {
-	//	std::cout << "한글 영어 혼용 사용이 감지되었습니다. 인식률 저하가 우려됩니다." << std::endl;
-	//	Init_Type = "eng+kor";			//일어나서는 안되는 경우. 에러 처리
-	//}
+	else if (DetectKor == true && DetectEng == true) {
+		std::cout << "한글 영어 혼용 사용이 감지되었습니다. 인식률 저하가 우려됩니다." << std::endl;
+		Init_Type = "eng+kor";			//일어나서는 안되는 경우. 에러 처리
+	}
 	else {
-		std::cout << "Could not find String type. Set type to default eng" << std::endl;
+		std::cout << "Could find String type. Set type to default eng" << std::endl;
 		Init_Type = "eng";
 	}
 
-	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_LSTM_ONLY)) {
+	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_DEFAULT)) {
 	if (res = api->Init(datapath.c_str(), Init_Type.c_str(), tesseract::OEM_DEFAULT)) {			//차이가 얼마나 나는지
 		fprintf(stderr, "Could not initialize tesseract.\n");
 		std::cout << "Could not initialize tesseract tessdata path." << std::endl;
@@ -344,11 +362,7 @@ std::string TesseractClass::UniToANSI(char* outText) {
 	// bstrWide 메모리 해제
 	SysFreeString(bstrWide);
 
-	std::string temp = pszAnsi;
-
-	delete pszAnsi;
-
-	return temp;
+	return pszAnsi;
 }
 
 void TesseractClass::Process() {
@@ -359,6 +373,8 @@ void TesseractClass::Process() {
 	OutPutstr = UniToANSI(outText);
 
 	std::cout << OutPutstr << std::endl;
+
+
 
 }
 

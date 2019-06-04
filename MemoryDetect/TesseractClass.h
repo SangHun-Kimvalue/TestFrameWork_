@@ -2,14 +2,14 @@
 
 #include <comutil.h>
 #include <leptwin.h>
-#include <gdiplus.h>
+//#include <gdiplus.h>
 #include "stdafx.h"
 #include <baseapi.h>
 #include <allheaders.h>
 #include <iostream>
 
-using namespace Gdiplus;
-#pragma comment(lib, "gdiplus.lib")
+//using namespace Gdiplus;
+//#pragma comment(lib, "gdiplus.lib")
 
 //Ini 파일로 불러오기 추가		클래스로 하나 만들면 편할듯
 #define DATAPATH "\\tessdata";
@@ -61,7 +61,7 @@ private:
 
 	TextType FindTextType(std::string Base_String, int Base_Type[256]);
 	int FindEachText(std::string Base_String, std::string InputType);
-	INT GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
-	int converbmptopng();
+	//INT GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
+	//int converbmptopng();
 
 };

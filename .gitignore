@@ -24,3 +24,11 @@
 /Test/Release/Test.tlog
 /DllTest/Release/DllTest.tlog
 /OCR_Tets/Release/OCR_Test.tlog
+/MemoryDetect/Debug/MemoryDetect.tlog
+/MemoryDetect/Debug/vc141.idb
+/MemoryDetect/targetver.h
+/MemoryDetect/stdafx.h
+/MemoryDetect/pch.h
+/MemoryDetect/pch.cpp
+/MemoryDetect/MemoryDetect.vcxproj.filters
+/MemoryDetect/MemoryDetect.vcxproj

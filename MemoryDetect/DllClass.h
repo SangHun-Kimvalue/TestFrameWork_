@@ -1,6 +1,5 @@
 #pragma once
 
-#include "stdafx.h"
 #include "TesseractClass.h"
 #include "ImageClass.h"
 #include "TextMatchClass.h"
@@ -71,7 +70,6 @@ private:
 
 };
 
-extern "C" _API DllClass* _GetInstance();
 
 
 

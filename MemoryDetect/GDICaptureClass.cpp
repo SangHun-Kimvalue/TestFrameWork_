@@ -191,7 +191,7 @@ bool GDICaptureClass::GetScreen() {
 		//clock_t end_t1 = clock();
 		//printf("DIBit time = %d \n", end_t1 - start_t1);
 		//if (RGBSaveBMP(src) == true) 
-			//OutputDebugStringA("success\n");
+			OutputDebugStringA("success\n");
 		//Cap_Release();
 		//free(src);
 	}
