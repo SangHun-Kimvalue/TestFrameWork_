@@ -52,7 +52,9 @@ void Save2png(Mat inputimage, std::string name) {
 	imwrite(temp.c_str(), inputimage);
 }
 
-ImageClass::ImageClass(){}
+ImageClass::ImageClass(int i){
+	index = i;
+}
 
 ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_length) 
 	: src(src), base_length(Base_length) {
@@ -129,11 +131,15 @@ Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei
 	}
 
 	//Mat DecodeImg = ori_image; // imdecode(ori_image, IMREAD_COLOR);
-	std::vector<uchar> OutBuffer;
-	OutBuffer.push_back((uchar)src);
-	bool res = imencode(".bmp", ori_image, OutBuffer);
+	//std::vector<uchar> OutBuffer;
+	//OutBuffer.push_back((uchar)src);
+	//bool res = imencode(".bmp", ori_image, OutBuffer);
 
-	OutBuffer.clear();
+	//OutBuffer.clear();
+
+	std::string temp = std::to_string(index);
+	temp = temp + "ori_image";
+	Save2png(ori_image, temp);
 
 	return ori_image;
 }
@@ -322,7 +328,7 @@ Mat ImageClass::GrayScale(Mat ori_image) {
 
 	GrayImage = Mat(ori_image.size(), CV_8UC4);
 	cvtColor(ori_image, GrayImage, COLOR_BGRA2GRAY);
-	ShowImage(GrayImage);
+	//ShowImage(GrayImage);
 
 	//GrayImage = C_Canny(GrayImage);
 	//std::vector<std::vector<cv::Point>> contours;
@@ -409,8 +415,10 @@ Mat ImageClass::Gaussian_Blur(Mat ori_image) {			//시그마가 0이면 자동으로 계산�
 	//Bilateral.create(fix_image, CV_8UC3);
 	//bilateralFilter(fix_image, Bilateral, 3, 15, 15);			//CV_8UC1 이나 3을 써야되는데 4를 쓰고있어서 쓰려면 변환이 필요.
 
-	ShowImage(Gasu_image);
-	Save2png(Gasu_image, "Lastest_PNG");
+	//ShowImage(Gasu_image);
+	std::string temp = std::to_string(index);
+	temp = temp + "fixed_image";
+	Save2png(Gasu_image, temp);
 
 	return Gasu_image;
 }

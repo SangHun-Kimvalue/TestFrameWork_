@@ -3,14 +3,14 @@
 TesseractClass::TesseractClass(): Base_String("") {}
 
 TesseractClass::TesseractClass(std::string Base_string)
-	: Base_String(Base_string), Base_Num(0), String_Type(TNULL) 
+	: Base_String(Base_string), Base_Num(0), String_Type(TNULL)
 {
 }
 
 TesseractClass::TesseractClass(std::string Base_string, int wid, int hei, BYTE* src)
 	: Base_String(Base_string), Base_Num(0), String_Type(TNULL)						//지금 베이스 넘버는 인트로 들어오는 것을 고려해야되는데 스트링에 맞춰져있음.
 {
-	//Init(InputType);
+	Init("String");
 	//Init();
 	//Test(wid, hei, src);
 }
@@ -249,7 +249,7 @@ bool TesseractClass::Init(std::string InputType) {
 	datapath = DATAPATH;
 #endif
 
-	Base_length = FindEachText(Base_String, InputType);
+	Base_length = FindEachText(Base_String, InputType);							//좀 이상함
 
 	std::string Init_Type = "";
 	if (String_Type == KOR) {
@@ -267,8 +267,9 @@ bool TesseractClass::Init(std::string InputType) {
 		Init_Type = "eng";
 	}
 
-	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_LSTM_ONLY)) {
-	if (res = api->Init(datapath.c_str(), Init_Type.c_str(), tesseract::OEM_DEFAULT)) {			//차이가 얼마나 나는지
+	//std::cout << api->Version() << std::endl;
+	if (res = api->Init(datapath.c_str(), Init_Type.c_str(), tesseract::OEM_LSTM_ONLY)) {					//tessdata가 없으면 구동이 안됨.
+	//if (res = api->Init(datapath.c_str(), Init_Type.c_str(), tesseract::OEM_DEFAULT)) {			//차이가 얼마나 나는지
 		fprintf(stderr, "Could not initialize tesseract.\n");
 		std::cout << "Could not initialize tesseract tessdata path." << std::endl;
 		return false;

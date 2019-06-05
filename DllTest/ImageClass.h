@@ -14,7 +14,7 @@ class ImageClass
 {
 public:
 
-	ImageClass();
+	ImageClass(int i);
 	ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_length);
 	~ImageClass();
 
@@ -54,6 +54,7 @@ private:
 	Mat Thresholding(Mat fix_image);
 	BYTE* Mat2Byte(Mat fix_image, int index, int depth, int save);
 
+	int index;
 
 };
 
