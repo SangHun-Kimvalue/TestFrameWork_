@@ -53,7 +53,7 @@ private:
 
 	size_t PreImageProcess(int String_Type, int String_length);
 	std::string GetText(int wid, int hei, unsigned char* src, size_t Image_step);
-	bool CompareText(std::string OutText, int Base_Num);
+	bool CompareText(std::string OutText);
 
 	std::string Base_String;
 	std::string String_Type;

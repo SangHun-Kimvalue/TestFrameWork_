@@ -96,7 +96,7 @@ double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 	
 	std::string OutText = GetText(ImageCV->c_wid, ImageCV->c_hei, data, Image_step);
 
-	bool res = CompareText(OutText, Base_Num);
+	bool res = CompareText(OutText);
 
 	std::cout << res << std::endl;
 
@@ -108,7 +108,7 @@ double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 		return 0;
 }
 
-bool DllClass::CompareText(std::string OutText, int Base_Num) {
+bool DllClass::CompareText(std::string OutText) {
 
 	bool res = false;
 
@@ -121,7 +121,7 @@ bool DllClass::CompareText(std::string OutText, int Base_Num) {
 		res = Match->Han_Delete(OutText);
 		break;
 	case 3:		//NUM
-		res = Match->Find_Scope(Base_Num);
+		res = Match->Find_Scope(OutText);
 		break;
 	default:
 		std::cout << "Text_Match_Class : 알수없는 형태가 들어옴" << std::endl;

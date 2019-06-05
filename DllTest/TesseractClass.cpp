@@ -3,12 +3,12 @@
 TesseractClass::TesseractClass(): Base_String("") {}
 
 TesseractClass::TesseractClass(std::string Base_string)
-	: Base_String(Base_string), Base_Num(0), String_Type(TNULL) 
+	: Base_String(Base_string), String_Type(TNULL) 
 {
 }
 
 TesseractClass::TesseractClass(std::string Base_string, int wid, int hei, BYTE* src)
-	: Base_String(Base_string), Base_Num(0), String_Type(TNULL)						//지금 베이스 넘버는 인트로 들어오는 것을 고려해야되는데 스트링에 맞춰져있음.
+	: Base_String(Base_string), String_Type(TNULL)						//지금 베이스 넘버는 인트로 들어오는 것을 고려해야되는데 스트링에 맞춰져있음.
 {
 	//Init(InputType);
 	//Init();
@@ -16,7 +16,7 @@ TesseractClass::TesseractClass(std::string Base_string, int wid, int hei, BYTE* 
 }
 
 TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_String, int InputType)
-	: Base_String(Base_String), String_Type((TextType)InputType), Base_Num(0) {
+	: Base_String(Base_String), String_Type((TextType)InputType) {
 
 }
 
@@ -38,7 +38,7 @@ int TesseractClass::FindEachText(std::string Base_String, std::string InputType)
 		//for (int i = 0; i < Base_length; i++)
 		//	Base_Type[i] == NUM;
 		String_Type = NUM;
-		Base_Num = atoi(Base_String.c_str());
+		//Base_Num = atoi(Base_String.c_str());
 		return Base_length;
 	}
 

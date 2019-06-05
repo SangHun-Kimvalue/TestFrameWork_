@@ -56,7 +56,7 @@ private:
 	std::string hangulname;
 
 	const std::string Base_String;
-	int Base_Num;
+	//int Base_Num;
 
 	TextType FindTextType(std::string Base_String, int Base_Type[256]);
 	int FindEachText(std::string Base_String, std::string InputType);
