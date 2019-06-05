@@ -56,6 +56,7 @@ bool TextMatchClass::Find_Base_String(std::string input_string) {
 	if (strstr(Deleted_String.c_str(), Base_String.c_str()) != NULL) {
 		if (Consistent == true) {
 			Detect = true;
+			return Detect;
 		}
 		Detect = false;
 	}
