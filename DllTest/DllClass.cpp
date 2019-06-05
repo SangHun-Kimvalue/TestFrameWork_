@@ -73,9 +73,9 @@ DllClass::~DllClass()
 size_t DllClass::PreImageProcess(int String_Type, int String_length) {
 
 	ImageCV->fix_image = ImageCV->Crop(ImageCV->ori_image);
-
+	ImageCV->ShowImage(ImageCV->fix_image);
 	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_Type, String_length);
-
+	ImageCV->ShowImage(ImageCV->fix_image);
 	ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);
 	ImageCV->ShowImage(ImageCV->fix_image);
 

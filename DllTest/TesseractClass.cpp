@@ -38,7 +38,6 @@ int TesseractClass::FindEachText(std::string Base_String, std::string InputType)
 		//for (int i = 0; i < Base_length; i++)
 		//	Base_Type[i] == NUM;
 		String_Type = NUM;
-		//Base_Num = atoi(Base_String.c_str());
 		return Base_length;
 	}
 

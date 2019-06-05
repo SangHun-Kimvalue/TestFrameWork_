@@ -97,21 +97,17 @@ int TextMatchClass::Remain_Num(std::string input_string) {
 
 	for (int i = 0; i < input_string.length(); i++) {		//타입 검출
 		
-
-		//else if (48 <= Base_String.at(i) || 57 >= Base_String.at(i)) {		//숫자			//공백 검출 x 
-		if (isdigit(Base_String.at(i)) != 0) {		//숫자
-			temp = temp + Base_String.at(i);
+		if (isdigit(input_string.at(i)) != 0) {		//숫자
+			temp = temp + input_string.at(i);
 		}
 	}
 
-
-	return atoi(Base_String.c_str());
+	return atoi(temp.c_str());
 }
 
 //Formula에 따라 숫자 찾기
 bool TextMatchClass::Find_Scope(std::string Input_Num) {
 
-	//Base_int = atoi(input_string.c_str());
 	int Only_Num = Remain_Num(Input_Num);
 
 	if (strstr(Fomula.c_str(), "EQUAL") != NULL ) {

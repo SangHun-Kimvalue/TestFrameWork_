@@ -109,16 +109,16 @@ ImageClass::~ImageClass()
 
 Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei, unsigned char* src) {
 
-	std::string Ipath = IMAGEPATH;
-	Ipath = Ipath + "ocr.bmp";
+	//std::string Ipath = IMAGEPATH;
+	//Ipath = Ipath + "ocr.bmp";
 	base_height = 75;											// 사용자가 평균적으로 지정한 영역내에서 글자의 높이 비율을 50 ~ 70% 로 분포 되어 있고 
 	base_width = 100;											// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
 																
 	c_x = x; 	c_y = y;  	c_wid = wid; 	c_hei = hei;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
 															
-	if (c_x + c_wid > ori_wid) 
+	if (c_x + c_wid < ori_wid) 
 		std::cerr << "넓이 오류" << std::endl;
-	else if(c_y + c_hei > ori_hei)
+	else if(c_y + c_hei < ori_hei)
 		std::cerr << "높이 오류" << std::endl;
 
 	ori_image = Mat(ori_hei, ori_wid, CV_8UC(4), src);
