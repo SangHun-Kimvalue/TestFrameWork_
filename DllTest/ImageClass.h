@@ -14,6 +14,7 @@ class ImageClass
 {
 public:
 
+	ImageClass(int i);
 	ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_length);
 	~ImageClass();
 

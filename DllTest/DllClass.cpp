@@ -88,7 +88,7 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	unsigned char* temp = (unsigned char*)Capturer->src;						//테스트용
 	img = std::shared_ptr<unsigned char[]>(temp);
 
-	ImageCV = new ImageClass();
+	ImageCV = new ImageClass(1);
 	Tesseract = new TesseractClass();
 	//Tesseract = new TesseractClass(Base_String, Capturer->nWidth, Capturer->nHeight, Capturer->src);
 	
