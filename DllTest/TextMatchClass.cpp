@@ -39,7 +39,7 @@ TextMatchClass::~TextMatchClass()
 //줄바꿈 제거 알고리즘
 std::string TextMatchClass::Delete_Enter(std::string input_string) {
 
-	std::cout << input_string.c_str() << std::endl;
+	//std::cout << input_string.c_str() << std::endl;
 
 	while (1) {						//줄바꿈 제거 알고리즘
 
@@ -50,7 +50,7 @@ std::string TextMatchClass::Delete_Enter(std::string input_string) {
 		input_string.erase(pos, 1);
 	}
 
-	std::cout << input_string.c_str() << std::endl;
+	//std::cout << input_string.c_str() << std::endl;
 
 	return input_string;
 }
