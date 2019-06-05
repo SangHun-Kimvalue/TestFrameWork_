@@ -52,8 +52,6 @@ void Save2png(Mat inputimage, std::string name) {
 	imwrite(temp.c_str(), inputimage);
 }
 
-ImageClass::ImageClass(){}
-
 ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_length) 
 	: src(src), base_length(Base_length) {
 
