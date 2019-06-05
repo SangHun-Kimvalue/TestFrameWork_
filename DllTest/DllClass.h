@@ -19,8 +19,6 @@ public:
 	DllClass();
 	~DllClass();
 
-	virtual void print();
-
 	bool InitModule(ModuleInfo info, RECT* displayrect);
 	bool UpdateModule(ModuleInfo info);
 	// for debug
@@ -61,8 +59,6 @@ private:
 
 	int Base_Num;
 	int String_Type_Num;
-	int Type;
-	bool Consistent;
 
 	std::shared_ptr<unsigned char[]> img;
 	unsigned char* data;

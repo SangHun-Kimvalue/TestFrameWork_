@@ -2,7 +2,7 @@
 
 TesseractClass::TesseractClass(): Base_String("") {}
 
-TesseractClass::TesseractClass(std::string Base_string)
+TesseractClass::TesseractClass(std::string Base_string, int Base_Num)
 	: Base_String(Base_string), String_Type(TNULL) 
 {
 }
@@ -26,9 +26,9 @@ TesseractClass::~TesseractClass()
 }
 
 //Base_String 길이를 반환
-int TesseractClass::FindEachText(std::string Base_String, std::string InputType) {
+int TesseractClass::FindEachText(std::string Base_String, std::string InputType, int Base_Num) {
 
-	Base_length = Base_String.length();
+	
 	//int *Base_Type = (int *)malloc(sizeof(int)*Base_length);
 
 	int point = -1;
@@ -37,64 +37,68 @@ int TesseractClass::FindEachText(std::string Base_String, std::string InputType)
 	if (strstr(InputType.c_str(), "NUM")) {
 		//for (int i = 0; i < Base_length; i++)
 		//	Base_Type[i] == NUM;
+		Base_length = std::to_string(Base_Num).length();
 		String_Type = NUM;
 		return Base_length;
 	}
-
-	int* Base_Type = new int[Base_length];
-
-	for (int i = 0; i < Base_length; i++) {		//타입 검출
-		point++;
-		//if (i > 2 && Base_Type[point - 2] == TNULL && Base_Type[point - 1] == TNULL)
-		//	break;
-		if (0 >= Base_String.at(i) || 127 < Base_String.at(i)) {		//한글
-			if (detec_han) {
-				point--;
-				detec_han = false;
-				continue;
-			}
-			else {
-				detec_han = true;
-				Base_Type[point] = KOR;
-				continue;
-			}
-		}
-
-		//if (65 <= Base_String.at(i) && Base_String.at(i) <= 90 || (97 <= Base_String.at(i) && Base_String.at(i) <= 122)) {		//영문  한글일 경우 죽음
-		else if (isalpha(Base_String.at(i)) != 0) {		//영문
-			Base_Type[point] = ENG;
-			continue;
-		}
-
-		//else if (48 <= Base_String.at(i) || 57 >= Base_String.at(i)) {		//숫자			//공백 검출 x 
-		else if (isdigit(Base_String.at(i)) != 0) {		//숫자
-			Base_Type[point] = NUM;
-			continue;
-		}
-
-		else if (isspace(Base_String.at(i)) != 0) {
-			Base_Type[point] = SPACE;
-			continue;
-		}
+	else {
 		
-		else if (ispunct(Base_String.at(i)) != 0) {
-			Base_Type[point] = SPEC;
-			continue;
+		Base_length = Base_String.length();
+
+		int* Base_Type = new int[Base_length];
+
+		for (int i = 0; i < Base_length; i++) {		//타입 검출
+			point++;
+			//if (i > 2 && Base_Type[point - 2] == TNULL && Base_Type[point - 1] == TNULL)
+			//	break;
+			if (0 >= Base_String.at(i) || 127 < Base_String.at(i)) {		//한글
+				if (detec_han) {
+					point--;
+					detec_han = false;
+					continue;
+				}
+				else {
+					detec_han = true;
+					Base_Type[point] = KOR;
+					continue;
+				}
+			}
+
+			//if (65 <= Base_String.at(i) && Base_String.at(i) <= 90 || (97 <= Base_String.at(i) && Base_String.at(i) <= 122)) {		//영문  한글일 경우 죽음
+			else if (isalpha(Base_String.at(i)) != 0) {		//영문
+				Base_Type[point] = ENG;
+				continue;
+			}
+
+			//else if (48 <= Base_String.at(i) || 57 >= Base_String.at(i)) {		//숫자			//공백 검출 x 
+			else if (isdigit(Base_String.at(i)) != 0) {		//숫자
+				Base_Type[point] = NUM;
+				continue;
+			}
+
+			//else if (isspace(Base_String.at(i)) != 0) {
+			//	Base_Type[point] = SPACE;
+			//	continue;
+			//}
+			//else if (ispunct(Base_String.at(i)) != 0) {
+			//	Base_Type[point] = SPEC;
+			//	continue;
+			//}
+
+			else
+				Base_Type[point] = TNULL;
 		}
 
-		else
-			Base_Type[point] = TNULL;
+		String_Type = FindTextType(Base_Type);
+
+		delete Base_Type;
 	}
-
-	String_Type = FindTextType(Base_String, Base_Type);
-
-	delete Base_Type;
 
 	return Base_length;
 }
 
 //Base_String 타입을 반환
-TextType TesseractClass::FindTextType(std::string Base_String, int Base_Type[256]) {
+TextType TesseractClass::FindTextType(int Base_Type[]) {
 
 	for (int i = 0; i < Base_length; i++) {
 		switch (Base_Type[i])
@@ -105,90 +109,26 @@ TextType TesseractClass::FindTextType(std::string Base_String, int Base_Type[256
 		case TNULL :
 		default :
 			if (i == Base_length - 1 && String_Type == TNULL) {
-				String_Type = ENG;
-				return String_Type;
+				return NUM;
 			}
 			continue;
 		//case NUM :
 		//	Numchecker = true;
 		//	if (i == Base_length - 1 && (String_Type == TNULL || String_Type == NUM)) {
-		//		String_Type = NUM;
 		//		Base_Num = atoi(Base_String.c_str());
 		//		return NUM;
 		//	}
 		//	break;
 		case KOR :
-			String_Type = KOR;
-			return String_Type;
+			return KOR;
+			
 		case ENG :
-			String_Type = ENG;
-			return String_Type;
+			return ENG;
 		}
 	}
 	
-	return String_Type;
+	return TNULL;
 
-}
-
-//UTF 8 -> 16 변환
-INT TesseractClass::GetEncoderClsid(const WCHAR* format, CLSID* pClsid) {
-
-	UINT  num = 0;          // number of image encoders
-	UINT  size = 0;         // size of the image encoder array in bytes
-
-	Gdiplus::ImageCodecInfo* pImageCodecInfo = NULL;
-
-	Gdiplus::GetImageEncodersSize(&num, &size);
-	if (size == 0)
-		return -1;  // Failure
-
-	pImageCodecInfo = (Gdiplus::ImageCodecInfo*)(malloc(size));
-	if (pImageCodecInfo == NULL)
-		return -1;  // Failure
-
-	GetImageEncoders(num, size, pImageCodecInfo);
-
-	for (UINT j = 0; j < num; ++j)
-	{
-		if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
-		{
-			*pClsid = pImageCodecInfo[j].Clsid;
-			free(pImageCodecInfo);
-			return j;  // Success
-		}
-	}
-
-	free(pImageCodecInfo);
-	return -1;  // Failure
-
-}
-
-//테스트용 bmp to png
-int TesseractClass::converbmptopng() {
-
-	// Initialize GDI+.
-	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR gdiplusToken;
-	Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-	CLSID   encoderClsid;
-	Gdiplus::Status  stat;
-	Gdiplus::Image*   image = new Gdiplus::Image(L"CCapture_1.bmp");
-
-	// Get the CLSID of the PNG encoder.
-	GetEncoderClsid(L"image/png", &encoderClsid);
-
-	stat = image->Save(L"CCapture_1.png", &encoderClsid, NULL);
-
-	if (stat == Gdiplus::Ok)
-		printf( "" /*"Bird.png was saved successfully\n"*/);
-	else
-		printf("Failure: stat = %d\n", stat);
-
-	delete image;
-	Gdiplus::GdiplusShutdown(gdiplusToken);
-
-	return 0;
 }
 
 //테스트 호출용
@@ -230,7 +170,7 @@ std::string TesseractClass::GetTextUTF8(int wid, int hei, unsigned char* src, si
 	return temp;
 }
 
-bool TesseractClass::Init(std::string InputType) {
+bool TesseractClass::Init(std::string Base_String, std::string InputType, int Base_Num) {
 
 	api = new tesseract::TessBaseAPI();
 
@@ -248,7 +188,7 @@ bool TesseractClass::Init(std::string InputType) {
 	datapath = DATAPATH;
 #endif
 
-	Base_length = FindEachText(Base_String, InputType);
+	Base_length = FindEachText(Base_String, InputType, Base_Num);
 
 	std::string Init_Type = "";
 	if (String_Type == KOR) {
@@ -266,8 +206,8 @@ bool TesseractClass::Init(std::string InputType) {
 		Init_Type = "eng";
 	}
 
-	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_LSTM_ONLY)) {
-	if (res = api->Init(datapath.c_str(), Init_Type.c_str(), tesseract::OEM_DEFAULT)) {			//차이가 얼마나 나는지
+	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_DEFAULT)) {
+	if (bool res = api->Init(datapath.c_str(), Init_Type.c_str(), tesseract::OEM_LSTM_ONLY)) {			//차이가 얼마나 나는지
 		fprintf(stderr, "Could not initialize tesseract.\n");
 		std::cout << "Could not initialize tesseract tessdata path." << std::endl;
 		return false;

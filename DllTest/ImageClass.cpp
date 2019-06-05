@@ -129,11 +129,10 @@ Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei
 	}
 
 	//Mat DecodeImg = ori_image; // imdecode(ori_image, IMREAD_COLOR);
-	std::vector<uchar> OutBuffer;
-	OutBuffer.push_back((uchar)src);
-	bool res = imencode(".bmp", ori_image, OutBuffer);
-
-	OutBuffer.clear();
+	//std::vector<uchar> OutBuffer;
+	//OutBuffer.push_back((uchar)src);
+	//bool res = imencode(".bmp", ori_image, OutBuffer);
+	//OutBuffer.clear();
 
 	return ori_image;
 }

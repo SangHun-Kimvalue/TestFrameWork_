@@ -1,35 +1,9 @@
 #include "TextMatchClass.h"
 
-TextMatchClass::TextMatchClass(std::string find_string, int type, int Base_Num, std::string fomula, bool Consistent)
-	: Base_String(find_string), Base_Num(Base_Num), Fomula("EQUAL"), Consistent(Consistent), Detect(false) {
+TextMatchClass::TextMatchClass(std::string Base_String, int Base_Num, std::string fomula)
+	: Base_String(Base_String), Base_Num(Base_Num), Detect(false), Consistent(true), ENumFomula(EQUAL), StringFomula(fomula) {
 	
-	Detect = false;
-
-}
-
-//std::string input_string, std::string find_string, int type, int threshold, std::string fomula
-TextMatchClass::TextMatchClass(std::string input_string, std::string find_string, int type, int Base_Num, std::string fomula, bool Consistent)
-	: Input_String(input_string), Base_Num(Base_Num), Base_String(find_string), Fomula(fomula), Consistent(false)
-{
-	Detect = false;
-
-	//switch (Type) {
-	//
-	//case 1 :
-	//	Detect = Find_Base_String(input_string);
-	//	break;
-	//case 2 :
-	//	Detect = Han_Delete(input_string);
-	//	break;
-	//case 3 :
-	//	Detect = Find_Scope(input_string);
-	//	break;
-	//default:
-	//	Detect = false;
-	//	std::cout << "Text_Match_Class : 알수없는 형태가 들어옴" << std::endl;
-	//	break;
-	//}
-
+	ConvFomula();
 }
 
 TextMatchClass::~TextMatchClass()
@@ -67,7 +41,7 @@ bool TextMatchClass::Han_Delete(std::string input_string) {
 		input_string.erase(pos, 1);
 	}
 	
-	if (Find_Base_String(input_string)) {
+	if (Find_Base_String(input_string) == true) {
 		return true;
 	}
 	else
@@ -80,12 +54,17 @@ bool TextMatchClass::Find_Base_String(std::string input_string) {
 	std::string Deleted_String = Delete_Enter(input_string);
 
 	if (strstr(Deleted_String.c_str(), Base_String.c_str()) != NULL) {
+		if (Consistent == true) {
+			Detect = true;
+		}
+		Detect = false;
+	}
+	else {
 		if (Consistent == false) {
-			Detect = false;
+			Detect = true;
 			return Detect;
 		}
-		Detect = true;
-		return Detect;
+		Detect = false;
 	}
 
 	return false;
@@ -105,21 +84,52 @@ int TextMatchClass::Remain_Num(std::string input_string) {
 	return atoi(temp.c_str());
 }
 
+void TextMatchClass::ConvFomula() {
+
+	if (strstr(StringFomula.c_str(), "NOTEQUAL") != NULL) {
+		ENumFomula = NEQUAL;
+		Consistent = false;
+	}
+	else if (strstr(StringFomula.c_str(), "EQUAL") != NULL) {
+		ENumFomula = EQUAL;
+		Consistent = true;
+	}
+	else if (strstr(StringFomula.c_str(), "LESSTHAN") != NULL) {
+		ENumFomula = LESST;
+	}
+	else if (strstr(StringFomula.c_str(), "MORETHAN") != NULL) {
+		ENumFomula = MORET;
+	}
+	else {
+		std::cout << "Formual Error" << std::endl;
+	}
+	return ;
+}
+
+
 //Formula에 따라 숫자 찾기
 bool TextMatchClass::Find_Scope(std::string Input_Num) {
 
 	int Only_Num = Remain_Num(Input_Num);
 
-	if (strstr(Fomula.c_str(), "EQUAL") != NULL ) {
+	if (ENumFomula == EQUAL || ENumFomula == NEQUAL) {
 
 		if (Only_Num == Base_Num) {
+			if (Consistent == true) {
+				Detect = true;
+				return Detect;
+			}
+			Detect = false;
+			return Detect;
+		}
+		if (Consistent == false) {
 			Detect = true;
 			return Detect;
 		}
 		Detect = false;
 		return Detect;
 	}
-	else if (strstr(Fomula.c_str(), "LESSTHAN") != NULL ) {
+	else if (ENumFomula == LESST) {
 		
 		if (Only_Num < Base_Num) {
 			Detect = true;
@@ -128,7 +138,7 @@ bool TextMatchClass::Find_Scope(std::string Input_Num) {
 		Detect = false;
 		return Detect;
 	}
-	else if (strstr(Fomula.c_str(), "MORETHAN") != NULL ) {
+	else if (ENumFomula == MORET) {
 		
 		if (Only_Num > Base_Num) {
 			Detect = true;
