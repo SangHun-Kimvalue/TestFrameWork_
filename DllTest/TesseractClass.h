@@ -2,14 +2,10 @@
 
 #include <comutil.h>
 #include <leptwin.h>
-#include <gdiplus.h>
 #include "stdafx.h"
 #include <baseapi.h>
 #include <allheaders.h>
 #include <iostream>
-
-using namespace Gdiplus;
-#pragma comment(lib, "gdiplus.lib")
 
 //Ini 파일로 불러오기 추가		클래스로 하나 만들면 편할듯
 #define DATAPATH "\\tessdata";
@@ -25,12 +21,12 @@ class TesseractClass
 public:
 	TesseractClass();
 	TesseractClass(std::string Base_string, int wid, int hei, BYTE* src);
-	TesseractClass(std::string Base_string);
+	TesseractClass(std::string Base_string, int Base_Num);
 	TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string, int InputType);
 	~TesseractClass();
 
 	bool Test(int wid, int hei, BYTE* src);
-	bool Init(std::string InputType);
+	bool Init(std::string Base_String, std::string InputType, int Base_Num);
 	std::string GetTextUTF8(int wid, int hei, unsigned char* src, size_t step);
 
 	TextType String_Type;
@@ -42,10 +38,8 @@ private:
 	void Release();
 	std::string UniToANSI(char* outText);
 
-
 	tesseract::TessBaseAPI *api;
 	Pix *image;
-	int res = 0;
 
 	std::string OutPutstr;
 
@@ -56,11 +50,7 @@ private:
 	std::string hangulname;
 
 	const std::string Base_String;
-	int Base_Num;
 
-	TextType FindTextType(std::string Base_String, int Base_Type[256]);
-	int FindEachText(std::string Base_String, std::string InputType);
-	INT GetEncoderClsid(const WCHAR* format, CLSID* pClsid);
-	int converbmptopng();
-
+	TextType FindTextType(int Base_Type[256]);
+	int FindEachText(std::string Base_String, std::string InputType, int Base_Num);
 };
