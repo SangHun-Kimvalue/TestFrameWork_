@@ -165,7 +165,7 @@ bool DllClass::CompareText(std::string OutText, int Base_Num) {
 		res = Match->Han_Delete(OutText);
 		break;
 	case 3:		//NUM
-		res = Match->Find_Scope(Base_Num);
+		res = Match->Find_Scope(OutText);
 		break;
 	default:
 		std::cout << "Text_Match_Class : 알수없는 형태가 들어옴" << std::endl;

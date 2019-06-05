@@ -13,12 +13,13 @@ public:
 
 	bool Han_Delete(std::string input_string);
 	bool Find_Base_String(std::string input_string);
-	bool Find_Scope(int Input_Num);
+	bool Find_Scope(std::string Input_Num);
 	
 	bool Detect;
 
 private:
 
+	int Remain_Num(std::string input_string);
 	std::string Delete_Enter(std::string input_string);
 
 	const int Base_Num;

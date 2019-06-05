@@ -91,32 +91,49 @@ bool TextMatchClass::Find_Base_String(std::string input_string) {
 	return false;
 }
 
+int TextMatchClass::Remain_Num(std::string input_string) {
+
+	std::string temp;
+
+	for (int i = 0; i < input_string.length(); i++) {		//타입 검출
+
+
+		//else if (48 <= Base_String.at(i) || 57 >= Base_String.at(i)) {		//숫자			//공백 검출 x 
+		if (isdigit(input_string.at(i)) != 0) {		//숫자
+			temp = temp + input_string.at(i);
+		}
+	}
+
+	return atoi(temp.c_str());
+}
+
 //Formula에 따라 숫자 찾기
-bool TextMatchClass::Find_Scope(int Input_Num) {
+bool TextMatchClass::Find_Scope(std::string Input_Num) {
 
 	//Base_int = atoi(input_string.c_str());
+	int Only_Num = Remain_Num(Input_Num);
 
-	if (strstr(Fomula.c_str(), "EQUAL") != NULL ) {
+	if (strstr(Fomula.c_str(), "EQUAL") != NULL) {
 
-		if (Input_Num == Base_Num) {
+		if (Only_Num == Base_Num) {
 			Detect = true;
 			return Detect;
 		}
 		Detect = false;
 		return Detect;
 	}
-	else if (strstr(Fomula.c_str(), "LESSTHAN") != NULL ) {
-		
-		if (Input_Num < Base_Num) {
+	else if (strstr(Fomula.c_str(), "LESSTHAN") != NULL) {
+
+		if (Only_Num < Base_Num) {
 			Detect = true;
 			return Detect;
 		}
 		Detect = false;
 		return Detect;
 	}
-	else if (strstr(Fomula.c_str(), "MORETHAN") != NULL ) {
-		
-		if (Input_Num > Base_Num) {
+	else if (strstr(Fomula.c_str(), "MORETHAN") != NULL) {
+
+		if (Only_Num > Base_Num) {
 			Detect = true;
 			return Detect;
 		}
