@@ -51,12 +51,12 @@ void Save2png(Mat inputimage, std::string name) {
 
 	imwrite(temp.c_str(), inputimage);
 }
-ImageClass::ImageClass() {}
+ImageClass::ImageClass() : Reverse_Color(false) {}
 
-ImageClass::ImageClass(int i){}
+ImageClass::ImageClass(int i): Reverse_Color(false) {}
 
 ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_length) 
-	: src(src), base_length(Base_length) {
+	: src(src), base_length(Base_length), Reverse_Color(false){
 
 	/*
 	//속도 개션 가능성 >> 다시 4채널로 변환하는게 아닌 tesseract 에서 1채널로 설정해줄수없나?
@@ -108,7 +108,85 @@ ImageClass::~ImageClass()
 //}
 
 
-Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) {
+void ImageClass::Reverse_check(int ori_wid, int ori_hei, unsigned char* src) {
+	Mat InputMat;
+	//Mat ori_image;
+
+	InputMat = Create_Mat(ori_wid, ori_hei, src);
+	InputMat = Crop(InputMat);
+	InputMat = GrayScale(InputMat);
+
+	//ori_image = InputMat.clone();
+	int count = 10;
+
+	if (InputMat.cols > 50 && InputMat.rows > 10) {
+
+		uchar pixsum = 0;
+		int temp = 0;
+
+		for (int i = 0; i < count; i++) {
+
+			int pos = rand() % (InputMat.rows * InputMat.cols);
+			pixsum = InputMat.at<uchar>(pos);
+			temp += (int)pixsum;
+			InputMat.at<uchar>(pos) = 0;
+		}
+
+		//ShowImage(ori_image);
+		//ShowImage(InputMat);
+
+		if (temp / count < 127) {
+			Reverse_Color = true;
+		}
+		else
+			Reverse_Color = false;
+	}
+	//std::cout << "Reverse_Color : " << Reverse_Color << std::endl;
+	InputMat.release();
+
+}
+
+void ImageClass::Reverse_check(Mat fix_image) {
+
+	Mat InputMat;
+	//Mat ori_image;
+
+	//InputMat = Create_Mat(ori_wid, ori_hei, src);
+	//InputMat = Crop(InputMat);
+	//InputMat = GrayScale(InputMat);
+
+	InputMat = fix_image.clone();
+	int count = 10;
+
+	if (InputMat.cols > 50 && InputMat.rows > 10) {
+
+		uchar pixsum = 0;
+		int temp = 0;
+
+		for (int i = 0; i < count; i++) {
+
+			int pos = rand() % (InputMat.rows * InputMat.cols);
+			pixsum = InputMat.at<uchar>(pos);
+			temp += (int)pixsum;
+			InputMat.at<uchar>(pos) = 0;
+		}
+
+		//ShowImage(ori_image);
+		//ShowImage(InputMat);
+
+		if (temp / count < 127) {
+			Reverse_Color = true;
+		}
+		else
+			Reverse_Color = false;
+	}
+	//std::cout << "Reverse_Color : " << Reverse_Color << std::endl;
+	InputMat.release();
+
+	return ;
+}
+
+Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei, unsigned char* src) {
 
 	//std::string Ipath = IMAGEPATH;
 	//Ipath = Ipath + "ocr.bmp";
@@ -123,6 +201,8 @@ Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei
 		std::cerr << "넓이 오류" << std::endl;
 	else if(c_y + c_hei < ori_hei)
 		std::cerr << "높이 오류" << std::endl;
+
+	Reverse_check(ori_wid, ori_hei, src);
 
 	//Mat DecodeImg = ori_image; // imdecode(ori_image, IMREAD_COLOR);
 	//std::vector<uchar> OutBuffer;
@@ -327,7 +407,6 @@ Mat ImageClass::GrayScale(Mat ori_image) {
 	//	CHAIN_APPROX_NONE); // 각 외곽선의 모든 화소 탐색
 	//ShowImage(GrayImage);
 
-	GrayImage = Thresholding(GrayImage);				//2ms
 	//cvtColor(Thresholding_Image, ori_image, COLOR_GRAY2BGRA);					
 
 	return GrayImage;//ThreshImage를 다시 4채널로 변경하는 과정에서 ori_image를 dst로 설정했음.
@@ -346,10 +425,16 @@ Mat ImageClass::Thresholding(Mat ori_image) {
 	//blockSize	픽셀의 임계 값을 계산하는 데 사용되는 픽셀 인접 영역의 크기 : 3, 5, 7 등.
 	//기음	상수는 평균 또는 가중 평균에서 뺍니다(아래 세부 정보 참조).일반적으로 양수이지만 0 또는 음수 일 수 있습니다.
 
-	//threshold(fix_image, ThreshImage, 127, 255, THRESH_BINARY);				
+	//threshold(fix_image, ThreshImage, 127, 255, THRESH_BINARY);	
 
-	adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 11, 5);			//11이 적당해 보이임.
-	
+	Reverse_check(ori_image);
+	if (Reverse_Color == false) {
+		adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 11, 5);			//11이 적당해 보이임.
+		return ThreshImage;
+	}
+	else 
+		return ori_image;
+
 	//fix_image = Gaussian_Blur(ThreshImage, 3, 3);
 	//Save2png(fix_image, "Thresh_11_5_blur");
 	//adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 21, 5);
@@ -359,7 +444,6 @@ Mat ImageClass::Thresholding(Mat ori_image) {
 	//fix_image = Gaussian_Blur(ThreshImage, 3, 3);
 	//Save2png(fix_image, "Thresh_31_5_blur");
 
-	return ThreshImage;		
 }
 
 //설명용..   양선형 보간법이 이미 Resize에서 적용되어 있어 필요가 없어짐.

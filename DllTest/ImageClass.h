@@ -31,12 +31,13 @@ public:
 	Mat fix_image;
 
 	Mat Create_Mat(int ori_wid, int ori_hei, unsigned char* src);
-	Mat CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei);
+	Mat CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei, unsigned char* src);
 	Mat Resize(Mat fix_image, int String_length);
 	Mat Crop(Mat fix_image);
 	Mat Bilinear_Interpolation(Mat fix_image);
 	Mat Gaussian_Blur(Mat fix_image);
 	Mat GrayScale(Mat fix_image);
+	Mat Thresholding(Mat fix_image);
 	Mat C_Canny(Mat ori_image);
 
 	void Release();
@@ -51,11 +52,13 @@ private:
 	int base_width;
 	int base_length;
 
+	void Reverse_check(Mat fix_image);
+	void Reverse_check(int ori_wid, int ori_hei, unsigned char* src);
 	Mat Resize_Num(Mat fix_image);
 	Mat Resize_String(Mat fix_image, int String_length);
-	Mat Thresholding(Mat fix_image);
 	BYTE* Mat2Byte(Mat fix_image, int index, int depth, int save);
 
+	bool Reverse_Color;
 	int index;
 
 };

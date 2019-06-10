@@ -10,7 +10,6 @@ extern "C" {
 
 DllClass::DllClass()
 {
-
 	m_hwnd = GetDesktopWindow();
 
 	ModuleInfo info;
@@ -19,8 +18,8 @@ DllClass::DllClass()
 
 	rect.left = 44;
 	rect.top = 0;
-	rect.right = rect.left + 100;
-	rect.bottom = rect.top + 40;
+	rect.right = rect.left + 150;
+	rect.bottom = rect.top + 35;
 	RECT* displayrect = &rect;
 	//rect(44, 0, 150, 40);
 
@@ -110,7 +109,7 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	Match = new TextMatchClass(Base_String, Base_Num, Formula);
 
 	ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,
-		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top);
+		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top, img.get());
 	Tesseract->Init(Base_String, String_Type, Base_Num);
 
 	//(std::string find_string, int Base_Num, std::string fomula)
@@ -133,6 +132,7 @@ void DllClass::PreImageProcess(int String_length) {
 	
 	if (String_Type_Num != (int)KOR) {
 		ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);				//4~5ms
+		ImageCV->fix_image = ImageCV->Thresholding(ImageCV->fix_image);				//2ms
 		//ImageCV->ShowImage(ImageCV->fix_image);
 	}
 
