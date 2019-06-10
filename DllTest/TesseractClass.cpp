@@ -210,7 +210,7 @@ bool TesseractClass::Init(std::string Base_String, std::string InputType, int Ba
 	}
 
 	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_DEFAULT)) {//OEM_LSTM_ONLY
-	if (bool res = api->Init(datapath.c_str(), Init_Type.c_str(), tesseract::OEM_LSTM_ONLY)) {			//차이가 얼마나 나는지
+	if (bool res = api->Init(datapath.c_str(), Init_Type.c_str(), tesseract::OEM_DEFAULT)) {			//차이가 얼마나 나는지
 		fprintf(stderr, "Could not initialize tesseract.\n");
 		std::cout << "Could not initialize tesseract tessdata path." << std::endl;
 		return false;

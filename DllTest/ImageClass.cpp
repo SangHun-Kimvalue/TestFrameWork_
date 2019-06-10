@@ -223,57 +223,22 @@ Mat ImageClass::Resize_Num(Mat ori_image) {
 //String_Type이 문자일때 높이를 중심으로 변환		//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
 Mat ImageClass::Resize_String(Mat ori_image, int String_length) {		//문장이 아닌 단어에 초점을 맞춤.	//버그의 여지가 쬐큼 있긴있음.		>> 모든 경우의 수를 생각해봐야함/
 	
-	Mat re_image;
+	Mat resize_image;
+	//ShowImage(ori_image);
+	//if (ori_image.cols < ori_image.rows) {
+		//resize_image = Resize_Num(ori_image);
+	//}
+	//else {
+	resize_image = Resize_String(ori_image, String_length);
+	//}
 
-	//CV_EXPORTS_W void resize(InputArray src, OutputArray dst,
-	//	Size dsize, double fx = 0, double fy = 0,
-	//	int interpolation = INTER_LINEAR);
-	//cv::resize(fix_image, fix_image, cv::Size(wid, hei), 0, 0, INTER_LINEAR);
-	//이미지를 축소하려면 일반적으로 INTER_AREA 보간으로 괜찮게 보이지만 이미지를 확대하려면 일반적으로 
-	//INTER_LINEAR (가장 빠르지 만 적당히 괜찮아 보입니다) 또는 INTER_CUBIC (느림)로 가장 잘 보입니다.
-	
-	base_width = String_length * 37;		//어자피 베이스 문자의 길이보다는 크게 조절해야함(그 보다 작으면 추출이 힘듬) (37포인트가 제일 이상적인 길이)
+	//if(String_Type == 3)
+	//	resize_image = Resize_Num(ori_image);
+	//else 
+	//	resize_image = Resize_String(ori_image, String_length);
+	//ShowImage(resize_image);
 
-	int base = ori_image.rows - base_height;
-	float percent = ((float)ori_image.rows - (float)base) / (float)ori_image.rows;
-
-	int temp_wid = ori_image.cols * percent;
-	int temp_hei = ori_image.rows - base;
-
-	if (base == 0) {					//절대적인 값 차이가 아니라 퍼센테이지로 높이와 넓이를 계산하면 좋을듯??
-		return ori_image;
-	}
-	else if (base > 0) {				//축소
-		//이미지가 기준치 보다 더 작아지게 안됨으로 기준 수치를 한번 더 더해 사용한다.
-		if (temp_hei < base_height || (temp_wid < base_width)) {
-			temp_hei = temp_hei + base_height;
-			temp_wid = temp_wid + base_width;
-			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
-			//ShowImage(re_image);
-			//c_wid = temp_wid;
-			//c_hei = temp_hei;
-			return re_image;
-		}
-		else {
-
-			//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그		//INTER_AREA >> Bilinear_Interpolation에 자세히
-			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
-			//c_wid = temp_wid;
-			//c_hei = temp_hei;
-
-			return re_image;
-		}
-	}
-	else if (base < 0) {			//확대
-
-		cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
-		//c_wid = temp_wid;
-		//c_hei = temp_hei;
-
-		return re_image;
-	}
-
-	return re_image;
+	return resize_image;
 }
 
 //인식률이 너무 않좋아서 폐기.
@@ -303,24 +268,46 @@ Mat ImageClass::Crop(Mat ori_image) {
 	return crop_image;
 }
 
-//이미지 사이즈 변경			String_Type에 맞게 메서드 호출		>>  길이와 높이에 맞추어 설정함. (세로의 문자열, 가로 숫자 상황 고려)
-Mat ImageClass::Resize(Mat ori_image, int String_Type, int String_length) {
+//이미지 사이즈 변경			//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
+Mat ImageClass::Resize(Mat ori_image, int String_length) {
+	
+	Mat re_image;
 
-	Mat resize_image;
+	base_width = String_length * 37;		//어자피 베이스 문자의 길이보다는 크게 조절해야함(그 보다 작으면 추출이 힘듬) (37포인트가 제일 이상적인 길이)
 
-	if (ori_image.cols < ori_image.rows) {
-		resize_image = Resize_Num(ori_image);
+	int base = ori_image.rows - base_height;
+	float percent = ((float)ori_image.rows - (float)base) / (float)ori_image.rows;
+
+	int temp_wid = ori_image.cols * percent;
+	int temp_hei = ori_image.rows - base;
+
+	if (base == 0) {
+		return ori_image;
 	}
-	else {
-		resize_image = Resize_String(ori_image, String_length);
+	else if (base > 0) {				//축소
+		//이미지가 기준치 보다 더 작아지게 안됨
+		if (temp_hei < base_height || (temp_wid < base_width) && percent < 0.7f) {
+
+			return ori_image;
+		}
+		else {
+			temp_hei = temp_hei + base_height;
+			temp_wid = temp_wid + base_width;
+			//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그		//INTER_AREA >> Bilinear_Interpolation에 자세히
+			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
+
+			return re_image;
+		}
+	}
+	else if (base < 0) {			//확대
+
+		cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
+
+		return re_image;
 	}
 
-	//if(String_Type == 3)
-	//	resize_image = Resize_Num(ori_image);
-	//else 
-	//	resize_image = Resize_String(ori_image, String_length);
-
-	return resize_image;
+	return re_image;
+	
 }
 
 //그레이 이미지 변경 >> BGRA 4채널에서 1채널로 변경되기 때문에 다시 4채널 BGRA로 변경 작업 포함.  >> 테세렉에서 1채널로 셋이미지로 변경함

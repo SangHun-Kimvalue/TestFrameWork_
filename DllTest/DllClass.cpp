@@ -19,8 +19,8 @@ DllClass::DllClass()
 
 	rect.left = 44;
 	rect.top = 0;
-	rect.right = 150;
-	rect.bottom = 40;
+	rect.right = rect.left + 100;
+	rect.bottom = rect.top + 40;
 	RECT* displayrect = &rect;
 	//rect(44, 0, 150, 40);
 
@@ -122,13 +122,13 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	return true;
 }
 
-void DllClass::PreImageProcess(int String_Type, int String_length) {
+void DllClass::PreImageProcess(int String_length) {
 
 	ImageCV->Create_Mat(Capturer->nWidth, Capturer->nHeight, img.get());
 
 	ImageCV->fix_image = ImageCV->Crop(ImageCV->ori_image);					//0ms
 	//ImageCV->ShowImage(ImageCV->fix_image);
-	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_Type, String_length);		//1~2ms
+	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_length);		//1~2ms
 	//ImageCV->ShowImage(ImageCV->fix_image);
 	
 	if (String_Type_Num != (int)KOR) {
@@ -150,7 +150,7 @@ double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 
 	//std::shared_ptr<unsigned char[]> temp = PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
 	//clock_t start = clock();
-	PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);		// 5~6 ms
+	PreImageProcess(Tesseract->Base_length);		// 5~6 ms
 	
 	std::string OutText = GetText(ImageCV->fix_image.cols, ImageCV->fix_image.rows, Iinfo.data, Iinfo.channel, Iinfo.step);
 

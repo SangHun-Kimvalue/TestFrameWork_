@@ -58,7 +58,7 @@ private:
 	TextMatchClass* Match;
 	HWND m_hwnd;
 
-	void PreImageProcess(int String_Type, int String_length);
+	void PreImageProcess(int String_length);
 	std::string GetText(int wid, int hei, unsigned char* src, int chanel, size_t Image_step);
 	bool CompareText(std::string OutText);
 
