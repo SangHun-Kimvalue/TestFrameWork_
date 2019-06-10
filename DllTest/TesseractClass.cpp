@@ -152,13 +152,13 @@ bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 	return true;
 }
 
-std::string TesseractClass::GetTextUTF8(int wid, int hei, unsigned char* src, size_t step) {
+std::string TesseractClass::GetTextUTF8(int wid, int hei, unsigned char* src, int chanel, size_t step) {
 
 	char *outText;
 	//image = pixCreate(wid, hei, 32);
 	//pixSetData(image, (l_uint32*)src);
 
-	api->SetImage((unsigned char*)src, wid, hei, 1, step);		//src, wid, hei, channels(), step1()
+	api->SetImage((unsigned char*)src, wid, hei, chanel, step);		//src, wid, hei, channels(), step1()
 
 	outText = api->GetUTF8Text();
 	

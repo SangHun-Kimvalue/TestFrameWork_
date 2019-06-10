@@ -43,14 +43,21 @@ public:
 
 private:
 
+	struct ImageInfo {
+		size_t step;
+		int channel;
+	};
+
+	ImageInfo Iinfo;
+
 	GDICaptureClass* Capturer;
 	ImageClass* ImageCV;
 	TesseractClass* Tesseract;
 	TextMatchClass* Match;
 	HWND m_hwnd;
 
-	size_t PreImageProcess(int String_Type, int String_length);
-	std::string GetText(int wid, int hei, unsigned char* src, size_t Image_step);
+	void PreImageProcess(int String_Type, int String_length);
+	std::string GetText(int wid, int hei, unsigned char* src, int chanel, size_t Image_step);
 	bool CompareText(std::string OutText);
 
 	std::string Base_String;

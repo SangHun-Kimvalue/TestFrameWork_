@@ -317,7 +317,6 @@ Mat ImageClass::Resize(Mat ori_image, int String_Type, int String_length) {
 Mat ImageClass::GrayScale(Mat ori_image) {
 
 	Mat GrayImage;
-	Mat Thresholding_Image;
 
 	GrayImage = Mat(ori_image.size(), CV_8UC4);
 	cvtColor(ori_image, GrayImage, COLOR_BGRA2GRAY);
@@ -331,10 +330,10 @@ Mat ImageClass::GrayScale(Mat ori_image) {
 	//	CHAIN_APPROX_NONE); // 각 외곽선의 모든 화소 탐색
 	//ShowImage(GrayImage);
 
-	Thresholding_Image = Thresholding(GrayImage);
+	GrayImage = Thresholding(GrayImage);
 	//cvtColor(Thresholding_Image, ori_image, COLOR_GRAY2BGRA);					
 
-	return Thresholding_Image;//ThreshImage를 다시 4채널로 변경하는 과정에서 ori_image를 dst로 설정했음.
+	return GrayImage;//ThreshImage를 다시 4채널로 변경하는 과정에서 ori_image를 dst로 설정했음.
 }
 
 // 1채널 그레이 이미지만 매개변수로 받아들임

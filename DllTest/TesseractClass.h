@@ -27,7 +27,7 @@ public:
 
 	bool Test(int wid, int hei, BYTE* src);
 	bool Init(std::string Base_String, std::string InputType, int Base_Num);
-	std::string GetTextUTF8(int wid, int hei, unsigned char* src, size_t step);
+	std::string GetTextUTF8(int wid, int hei, unsigned char* src, int chanel, size_t step);
 
 	TextType String_Type;
 	int Base_length;

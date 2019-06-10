@@ -73,7 +73,7 @@ DllClass::~DllClass()
 bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
 	Formula = "EQUAL";
-	Base_String = "How";
+	Base_String = "ㅁㄴㅇ";
 	Base_Num = 70;
 	String_Type = "STR";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
@@ -107,31 +107,36 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	return true;
 }
 
-size_t DllClass::PreImageProcess(int String_Type, int String_length) {
+void DllClass::PreImageProcess(int String_Type, int String_length) {
 
 	ImageCV->fix_image = ImageCV->Crop(ImageCV->ori_image);
-	//ImageCV->ShowImage(ImageCV->fix_image);
+	ImageCV->ShowImage(ImageCV->fix_image);
 	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_Type, String_length);
-	//ImageCV->ShowImage(ImageCV->fix_image);
-	ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);
-	//ImageCV->ShowImage(ImageCV->fix_image);
+	ImageCV->ShowImage(ImageCV->fix_image);
+	
+	if (String_Type_Num != (int)KOR) {
+		ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);
+		ImageCV->ShowImage(ImageCV->fix_image);
+	}
 
 	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image);
 	
 	//int temp2 = ImageCV->fix_image.channels();
 
 	data = ImageCV->fix_image.data;
+	Iinfo.step = ImageCV->fix_image.step1();
+	Iinfo.channel = ImageCV->fix_image.step.buf[1];
 
-	return ImageCV->fix_image.step1();
+	return ;
 }
 
 double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 
 	//std::shared_ptr<unsigned char[]> temp = PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
 	
-	size_t Image_step = PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
+	PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
 	
-	std::string OutText = GetText(ImageCV->c_wid, ImageCV->c_hei, data, Image_step);
+	std::string OutText = GetText(ImageCV->c_wid, ImageCV->c_hei, data, Iinfo.channel, Iinfo.step);
 
 	bool Detect = CompareText(OutText);
 
@@ -168,9 +173,9 @@ bool DllClass::CompareText(std::string OutText) {
 	return res;
 }
 
-std::string DllClass::GetText(int wid, int hei, unsigned char* src, size_t Image_step) {
+std::string DllClass::GetText(int wid, int hei, unsigned char* src, int chanel, size_t Image_step) {
 
-	return Tesseract->GetTextUTF8(wid, hei, src, Image_step);
+	return Tesseract->GetTextUTF8(wid, hei, src, chanel, Image_step);
 }
 
 bool DllClass::UpdateModule(ModuleInfo info) {
