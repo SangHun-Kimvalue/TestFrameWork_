@@ -4,6 +4,7 @@
 #include "TesseractClass.h"
 #include "ImageClass.h"
 #include "TextMatchClass.h"
+#include <Windows.h>
 
 //#define _API __declspec(dllexport)
 

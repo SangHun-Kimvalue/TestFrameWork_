@@ -23,6 +23,13 @@ public:
 	HBITMAP hBitmap;
 	bool RGBSaveBMP(BYTE *image);
 
+
+	bool Get_Monitors();
+	bool GetMouse();
+	void Roop();
+	int CalFPS();
+	bool GetScreen();
+	bool DeleteDCA();
 private:
 
 	HDC HDCC;
@@ -41,12 +48,7 @@ private:
 
 	RECT ImageRect = { 0 , 0 , 0 , 0 };
 
-	bool Get_Monitors();
-	bool GetMouse();
-	void Roop();
-	int CalFPS();
-	bool GetScreen();
-	bool DeleteDCA();
+	
 
 
 	const int select;

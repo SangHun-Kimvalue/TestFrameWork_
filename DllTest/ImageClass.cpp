@@ -108,10 +108,12 @@ ImageClass::~ImageClass()
 //}
 
 
-Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei, unsigned char* src) {
+Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) {
 
 	//std::string Ipath = IMAGEPATH;
 	//Ipath = Ipath + "ocr.bmp";
+	Release();
+
 	base_height = 75;											// 사용자가 평균적으로 지정한 영역내에서 글자의 높이 비율을 50 ~ 70% 로 분포 되어 있고 
 	base_width = 100;											// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
 																
@@ -122,18 +124,25 @@ Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei
 	else if(c_y + c_hei < ori_hei)
 		std::cerr << "높이 오류" << std::endl;
 
+	//Mat DecodeImg = ori_image; // imdecode(ori_image, IMREAD_COLOR);
+	//std::vector<uchar> OutBuffer;
+	//OutBuffer.push_back((uchar)src);
+	//bool res = imencode(".bmp", ori_image, OutBuffer);
+	//OutBuffer.clear();
+
+	return ori_image;
+}
+
+Mat ImageClass::Create_Mat(int ori_wid, int ori_hei, unsigned char* src) {
+
+	Release();
+
 	ori_image = Mat(ori_hei, ori_wid, CV_8UC(4), src);
 	if (ori_image.empty()) {
 		std::cout << "Could not open or find the image" << std::endl;
 		std::cin.get(); //wait for any key press
 		return ori_image;
 	}
-
-	//Mat DecodeImg = ori_image; // imdecode(ori_image, IMREAD_COLOR);
-	//std::vector<uchar> OutBuffer;
-	//OutBuffer.push_back((uchar)src);
-	//bool res = imencode(".bmp", ori_image, OutBuffer);
-	//OutBuffer.clear();
 
 	return ori_image;
 }
@@ -169,11 +178,11 @@ Mat ImageClass::Resize_Num(Mat ori_image) {
 
 	base_width = base_height;
 
-	int base = c_wid - base_width;
+	int base = fix_image.cols - base_width;
 
-	float percent = ((float)c_wid - (float)base) / (float)c_wid;
-	int temp_hei = c_hei * percent;
-	int temp_wid = c_wid - base;
+	float percent = ((float)fix_image.cols - (float)base) / (float)fix_image.cols;
+	int temp_hei = fix_image.rows * percent;
+	int temp_wid = fix_image.cols - base;
 
 	if (base == 0) {					//절대적인 값 차이가 아니라 퍼센테이지로 높이와 넓이를 계산하면 좋을듯??
 		return ori_image;
@@ -186,16 +195,16 @@ Mat ImageClass::Resize_Num(Mat ori_image) {
 			temp_wid = temp_wid + base_width;
 			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
 			//ShowImage(re_image);
-			c_wid = temp_wid;
-			c_hei = temp_hei;
+			//c_wid = temp_wid;
+			//c_hei = temp_hei;
 			return re_image;
 		}
 
 		else {
 			//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그		//INTER_AREA >> Bilinear_Interpolation에 자세히
 			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
-			c_wid = temp_wid;
-			c_hei = temp_hei;
+			//c_wid = temp_wid;
+			//c_hei = temp_hei;
 
 			return re_image;
 		}
@@ -203,8 +212,8 @@ Mat ImageClass::Resize_Num(Mat ori_image) {
 	else if (base < 0) {			//확대
 
 		cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
-		c_wid = temp_wid;
-		c_hei = temp_hei;
+		//c_wid = temp_wid;
+		//c_hei = temp_hei;
 
 		return re_image;
 	}
@@ -225,11 +234,11 @@ Mat ImageClass::Resize_String(Mat ori_image, int String_length) {		//문장이 아닌
 	
 	base_width = String_length * 37;		//어자피 베이스 문자의 길이보다는 크게 조절해야함(그 보다 작으면 추출이 힘듬) (37포인트가 제일 이상적인 길이)
 
-	int base = c_hei - base_height;
-	float percent = ((float)c_hei - (float)base) / (float)c_hei;
+	int base = ori_image.rows - base_height;
+	float percent = ((float)ori_image.rows - (float)base) / (float)ori_image.rows;
 
-	int temp_wid = c_wid * percent;
-	int temp_hei = c_hei - base;
+	int temp_wid = ori_image.cols * percent;
+	int temp_hei = ori_image.rows - base;
 
 	if (base == 0) {					//절대적인 값 차이가 아니라 퍼센테이지로 높이와 넓이를 계산하면 좋을듯??
 		return ori_image;
@@ -241,16 +250,16 @@ Mat ImageClass::Resize_String(Mat ori_image, int String_length) {		//문장이 아닌
 			temp_wid = temp_wid + base_width;
 			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
 			//ShowImage(re_image);
-			c_wid = temp_wid;
-			c_hei = temp_hei;
+			//c_wid = temp_wid;
+			//c_hei = temp_hei;
 			return re_image;
 		}
 		else {
 
 			//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그		//INTER_AREA >> Bilinear_Interpolation에 자세히
 			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
-			c_wid = temp_wid;
-			c_hei = temp_hei;
+			//c_wid = temp_wid;
+			//c_hei = temp_hei;
 
 			return re_image;
 		}
@@ -258,8 +267,8 @@ Mat ImageClass::Resize_String(Mat ori_image, int String_length) {		//문장이 아닌
 	else if (base < 0) {			//확대
 
 		cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
-		c_wid = temp_wid;
-		c_hei = temp_hei;
+		//c_wid = temp_wid;
+		//c_hei = temp_hei;
 
 		return re_image;
 	}
@@ -320,8 +329,8 @@ Mat ImageClass::GrayScale(Mat ori_image) {
 	Mat GrayImage;
 
 	GrayImage = Mat(ori_image.size(), CV_8UC4);
-	cvtColor(ori_image, GrayImage, COLOR_BGRA2GRAY);
-	ShowImage(GrayImage);
+	cvtColor(ori_image, GrayImage, COLOR_BGRA2GRAY);		//1~2ms
+	//ShowImage(GrayImage);
 
 	//GrayImage = C_Canny(GrayImage);
 	//std::vector<std::vector<cv::Point>> contours;
@@ -331,7 +340,7 @@ Mat ImageClass::GrayScale(Mat ori_image) {
 	//	CHAIN_APPROX_NONE); // 각 외곽선의 모든 화소 탐색
 	//ShowImage(GrayImage);
 
-	GrayImage = Thresholding(GrayImage);
+	GrayImage = Thresholding(GrayImage);				//2ms
 	//cvtColor(Thresholding_Image, ori_image, COLOR_GRAY2BGRA);					
 
 	return GrayImage;//ThreshImage를 다시 4채널로 변경하는 과정에서 ori_image를 dst로 설정했음.
@@ -408,8 +417,8 @@ Mat ImageClass::Gaussian_Blur(Mat ori_image) {			//시그마가 0이면 자동으로 계산�
 	//Bilateral.create(fix_image, CV_8UC3);
 	//bilateralFilter(fix_image, Bilateral, 3, 15, 15);			//CV_8UC1 이나 3을 써야되는데 4를 쓰고있어서 쓰려면 변환이 필요.
 
-	ShowImage(Gasu_image);
-	Save2png(Gasu_image, "Lastest_PNG");
+	//ShowImage(Gasu_image);
+	//Save2png(Gasu_image, "Lastest_PNG");
 
 	return Gasu_image;
 }

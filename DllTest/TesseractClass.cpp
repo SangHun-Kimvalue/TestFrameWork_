@@ -157,15 +157,18 @@ std::string TesseractClass::GetTextUTF8(int wid, int hei, unsigned char* src, in
 	char *outText;
 	//image = pixCreate(wid, hei, 32);
 	//pixSetData(image, (l_uint32*)src);
-
+	//clock_t start = clock();
 	api->SetImage((unsigned char*)src, wid, hei, chanel, step);		//src, wid, hei, channels(), step1()
 
 	outText = api->GetUTF8Text();
-	
+
 	std::string temp = UniToANSI(outText);
 	std::cout << temp << std::endl;
-
+	
+	api->Clear();
 	//pixDestroy(&image);
+	//clock_t end = clock();
+	//std::cout << "Tesseract : " << end - start << std::endl;
 
 	return temp;
 }
@@ -189,7 +192,7 @@ bool TesseractClass::Init(std::string Base_String, std::string InputType, int Ba
 #endif
 
 	Base_length = FindEachText(Base_String, InputType, Base_Num);
-
+	//OMP_THREAD_LIMIT;
 	std::string Init_Type = "";
 	if (String_Type == KOR) {
 		Init_Type = "kor";
@@ -206,7 +209,7 @@ bool TesseractClass::Init(std::string Base_String, std::string InputType, int Ba
 		Init_Type = "eng";
 	}
 
-	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_DEFAULT)) {
+	//if (res = api->Init(datapath.c_str(), "eng+kor", tesseract::OEM_DEFAULT)) {//OEM_LSTM_ONLY
 	if (bool res = api->Init(datapath.c_str(), Init_Type.c_str(), tesseract::OEM_LSTM_ONLY)) {			//차이가 얼마나 나는지
 		fprintf(stderr, "Could not initialize tesseract.\n");
 		std::cout << "Could not initialize tesseract tessdata path." << std::endl;

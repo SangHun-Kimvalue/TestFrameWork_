@@ -6,6 +6,7 @@
 #include <baseapi.h>
 #include <allheaders.h>
 #include <iostream>
+#include <ctime>
 
 //Ini 파일로 불러오기 추가		클래스로 하나 만들면 편할듯
 #define DATAPATH "\\tessdata";

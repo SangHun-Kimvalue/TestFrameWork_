@@ -28,8 +28,25 @@ DllClass::DllClass()
 
 	InitModule(info, displayrect);
 
-	ProcessAnalyze(img);
+	while (1) {
+		//clock_t start = clock();
 
+		Capturer->GetScreen();					//30~33
+		unsigned char* temp = (unsigned char*)Capturer->src;						//테스트용
+		img = std::shared_ptr<unsigned char[]>(temp);
+
+		clock_t start = clock();
+
+		ProcessAnalyze(img);
+
+		clock_t end = clock();
+		std::cout << "ProcessAnalyze : " << end - start << std::endl;
+		//clock_t end = clock();
+
+		//std::cout << "ImageProcessTime : " << end - start << std::endl;
+
+		Sleep(1);
+	}
 
 	/*std::string Test_String = "Improve";
 
@@ -56,8 +73,6 @@ DllClass::DllClass()
 
 DllClass::~DllClass()
 {
-	//std::cout << "Call Instance delete" << std::endl;
-
 	//if (data != nullptr)
 	//{
 	//	delete[] data;
@@ -73,7 +88,7 @@ DllClass::~DllClass()
 bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
 	Formula = "EQUAL";
-	Base_String = "How To";
+	Base_String = "How";
 	Base_Num = 50;
 	String_Type = "STR";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
@@ -95,7 +110,7 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	Match = new TextMatchClass(Base_String, Base_Num, Formula);
 
 	ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,
-		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top, img.get());
+		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top);
 	Tesseract->Init(Base_String, String_Type, Base_Num);
 
 	//(std::string find_string, int Base_Num, std::string fomula)
@@ -109,17 +124,20 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
 void DllClass::PreImageProcess(int String_Type, int String_length) {
 
-	ImageCV->fix_image = ImageCV->Crop(ImageCV->ori_image);
-	ImageCV->ShowImage(ImageCV->fix_image);
-	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_Type, String_length);
-	ImageCV->ShowImage(ImageCV->fix_image);
+	ImageCV->Create_Mat(Capturer->nWidth, Capturer->nHeight, img.get());
+
+	ImageCV->fix_image = ImageCV->Crop(ImageCV->ori_image);					//0ms
+	//ImageCV->ShowImage(ImageCV->fix_image);
+	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_Type, String_length);		//1~2ms
+	//ImageCV->ShowImage(ImageCV->fix_image);
 	
 	if (String_Type_Num != (int)KOR) {
-		ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);
-		ImageCV->ShowImage(ImageCV->fix_image);
+		ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);				//4~5ms
+		//ImageCV->ShowImage(ImageCV->fix_image);
 	}
 
-	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image);
+	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image);				//1~2ms
+	//ImageCV->ShowImage(ImageCV->fix_image);
 
 	Iinfo.data = ImageCV->fix_image.data;
 	Iinfo.step = ImageCV->fix_image.step1();
@@ -131,16 +149,18 @@ void DllClass::PreImageProcess(int String_Type, int String_length) {
 double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 
 	//std::shared_ptr<unsigned char[]> temp = PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
+	//clock_t start = clock();
+	PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);		// 5~6 ms
 	
-	PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
-	
-	std::string OutText = GetText(ImageCV->c_wid, ImageCV->c_hei, Iinfo.data, Iinfo.channel, Iinfo.step);
+	std::string OutText = GetText(ImageCV->fix_image.cols, ImageCV->fix_image.rows, Iinfo.data, Iinfo.channel, Iinfo.step);
 
 	bool Detect = CompareText(OutText);
-
+	
 	std::cout << Detect << std::endl;
 
 	ImageCV->Release();
+	//clock_t end = clock();
+	//std::cout << "ImageProcessTime : " << end - start << std::endl;
 
 	if (Detect)
 		return 1;

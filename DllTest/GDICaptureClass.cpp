@@ -22,12 +22,22 @@ GDICaptureClass::GDICaptureClass(HWND hwnd) : m_hWndCopy(hwnd), select(1)
 	//nWidth = nWidth * -1;
 	//nHeight = nHeight *2;
 
-	bool res;
-	res = Cap_Init();
-	if (!res)
-		return;
+	clock_t start;
+	clock_t end;
 
-	GetScreen();
+	//while (1) {
+		//start = clock();
+		bool res;
+		res = Cap_Init();
+		if (!res)
+			return;
+
+		GetScreen();
+		//end = clock();
+		//float temp = (end - start);
+		//std::cout << temp << std::endl;
+		Sleep(1);
+	//}
 	//Roop();
 
 }
@@ -189,7 +199,7 @@ bool GDICaptureClass::GetScreen() {
 		//clock_t end_t1 = clock();
 		//printf("DIBit time = %d \n", end_t1 - start_t1);
 		//if (RGBSaveBMP(src) == true) 
-			//OutputDebugStringA("success\n");
+		//	OutputDebugStringA("success\n");
 		//Cap_Release();
 		//free(src);
 	}
@@ -242,7 +252,7 @@ bool GDICaptureClass::RGBSaveBMP(BYTE *input) {
 	FILE *file;
 	char title[1024];
 
-	sprintf_s(title, "capture_%d.bmp", 1);
+	sprintf_s(title, "capture_%d.bmp", 2);
 	fopen_s(&file, title, "wb");
 
 	if (image != NULL)
