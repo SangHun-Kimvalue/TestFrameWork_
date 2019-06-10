@@ -427,7 +427,7 @@ Mat ImageClass::Thresholding(Mat ori_image) {
 
 	//threshold(fix_image, ThreshImage, 127, 255, THRESH_BINARY);	
 
-	Reverse_check(ori_image);
+	Reverse_check(ori_image);			// 1ms
 	if (Reverse_Color == false) {
 		adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 11, 5);			//11이 적당해 보이임.
 		return ThreshImage;
