@@ -73,8 +73,8 @@ DllClass::~DllClass()
 bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
 	Formula = "EQUAL";
-	Base_String = "ㅁㄴㅇ";
-	Base_Num = 70;
+	Base_String = "How To";
+	Base_Num = 50;
 	String_Type = "STR";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
 
@@ -88,7 +88,7 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	unsigned char* temp = (unsigned char*)Capturer->src;						//테스트용
 	img = std::shared_ptr<unsigned char[]>(temp);
 
-	ImageCV = new ImageClass(1);
+	ImageCV = new ImageClass();
 	Tesseract = new TesseractClass();
 	//Tesseract = new TesseractClass(Base_String, Capturer->nWidth, Capturer->nHeight, Capturer->src);
 	
@@ -120,10 +120,8 @@ void DllClass::PreImageProcess(int String_Type, int String_length) {
 	}
 
 	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image);
-	
-	//int temp2 = ImageCV->fix_image.channels();
 
-	data = ImageCV->fix_image.data;
+	Iinfo.data = ImageCV->fix_image.data;
 	Iinfo.step = ImageCV->fix_image.step1();
 	Iinfo.channel = ImageCV->fix_image.step.buf[1];
 
@@ -136,7 +134,7 @@ double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 	
 	PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
 	
-	std::string OutText = GetText(ImageCV->c_wid, ImageCV->c_hei, data, Iinfo.channel, Iinfo.step);
+	std::string OutText = GetText(ImageCV->c_wid, ImageCV->c_hei, Iinfo.data, Iinfo.channel, Iinfo.step);
 
 	bool Detect = CompareText(OutText);
 

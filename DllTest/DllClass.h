@@ -46,6 +46,7 @@ private:
 	struct ImageInfo {
 		size_t step;
 		int channel;
+		unsigned char* data;
 	};
 
 	ImageInfo Iinfo;
@@ -68,7 +69,6 @@ private:
 	int String_Type_Num;
 
 	std::shared_ptr<unsigned char[]> img;
-	unsigned char* data;
 
 	bool			m_stopThreadAnalyze;
 

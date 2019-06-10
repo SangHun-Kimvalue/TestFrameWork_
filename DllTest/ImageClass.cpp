@@ -51,6 +51,7 @@ void Save2png(Mat inputimage, std::string name) {
 
 	imwrite(temp.c_str(), inputimage);
 }
+ImageClass::ImageClass() {}
 
 ImageClass::ImageClass(int i){}
 
@@ -170,7 +171,7 @@ Mat ImageClass::Resize_Num(Mat ori_image) {
 
 	int base = c_wid - base_width;
 
-	float percent = (float)c_wid - (float)base / (float)c_wid;
+	float percent = ((float)c_wid - (float)base) / (float)c_wid;
 	int temp_hei = c_hei * percent;
 	int temp_wid = c_wid - base;
 
