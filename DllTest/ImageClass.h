@@ -27,11 +27,11 @@ public:
 	int c_wid;
 	int c_hei;
 
-	Mat ori_image;
+
 	Mat fix_image;
 
 	Mat Create_Mat(int ori_wid, int ori_hei, unsigned char* src);
-	bool CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei);
+	bool Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei);
 	Mat Resize(Mat fix_image, int String_length);
 	Mat Crop(Mat fix_image);
 	Mat Bilinear_Interpolation(Mat fix_image);
@@ -47,6 +47,8 @@ public:
 
 
 private:
+
+	Mat ori_image;
 
 	int base_height;
 	int base_width;

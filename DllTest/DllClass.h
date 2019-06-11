@@ -5,6 +5,7 @@
 #include "ImageClass.h"
 #include "TextMatchClass.h"
 #include <Windows.h>
+#include "msgcontrol.h"
 
 //#define _API __declspec(dllexport)
 
@@ -58,20 +59,47 @@ private:
 	TextMatchClass* Match;
 	HWND m_hwnd;
 
-	void PreImageProcess(int String_length);
+	void PreImageProcess(int String_length, std::shared_ptr<unsigned char[]> img);
 	std::string GetText(int wid, int hei, unsigned char* src, int chanel, size_t Image_step);
 	bool CompareText(std::string OutText);
 
 	std::string Base_String;
-	std::string String_Type;
-	std::string Formula;
-
 	int Base_Num;
 	int String_Type_Num;
 
-	std::shared_ptr<unsigned char[]> img;
+	std::string guid;
+	std::string name;
+	std::string description;
+	std::string createtime;
+	std::string modifytime;
+	bool enable;
+	int monitorinx;
+	std::string sendertype;
+	std::string senderconfig;
+	std::string url;
+	std::string moduletype;
+	std::array<float, 4> rect;
+	std::string formula;
+	float threshold;
+	std::vector<ocrmodule::ocr> ocr;
 
+	std::thread		m_threadAnalyze;
 	bool			m_stopThreadAnalyze;
+
+	double			m_totalCount;
+
+	int				m_AreaWidth;
+	int				m_AreaHeight;
+	int				m_DisplayWidth;
+	int				m_DisplayHeight;
+
+	//unsigned char* data;
+	Mat				m_img_input;
+
+	std::string		m_moduleConfigString;
+	ModuleInfo		m_moduleInfo;
+
+	Rect2f			m_FocusArea;
 
 };
 

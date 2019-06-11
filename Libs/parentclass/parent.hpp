@@ -1,12 +1,9 @@
 #pragma once
 
-
 #include <Windows.h>
 #include <iostream>
 #include <memory>
 #include <string>
-
-
 
 enum ModuleType
 {

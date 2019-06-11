@@ -1,6 +1,9 @@
 #include "DllClass.h"
+#include "msgcontrol.h"
 #include <iostream>
 
+using nlohmann::json;
+using namespace ocrmodule;
 
 extern "C" {
 	_API DllClass* _GetInstance() {
@@ -15,11 +18,15 @@ DllClass::DllClass()
 	ModuleInfo info;
 
 	RECT rect;
+	rect.left = 44;
+	rect.top = 0;
+	rect.right = rect.left + 450;
+	rect.bottom = rect.top + 40;
 
-	rect.left = 100;
+	/*rect.left = 100;
 	rect.top = 100;
 	rect.right = rect.left + 1000;
-	rect.bottom = rect.top + 400;
+	rect.bottom = rect.top + 400;*/
 	RECT* displayrect = &rect;
 	//rect(44, 0, 150, 40);
 
@@ -27,25 +34,21 @@ DllClass::DllClass()
 
 	InitModule(info, displayrect);
 
-	//while (1) {
-		//clock_t start = clock();
+	while (1) {
 
 		Capturer->GetScreen();					//30~33
 		unsigned char* temp = (unsigned char*)Capturer->src;						//테스트용
-		img = std::shared_ptr<unsigned char[]>(temp);
+		std::shared_ptr<unsigned char[]> img = std::shared_ptr<unsigned char[]>(temp);
 
-		clock_t start = clock();
+		//clock_t start = clock();
 
 		ProcessAnalyze(img);
 
-		clock_t end = clock();
-		std::cout << "ProcessAnalyze : " << end - start << std::endl;
 		//clock_t end = clock();
-
-		//std::cout << "ImageProcessTime : " << end - start << std::endl;
-
+		//std::cout << "ProcessAnalyze : " << end - start << std::endl;
+	
 		Sleep(1);
-	//}
+	}
 
 	/*std::string Test_String = "Improve";
 
@@ -87,13 +90,17 @@ DllClass::~DllClass()
 
 bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
-	Formula = "EQUAL";
-	Base_String = "ㅁㄴㅇ라ㅓㄴ알";
+	//ocrmodule::ModuleConfig config = json::parse(info.moduleconfig.c_str());
+	//ocrmodule::SenderConfig senderconfig = json::parse(info.senderconfig.c_str());
+
+	bool res = false;
+	formula = "EQUAL";
+	Base_String = "ㅁㄴㅇㄹ";
 	Base_Num = 50;
-	String_Type = "STR";		//임시 타입 변수		//NUM or STR
+	moduletype = "STR";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
 
-	if (NUMTYPE != String_Type)
+	if (NUMTYPE != moduletype)
 		Base_Num = 0;
 	else
 		Base_String = "";
@@ -102,24 +109,39 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
 	ImageCV = new ImageClass();
 	Tesseract = new TesseractClass();
-	Match = new TextMatchClass(Base_String, Base_Num, Formula);
+	Match = new TextMatchClass(Base_String, Base_Num, formula);
 
 	//oriwid, orihei, x, y, wid, hei(crop용 변수)
-	ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,			
+	res = ImageCV->Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,			
 		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top);
-	Tesseract->Init(Base_String, String_Type, Base_Num);
-
+	if(res)
+		res = Tesseract->Init(Base_String, moduletype, Base_Num);
 
 	String_Type_Num = (int)Tesseract->String_Type;
 
-	return true;
+	//this->guid = info.guid;
+	//this->name = info.name;
+	//this->description = info.description;
+	//this->createtime = info.createtime;
+	//this->modifytime = info.modifytime;
+	//this->enable = info.enable;
+	//this->monitorinx = info.monitorinx;
+	//this->sendertype = info.sendertype;
+	//this->senderconfig = info.senderconfig;
+	//this->url = senderconfig.url;
+	//this->moduletype = info.moduletype;
+	//this->rect = config.rect;
+	//this->formula = config.formula;
+	//this->threshold = config.threshold;
+
+	return res;
 }
 
-void DllClass::PreImageProcess(int String_length) {
+void DllClass::PreImageProcess(int String_length, std::shared_ptr<unsigned char[]> img) {
 
-	ImageCV->Create_Mat(Capturer->nWidth, Capturer->nHeight, img.get());
+	ImageCV->fix_image = ImageCV->Create_Mat(Capturer->nWidth, Capturer->nHeight, img.get());
 
-	ImageCV->fix_image = ImageCV->Crop(ImageCV->ori_image);					//0ms
+	ImageCV->fix_image = ImageCV->Crop(ImageCV->fix_image);					//0ms
 	//ImageCV->ShowImage(ImageCV->fix_image);
 	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_length);		//1~2ms
 	//ImageCV->ShowImage(ImageCV->fix_image);
@@ -133,8 +155,8 @@ void DllClass::PreImageProcess(int String_length) {
 	}
 
 	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image);				//1~2ms
-
 	ImageCV->ShowImage(ImageCV->fix_image);
+
 	Iinfo.data = ImageCV->fix_image.data;
 	Iinfo.step = ImageCV->fix_image.step1();
 	Iinfo.channel = ImageCV->fix_image.step.buf[1];
@@ -145,23 +167,26 @@ void DllClass::PreImageProcess(int String_length) {
 double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 
 	//std::shared_ptr<unsigned char[]> temp = PreImageProcess((int)(Tesseract->String_Type), Tesseract->Base_length);
+
+	PreImageProcess(Tesseract->Base_length, img);		// 5~6 ms
 	//clock_t start = clock();
-	PreImageProcess(Tesseract->Base_length);		// 5~6 ms
-	
 	std::string OutText = GetText(ImageCV->fix_image.cols, ImageCV->fix_image.rows, Iinfo.data, Iinfo.channel, Iinfo.step);
 
 	bool Detect = CompareText(OutText);
-	
-	std::cout << Detect << std::endl;
-
-	ImageCV->Release();
 	//clock_t end = clock();
 	//std::cout << "ImageProcessTime : " << end - start << std::endl;
 
-	if (Detect)
+
+	ImageCV->Release();
+
+	if (Detect) {
+		std::cout << "Detected! " <<Detect << std::endl;
 		return 1;
-	else
+	}
+	else {
+		std::cout << "Not Detected! " << Detect << std::endl;
 		return 0;
+	}
 }
 
 bool DllClass::CompareText(std::string OutText) {
@@ -193,6 +218,49 @@ std::string DllClass::GetText(int wid, int hei, unsigned char* src, int chanel, 
 }
 
 bool DllClass::UpdateModule(ModuleInfo info) {
+
+	ocrmodule::ModuleConfig config = json::parse(info.moduleconfig.c_str());
+	ocrmodule::SenderConfig senderconfig = json::parse(info.senderconfig.c_str());
+
+	if (this->enable)
+		this->enable = false;
+
+	bool isChangedArea = false;
+
+	// 모듈 쓰레드 종료를 기다렸다가 종료되면 업데이트 한다.
+	this->guid = info.guid;
+	this->name = info.name;
+	this->description = info.description;
+	this->createtime = info.createtime;
+	this->modifytime = info.modifytime;
+	this->enable = info.enable;
+	this->monitorinx = info.monitorinx;
+	this->sendertype = info.sendertype;
+	this->url = senderconfig.url;
+	this->senderconfig = info.senderconfig;
+	this->moduletype = info.moduletype;
+
+	if (config.rect != this->rect)
+		isChangedArea = true;
+
+	if (isChangedArea) {
+		float startx = (this->m_DisplayWidth / 100.f) * this->rect[0];
+		float starty = (this->m_DisplayHeight / 100.f) * this->rect[1];
+		float fWidth = (this->m_DisplayWidth / 100.f) * this->rect[2];
+		float fHeight = (this->m_DisplayHeight / 100.f) * this->rect[3];
+		m_FocusArea.x = startx;
+		m_FocusArea.y = starty;
+		m_FocusArea.width = fWidth;
+		m_FocusArea.height = fHeight;
+		this->m_totalCount = m_FocusArea.width * m_FocusArea.height;
+	}
+
+	this->rect = config.rect;
+	this->formula = config.formula;
+	this->threshold = config.threshold;
+
+	m_moduleInfo = info;
+
 	return true;
 }
 
@@ -208,16 +276,11 @@ bool DllClass::GetModuleStatus() {
 }
 
 std::string DllClass::GetGUID() {
-
-	std::string temp = "";
-
-	return temp = "";
+	return this->guid;
 }
 
 std::string DllClass::GetModuleName() {
-	std::string temp;
-
-	return temp;
+	return this->name;
 }
 
 std::string DllClass::GetModuleDesc() {
@@ -237,7 +300,6 @@ float DllClass::GetThreshold() {
 }
 
 std::string DllClass::GetFormula() {
-
 	return Match->StringFomula;
 }
 
@@ -249,9 +311,7 @@ std::string DllClass::GetModuleConfig() {
 
 std::wstring DllClass::GetModuleType() {
 	
-	std::wstring temp = L"OCR";
-
-	return temp;
+	return L"ocr";
 }
 
 int DllClass::GetModuleSenderInfo(ModuleSenderInfo &info) {

@@ -134,7 +134,7 @@ void ImageClass::Reverse_check(Mat fix_image) {
 	return ;
 }
 
-bool ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) {
+bool ImageClass::Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) {
 
 	//std::string Ipath = IMAGEPATH;
 	//Ipath = Ipath + "ocr.bmp";
@@ -190,7 +190,7 @@ void ImageClass::ShowImage(Mat Image) {
 	destroyWindow("main");					//destroy the created window
 }
 
-//String_Type이 Num일때 넓이를 중심으로 변환
+//String_Type이 Num일때 넓이를 중심으로 변환			//폐기
 Mat ImageClass::Resize_Num(Mat ori_image) {
 
 	Mat re_image;
@@ -246,7 +246,7 @@ Mat ImageClass::Resize_Num(Mat ori_image) {
 	return re_image;
 }
 
-//String_Type이 문자일때 높이를 중심으로 변환		//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
+//String_Type이 문자일때 높이를 중심으로 변환		//폐기	//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
 Mat ImageClass::Resize_String(Mat ori_image, int String_length) {		//문장이 아닌 단어에 초점을 맞춤.	//버그의 여지가 쬐큼 있긴있음.		>> 모든 경우의 수를 생각해봐야함/
 	
 	Mat resize_image;
@@ -256,7 +256,7 @@ Mat ImageClass::Resize_String(Mat ori_image, int String_length) {		//문장이 아닌
 	return resize_image;
 }
 
-//인식률이 너무 않좋아서 폐기.
+//인식률이 너무 않좋아서 폐기.		윤곽선 추출
 Mat ImageClass::C_Canny(Mat ori_image) {
 
 	Mat canny_image;
@@ -283,7 +283,7 @@ Mat ImageClass::Crop(Mat ori_image) {
 	return crop_image;
 }
 
-//이미지 사이즈 변경			//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
+//이미지 사이즈 변경		//Base_String의 길이에 최적화 하여 변경함 	//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
 Mat ImageClass::Resize(Mat ori_image, int String_length) {
 	
 	Mat re_image;
@@ -300,8 +300,8 @@ Mat ImageClass::Resize(Mat ori_image, int String_length) {
 		return ori_image;
 	}
 	else if (base > 0) {				//축소
-		//이미지가 기준치 보다 더 작아지게 안됨
-		if (temp_hei < base_height || (temp_wid < base_width) && percent < 0.7f) {
+		//이미지가 기준치 보다 더 작아지게 안됨		//너무 줄이면 글씨가 아예 짜부됨.( 사용자가 넓은 영역 설정을 피해야함.)
+		if (temp_hei < base_height || (temp_wid < base_width) && percent < 0.5f) {
 
 			return ori_image;
 		}
@@ -364,11 +364,19 @@ Mat ImageClass::Thresholding(Mat ori_image) {
 	//임계 값 유형	thresholding 타입은 THRESH_BINARY 또는 THRESH_BINARY_INV가 아니면 안된다 .
 	//blockSize	픽셀의 임계 값을 계산하는 데 사용되는 픽셀 인접 영역의 크기 : 3, 5, 7 등.
 	//기음	상수는 평균 또는 가중 평균에서 뺍니다(아래 세부 정보 참조).일반적으로 양수이지만 0 또는 음수 일 수 있습니다.
+	
+	//adaptiveThreshold(image, // 입력영상 
+	//	binaryAdaptive, // 이진화 결과 영상 
+	//	255, // 최대 화소 값 
+	//	ADAPTIVE_THRESH_MEAN_C, // Adaptive 함수 
+	//	THRESH_BINARY, // 이진화 타입 
+	//	blockSize, // 이웃크기 
+	//	threshold); // threshold used
 
-	//threshold(fix_image, ThreshImage, 127, 255, THRESH_BINARY);	
-
-	if (Reverse_Color == false) {
-		adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 11, 5);			//11이 적당해 보이임.
+	if (Reverse_Color == false) {		//Locally adaptive thresholding
+		adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 11, 13);			//11이 적당해 보이임.
+		//(ori_image, ThreshImage, 127, 255, THRESH_BINARY);
+		//Save2png(ThreshImage, "adaptiveThreshold_13");
 		return ThreshImage;
 	}
 	else 
@@ -434,7 +442,7 @@ Mat ImageClass::Gaussian_Blur(Mat ori_image) {			//시그마가 0이면 자동으로 계산�
 	//bilateralFilter(fix_image, Bilateral, 3, 15, 15);			//CV_8UC1 이나 3을 써야되는데 4를 쓰고있어서 쓰려면 변환이 필요.
 
 	//ShowImage(Gasu_image);
-	Save2png(Gasu_image, "Lastest_PNG");
+	//Save2png(Gasu_image, "Lastest_PNG");
 
 	return Gasu_image;
 }
