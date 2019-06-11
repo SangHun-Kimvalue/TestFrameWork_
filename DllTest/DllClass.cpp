@@ -16,10 +16,10 @@ DllClass::DllClass()
 
 	RECT rect;
 
-	rect.left = 44;
-	rect.top = 0;
-	rect.right = rect.left + 150;
-	rect.bottom = rect.top + 35;
+	rect.left = 100;
+	rect.top = 100;
+	rect.right = rect.left + 1000;
+	rect.bottom = rect.top + 400;
 	RECT* displayrect = &rect;
 	//rect(44, 0, 150, 40);
 
@@ -27,7 +27,7 @@ DllClass::DllClass()
 
 	InitModule(info, displayrect);
 
-	while (1) {
+	//while (1) {
 		//clock_t start = clock();
 
 		Capturer->GetScreen();					//30~33
@@ -45,7 +45,7 @@ DllClass::DllClass()
 		//std::cout << "ImageProcessTime : " << end - start << std::endl;
 
 		Sleep(1);
-	}
+	//}
 
 	/*std::string Test_String = "Improve";
 
@@ -79,6 +79,7 @@ DllClass::~DllClass()
 	
 	//_CrtDumpMemoryLeaks();
 
+	delete ImageCV;
 	delete Match;
 	delete Capturer;
 	delete Tesseract;
@@ -87,7 +88,7 @@ DllClass::~DllClass()
 bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
 	Formula = "EQUAL";
-	Base_String = "How";
+	Base_String = "ㅁㄴㅇ라ㅓㄴ알";
 	Base_Num = 50;
 	String_Type = "STR";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
@@ -99,24 +100,17 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
 	Capturer = new GDICaptureClass(m_hwnd);
 
-	unsigned char* temp = (unsigned char*)Capturer->src;						//테스트용
-	img = std::shared_ptr<unsigned char[]>(temp);
-
 	ImageCV = new ImageClass();
 	Tesseract = new TesseractClass();
-	//Tesseract = new TesseractClass(Base_String, Capturer->nWidth, Capturer->nHeight, Capturer->src);
-	
 	Match = new TextMatchClass(Base_String, Base_Num, Formula);
 
-	ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,
-		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top, img.get());
+	//oriwid, orihei, x, y, wid, hei(crop용 변수)
+	ImageCV->CV_Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,			
+		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top);
 	Tesseract->Init(Base_String, String_Type, Base_Num);
 
-	//(std::string find_string, int Base_Num, std::string fomula)
 
 	String_Type_Num = (int)Tesseract->String_Type;
-	//Tesseract->Test(ImageCV->c_wid, ImageCV->c_hei, ImageCV->src);
-	//Match = new TextMatchClass("qwertyuiopasdfghjklzxcvbnm", "zxcv", (int)Tesseract->String_Type, 3, "EQUAL");
 
 	return true;
 }
@@ -129,16 +123,18 @@ void DllClass::PreImageProcess(int String_length) {
 	//ImageCV->ShowImage(ImageCV->fix_image);
 	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_length);		//1~2ms
 	//ImageCV->ShowImage(ImageCV->fix_image);
-	
+
+	ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);				//4~5ms
+	//ImageCV->ShowImage(ImageCV->fix_image);
+
 	if (String_Type_Num != (int)KOR) {
-		ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);				//4~5ms
-		ImageCV->fix_image = ImageCV->Thresholding(ImageCV->fix_image);				//2ms
+		ImageCV->fix_image = ImageCV->Thresholding(ImageCV->fix_image);				//2ms		테서렉에서 3ms정도 더 걸림
 		//ImageCV->ShowImage(ImageCV->fix_image);
 	}
 
 	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image);				//1~2ms
-	//ImageCV->ShowImage(ImageCV->fix_image);
 
+	ImageCV->ShowImage(ImageCV->fix_image);
 	Iinfo.data = ImageCV->fix_image.data;
 	Iinfo.step = ImageCV->fix_image.step1();
 	Iinfo.channel = ImageCV->fix_image.step.buf[1];

@@ -55,124 +55,71 @@ ImageClass::ImageClass() : Reverse_Color(false) {}
 
 ImageClass::ImageClass(int i): Reverse_Color(false) {}
 
-ImageClass::ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_length) 
-	: src(src), base_length(Base_length), Reverse_Color(false){
-
-	/*
-	//속도 개션 가능성 >> 다시 4채널로 변환하는게 아닌 tesseract 에서 1채널로 설정해줄수없나?
-	//Base length에 맞게 Resize 수정 필요함.
-	//가우시안이 너무 흐린느낌이 있음.
-
-	//ori_image = CV_Init(wid, hei, 44, 0, 150, 40);			
-	
-	//fix_image = Crop(ori_image);
-
-	//fix_image = Resize(fix_image, String_Type);
-
-	//fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)  해결
-
-	//fix_image = Gaussian_Blur(fix_image, 3, 3);
-
-	//ShowImage(fix_image);
-
-	////Save2png(ori_image, "ori");
-	//Save2png(fix_image, "Thresh");
-
-	//this->src = Mat2Byte(fix_image, 1, 4);
-	*/
-}
-
 ImageClass::~ImageClass()
 {
 	Release();
 }
 
-//bool ImageClass::PreImageProcess(int String_Type, int String_length) {
+//void ImageClass::Reverse_check(int ori_wid, int ori_hei, unsigned char* src) {
+//	
+//	Mat InputMat;
+//	//Mat ori_image;
 //
-//	fix_image = Crop(ori_image);
+//	InputMat = Create_Mat(ori_wid, ori_hei, src);
+//	InputMat = Crop(InputMat);
+//	InputMat = GrayScale(InputMat);
 //
-//	fix_image = Resize(fix_image, String_Type, String_length);
+//	//ori_image = InputMat.clone();
+//	int count = 10;
 //
-//	fix_image = GrayScale(fix_image);				//그레이 이미지하면 src가 이상해짐.(pixel 채널때문인듯.)  해결
+//	if (InputMat.cols > 50 && InputMat.rows > 10) {
 //
-//	fix_image = Gaussian_Blur(fix_image, 3, 3);
+//		uchar pixsum = 0;
+//		int temp = 0;
 //
-//	ShowImage(fix_image);
+//		for (int i = 0; i < count; i++) {
 //
-//	//Save2png(ori_image, "ori");
-//	//Save2png(fix_image, "Thresh");
+//			int pos = rand() % (InputMat.rows * InputMat.cols);
+//			pixsum = InputMat.at<uchar>(pos);
+//			temp += (int)pixsum;
+//			InputMat.at<uchar>(pos) = 0;
+//		}
 //
-//	this->src = Mat2Byte(fix_image, 1, 4);
+//		//ShowImage(ori_image);
+//		//ShowImage(InputMat);
 //
-//	return true;
+//		if (temp / count < 127) {
+//			Reverse_Color = true;
+//		}
+//		else
+//			Reverse_Color = false;
+//	}
+//	//std::cout << "Reverse_Color : " << Reverse_Color << std::endl;
+//	InputMat.release();
+//
 //}
-
-
-void ImageClass::Reverse_check(int ori_wid, int ori_hei, unsigned char* src) {
-	Mat InputMat;
-	//Mat ori_image;
-
-	InputMat = Create_Mat(ori_wid, ori_hei, src);
-	InputMat = Crop(InputMat);
-	InputMat = GrayScale(InputMat);
-
-	//ori_image = InputMat.clone();
-	int count = 10;
-
-	if (InputMat.cols > 50 && InputMat.rows > 10) {
-
-		uchar pixsum = 0;
-		int temp = 0;
-
-		for (int i = 0; i < count; i++) {
-
-			int pos = rand() % (InputMat.rows * InputMat.cols);
-			pixsum = InputMat.at<uchar>(pos);
-			temp += (int)pixsum;
-			InputMat.at<uchar>(pos) = 0;
-		}
-
-		//ShowImage(ori_image);
-		//ShowImage(InputMat);
-
-		if (temp / count < 127) {
-			Reverse_Color = true;
-		}
-		else
-			Reverse_Color = false;
-	}
-	//std::cout << "Reverse_Color : " << Reverse_Color << std::endl;
-	InputMat.release();
-
-}
 
 void ImageClass::Reverse_check(Mat fix_image) {
 
 	Mat InputMat;
-	//Mat ori_image;
-
-	//InputMat = Create_Mat(ori_wid, ori_hei, src);
-	//InputMat = Crop(InputMat);
-	//InputMat = GrayScale(InputMat);
 
 	InputMat = fix_image.clone();
-	int count = 10;
+	int count = 20;
 
 	if (InputMat.cols > 50 && InputMat.rows > 10) {
 
 		uchar pixsum = 0;
 		int temp = 0;
+		int scope = (InputMat.rows * InputMat.cols);
 
 		for (int i = 0; i < count; i++) {
-
-			int pos = rand() % (InputMat.rows * InputMat.cols);
+			//long pos = rand() % scope +1;
+			long pos = (((long)rand()<<15)|rand()) % scope;
 			pixsum = InputMat.at<uchar>(pos);
 			temp += (int)pixsum;
 			InputMat.at<uchar>(pos) = 0;
+			//std::cout << "pos : " << pos << std::endl;
 		}
-
-		//ShowImage(ori_image);
-		//ShowImage(InputMat);
 
 		if (temp / count < 127) {
 			Reverse_Color = true;
@@ -180,37 +127,36 @@ void ImageClass::Reverse_check(Mat fix_image) {
 		else
 			Reverse_Color = false;
 	}
+	//ShowImage(InputMat);
 	//std::cout << "Reverse_Color : " << Reverse_Color << std::endl;
 	InputMat.release();
 
 	return ;
 }
 
-Mat ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei, unsigned char* src) {
+bool ImageClass::CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) {
 
 	//std::string Ipath = IMAGEPATH;
 	//Ipath = Ipath + "ocr.bmp";
-	Release();
 
 	base_height = 75;											// 사용자가 평균적으로 지정한 영역내에서 글자의 높이 비율을 50 ~ 70% 로 분포 되어 있고 
 	base_width = 100;											// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
 																
 	c_x = x; 	c_y = y;  	c_wid = wid; 	c_hei = hei;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
 															
-	if (c_x + c_wid < ori_wid) 
+	if (c_x + c_wid > ori_wid) {
 		std::cerr << "넓이 오류" << std::endl;
-	else if(c_y + c_hei < ori_hei)
+		return false;
+	}
+	else if (c_y + c_hei > ori_hei) {
 		std::cerr << "높이 오류" << std::endl;
+		return false;
+	}
 
-	Reverse_check(ori_wid, ori_hei, src);
+	srand((unsigned int)time(NULL));
+	//Reverse_check(ori_wid, ori_hei, src);
 
-	//Mat DecodeImg = ori_image; // imdecode(ori_image, IMREAD_COLOR);
-	//std::vector<uchar> OutBuffer;
-	//OutBuffer.push_back((uchar)src);
-	//bool res = imencode(".bmp", ori_image, OutBuffer);
-	//OutBuffer.clear();
-
-	return ori_image;
+	return true;
 }
 
 Mat ImageClass::Create_Mat(int ori_wid, int ori_hei, unsigned char* src) {
@@ -304,19 +250,8 @@ Mat ImageClass::Resize_Num(Mat ori_image) {
 Mat ImageClass::Resize_String(Mat ori_image, int String_length) {		//문장이 아닌 단어에 초점을 맞춤.	//버그의 여지가 쬐큼 있긴있음.		>> 모든 경우의 수를 생각해봐야함/
 	
 	Mat resize_image;
-	//ShowImage(ori_image);
-	//if (ori_image.cols < ori_image.rows) {
-		//resize_image = Resize_Num(ori_image);
-	//}
-	//else {
-	resize_image = Resize_String(ori_image, String_length);
-	//}
 
-	//if(String_Type == 3)
-	//	resize_image = Resize_Num(ori_image);
-	//else 
-	//	resize_image = Resize_String(ori_image, String_length);
-	//ShowImage(resize_image);
+	//resize_image = Resize_String(ori_image, String_length);
 
 	return resize_image;
 }
@@ -407,8 +342,13 @@ Mat ImageClass::GrayScale(Mat ori_image) {
 	//	CHAIN_APPROX_NONE); // 각 외곽선의 모든 화소 탐색
 	//ShowImage(GrayImage);
 
-	//cvtColor(Thresholding_Image, ori_image, COLOR_GRAY2BGRA);					
+	//clock_t start = clock();
+	Reverse_check(GrayImage);			// 1ms 이하
+	//clock_t end = clock();
+	//std::cout << "RecerseCheck : " << end - start << std::endl;
 
+	//cvtColor(GrayImage, ori_image, COLOR_GRAY2BGRA);			//4채널로 보내면 테서렉이 3~4ms 더 걸림
+	//Save2png(GrayImage, "Lastest_PNG");
 	return GrayImage;//ThreshImage를 다시 4채널로 변경하는 과정에서 ori_image를 dst로 설정했음.
 }
 
@@ -427,7 +367,6 @@ Mat ImageClass::Thresholding(Mat ori_image) {
 
 	//threshold(fix_image, ThreshImage, 127, 255, THRESH_BINARY);	
 
-	Reverse_check(ori_image);			// 1ms
 	if (Reverse_Color == false) {
 		adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 11, 5);			//11이 적당해 보이임.
 		return ThreshImage;
@@ -473,7 +412,13 @@ Mat ImageClass::Gaussian_Blur(Mat ori_image) {			//시그마가 0이면 자동으로 계산�
 	Mat Gasu_image;
 	//void GaussianBlur(InputArray src, OutputArray dst, double sigmaX, double sigmaY=0, int borderType=BORDER_DEFAULT )
 	// GaussianBlur( src, dst, Size( i, i ), 0, 0 );				//거리에 따른 가중치 마스크값		, BorderType은 크게 영향이 없는듯함.
+	
+	if (ori_image.rows > 500 || ori_image.cols > 500)
+		return ori_image;
+
 	GaussianBlur(ori_image, Gasu_image, Size(3, 3), BORDER_DEFAULT);
+
+	//테스트 결과 가우시안 블러가 들어가면 영문 인식률이 현저히 떨어져서 오히려 한글 인식하기에는 더욱 용이함.
 
 	//엣지 보존 스무딩		거리 및 픽셀의 밝기차에 따른 가중치 마스크값
 	//void bilateralFilter(InputArray src, OutputArray dst, int d, double sigmaColor, double sigmaSpace, int borderType=BORDER_DEFAULT )
@@ -489,35 +434,35 @@ Mat ImageClass::Gaussian_Blur(Mat ori_image) {			//시그마가 0이면 자동으로 계산�
 	//bilateralFilter(fix_image, Bilateral, 3, 15, 15);			//CV_8UC1 이나 3을 써야되는데 4를 쓰고있어서 쓰려면 변환이 필요.
 
 	//ShowImage(Gasu_image);
-	//Save2png(Gasu_image, "Lastest_PNG");
+	Save2png(Gasu_image, "Lastest_PNG");
 
 	return Gasu_image;
 }
 
-//이미지를 다시 BYTE 형으로 변경 (저장x)
-BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth) {				//수정
-
-	int size = input_image.rows * input_image.cols;
-	
-	//std::memcpy(src, fix_image.data, size * sizeof(BYTE));
-	//imencode(".png", fix_image, src, src);
-
-	this->src = (BYTE*)input_image.data;
-	//RGBSaveBMP(this->src, input_image.rows, input_image.cols, index, depth);
-
-	return src;
-}
-
-//이미지를 다시 BYTE 형으로 변경 (저장o)
-BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth, int save) {				//수정
-
-	int size = input_image.rows * input_image.cols;
-
-	//std::memcpy(src, fix_image.data, size * sizeof(BYTE));
-	//imencode(".png", fix_image, src, src);
-
-	this->src = (BYTE*)input_image.data;
-	RGBSaveBMP(this->src, 1000, 1000, index, depth);
-
-	return src;
-}
+////이미지를 다시 BYTE 형으로 변경 (저장x)
+//BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth) {				//수정
+//
+//	int size = input_image.rows * input_image.cols;
+//	
+//	//std::memcpy(src, fix_image.data, size * sizeof(BYTE));
+//	//imencode(".png", fix_image, src, src);
+//
+//	this->src = (BYTE*)input_image.data;
+//	//RGBSaveBMP(this->src, input_image.rows, input_image.cols, index, depth);
+//
+//	return src;
+//}
+//
+////이미지를 다시 BYTE 형으로 변경 (저장o)
+//BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth, int save) {				//수정
+//
+//	int size = input_image.rows * input_image.cols;
+//
+//	//std::memcpy(src, fix_image.data, size * sizeof(BYTE));
+//	//imencode(".png", fix_image, src, src);
+//
+//	this->src = (BYTE*)input_image.data;
+//	RGBSaveBMP(this->src, 1000, 1000, index, depth);
+//
+//	return src;
+//}

@@ -6,6 +6,8 @@
 //#include "opencv2/video/background_segm.hpp"
 #include "GDICaptureClass.h"
 
+#include <ctime>
+
 #define IMAGEPATH "..\\Libs\\Test_Image\\";
 
 using namespace cv;
@@ -16,7 +18,6 @@ public:
 
 	ImageClass();
 	ImageClass(int i);
-	ImageClass(int wid, int hei, BYTE* src, int String_Type, int Base_length);
 	~ImageClass();
 
 	GDICaptureClass* m_Cap;
@@ -25,13 +26,12 @@ public:
 	int c_y;
 	int c_wid;
 	int c_hei;
-	BYTE *src;
 
 	Mat ori_image;
 	Mat fix_image;
 
 	Mat Create_Mat(int ori_wid, int ori_hei, unsigned char* src);
-	Mat CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei, unsigned char* src);
+	bool CV_Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei);
 	Mat Resize(Mat fix_image, int String_length);
 	Mat Crop(Mat fix_image);
 	Mat Bilinear_Interpolation(Mat fix_image);
@@ -43,7 +43,7 @@ public:
 	void Release();
 
 	void ShowImage(Mat showimage);
-	BYTE* Mat2Byte(Mat fix_image, int index, int depth);
+	//BYTE* Mat2Byte(Mat fix_image, int index, int depth);
 
 
 private:
@@ -53,10 +53,10 @@ private:
 	int base_length;
 
 	void Reverse_check(Mat fix_image);
-	void Reverse_check(int ori_wid, int ori_hei, unsigned char* src);
+	//void Reverse_check(int ori_wid, int ori_hei, unsigned char* src);
 	Mat Resize_Num(Mat fix_image);
 	Mat Resize_String(Mat fix_image, int String_length);
-	BYTE* Mat2Byte(Mat fix_image, int index, int depth, int save);
+	//BYTE* Mat2Byte(Mat fix_image, int index, int depth, int save);
 
 	bool Reverse_Color;
 	int index;
