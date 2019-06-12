@@ -33,6 +33,7 @@ public:
 	int GetMonitorIndex();
 	float GetThreshold();
 	std::string GetFormula();
+	int GetModuleConfig(ModuleSenderInfo &info);
 	std::string GetModuleConfig();
 	std::wstring GetModuleType();
 	int GetModuleSenderInfo(ModuleSenderInfo &info);

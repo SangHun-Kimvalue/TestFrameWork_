@@ -54,7 +54,9 @@ private:
 	int base_width;
 	int base_length;
 
+	void Reverse_check_line(Mat fix_image);
 	void Reverse_check(Mat fix_image);
+	void Reverse_check_Ran(Mat fix_image);
 	//void Reverse_check(int ori_wid, int ori_hei, unsigned char* src);
 	Mat Resize_Num(Mat fix_image);
 	Mat Resize_String(Mat fix_image, int String_length);

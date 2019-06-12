@@ -20,7 +20,7 @@ DllClass::DllClass()
 	RECT rect;
 	rect.left = 44;
 	rect.top = 0;
-	rect.right = rect.left + 450;
+	rect.right = rect.left + 150;
 	rect.bottom = rect.top + 40;
 
 	/*rect.left = 100;
@@ -77,6 +77,7 @@ DllClass::~DllClass()
 {
 	//if (data != nullptr)
 	//{
+	//	m_img_input.release();
 	//	delete[] data;
 	//}
 	
@@ -95,7 +96,7 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
 	bool res = false;
 	formula = "EQUAL";
-	Base_String = "ㅁㄴㅇㄹ";
+	Base_String = "asdfasdf";
 	Base_Num = 50;
 	moduletype = "STR";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
@@ -155,7 +156,7 @@ void DllClass::PreImageProcess(int String_length, std::shared_ptr<unsigned char[
 	}
 
 	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image);				//1~2ms
-	ImageCV->ShowImage(ImageCV->fix_image);
+	//ImageCV->ShowImage(ImageCV->fix_image);
 
 	Iinfo.data = ImageCV->fix_image.data;
 	Iinfo.step = ImageCV->fix_image.step1();
@@ -272,7 +273,7 @@ void DllClass::PrintModuleInfo() {
 }
 
 bool DllClass::GetModuleStatus() {
-	return true;
+	return this->enable;
 }
 
 std::string DllClass::GetGUID() {
@@ -284,14 +285,12 @@ std::string DllClass::GetModuleName() {
 }
 
 std::string DllClass::GetModuleDesc() {
-	std::string temp ="";
-
-	return temp;
+	return this->description;
 }
 
 int DllClass::GetMonitorIndex() {
 
-	return 0;
+	return this->monitorinx;
 }
 
 float DllClass::GetThreshold() {
@@ -303,10 +302,33 @@ std::string DllClass::GetFormula() {
 	return Match->StringFomula;
 }
 
-std::string DllClass::GetModuleConfig() {
-	std::string temp = "";
+std::string DllClass::GetModuleConfig()
+{
+	std::string moduleconfig = "";
+	auto config = ocrmodule::SmartAlertModule();
+	config.guid = m_moduleInfo.guid;
+	config.name = m_moduleInfo.name;
+	config.description = m_moduleInfo.description;
+	config.createtime = m_moduleInfo.createtime;
+	config.modifytime = m_moduleInfo.modifytime;
+	config.enable = m_moduleInfo.enable;
+	config.monitorinx = m_moduleInfo.monitorinx;
+	config.sendertype = m_moduleInfo.sendertype;
+	config.senderconfig = m_moduleInfo.senderconfig;
+	config.moduletype = m_moduleInfo.moduletype;
+	config.moduleconfig = m_moduleInfo.moduleconfig;
 
-	return temp;
+	json temp = config;
+	moduleconfig = temp.dump();// (char*)temp.dump().c_str();
+	return moduleconfig;
+}
+
+int DllClass::GetModuleConfig(ModuleSenderInfo &info) {
+
+	info.type = this->m_moduleInfo.sendertype;
+	info.url = this->url;
+	return 0;
+
 }
 
 std::wstring DllClass::GetModuleType() {
@@ -315,7 +337,8 @@ std::wstring DllClass::GetModuleType() {
 }
 
 int DllClass::GetModuleSenderInfo(ModuleSenderInfo &info) {
-	
+	info.type = this->m_moduleInfo.sendertype;
+	info.url = this->url;
 	return 0;
 }
 
@@ -327,7 +350,13 @@ void DllClass::StopModule() {
 // 이벤트 발생 이미지를 저장한다.
 int DllClass::SaveImage(std::string saveFoler, std::string timestamp) {
 	
+	char file[256];
+	sprintf_s(file, "%s\\%s-%s.jpg", saveFoler.c_str(), this->m_moduleInfo.name.c_str(), timestamp.c_str());
 
+	rectangle(m_img_input, Point2f(m_FocusArea.x, m_FocusArea.y), Point2f(m_FocusArea.x + m_FocusArea.width, m_FocusArea.y + m_FocusArea.height),
+		Scalar(0, 255, 0), 5);
+
+	imwrite(file, m_img_input);
 
 	return 0;
 }

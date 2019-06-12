@@ -101,6 +101,110 @@ ImageClass::~ImageClass()
 
 void ImageClass::Reverse_check(Mat fix_image) {
 
+	Mat InputMat = fix_image.clone();
+
+	float wid = InputMat.cols;
+	float hei = InputMat.rows;
+	float percent = 0;
+
+	uchar pixsum = 0;
+	int temp = 0;
+
+	if (wid > hei) {
+		percent = wid / hei;
+		for (int i = 0; i < hei; i++) {
+			int y = i;	int x = (y * percent);
+			pixsum = InputMat.at<uchar>(y, x);
+			temp += (int)pixsum;
+			//InputMat.at<uchar>(y, x) = 0;
+		}
+		int ave = temp / hei;
+		if (ave < 127) {
+			Reverse_Color = true;
+		}
+		else
+			Reverse_Color = false;
+	}
+	else {
+		percent = hei / wid;
+		for (int i = 0; i < wid; i++) {
+			int x = i;	int y = (x * percent);
+			pixsum = InputMat.at<uchar>(y, x);
+			temp += (int)pixsum;
+			//InputMat.at<uchar>(y, x) = 0;
+		}
+		int ave = temp / wid;
+		if (ave < 127) {
+			Reverse_Color = true;
+		}
+		else
+			Reverse_Color = false;
+	}
+
+	//ShowImage(InputMat);
+	//std::cout << "Reverse_Color : " << Reverse_Color << std::endl;
+	InputMat.release();
+
+	return;
+}
+
+void ImageClass::Reverse_check_line(Mat fix_image) {
+
+	Mat InputMat = fix_image.clone();
+
+
+	uchar pixsum = 0;
+	int temp = 0;
+	int linepos = 0;
+
+	if (InputMat.rows > InputMat.cols) {
+		linepos = InputMat.rows / InputMat.cols;
+		for (int i = 0; i < InputMat.cols; i++) {
+			long pos = (i * InputMat.cols) + (i * linepos);
+			//long pos = (linepos * i * InputMat.cols) + (i);
+			pixsum = InputMat.at<uchar>(pos);
+			//pixsum = InputMat.at<uchar>((InputMat.rows / 2), i);
+			temp += (int)pixsum;
+			InputMat.at<uchar>(pos) = 0;
+			//ShowImage(InputMat);
+			//std::cout << "pos : " << pos << std::endl;
+		}
+		int ave = temp / InputMat.cols;
+		if (ave < 127) {
+			Reverse_Color = true;
+		}
+		else
+			Reverse_Color = false;
+	}
+	else {
+		linepos = InputMat.cols / InputMat.rows;
+		for (int i = 0; i < InputMat.rows; i++) {
+			//long pos = (linepos * i * InputMat.cols) + (i);
+			long pos = (i * InputMat.cols) + (i * linepos);
+			pixsum = InputMat.at<uchar>(pos);
+			//pixsum = InputMat.at<uchar>((InputMat.rows / 2), i);
+			temp += (int)pixsum;
+			InputMat.at<uchar>(pos) = 0;
+			//ShowImage(InputMat);
+			//std::cout << "pos : " << pos << std::endl;
+		}
+		int ave = temp / InputMat.rows;
+		if (ave < 127) {
+			Reverse_Color = true;
+		}
+		else
+			Reverse_Color = false;
+	}
+
+	ShowImage(InputMat);
+	//std::cout << "Reverse_Color : " << Reverse_Color << std::endl;
+	InputMat.release();
+
+	return;
+}
+
+void ImageClass::Reverse_check_Ran(Mat fix_image) {
+
 	Mat InputMat;
 
 	InputMat = fix_image.clone();
@@ -113,7 +217,7 @@ void ImageClass::Reverse_check(Mat fix_image) {
 		int scope = (InputMat.rows * InputMat.cols);
 
 		for (int i = 0; i < count; i++) {
-			//long pos = rand() % scope +1;
+			
 			long pos = (((long)rand()<<15)|rand()) % scope;
 			pixsum = InputMat.at<uchar>(pos);
 			temp += (int)pixsum;
@@ -306,8 +410,8 @@ Mat ImageClass::Resize(Mat ori_image, int String_length) {
 			return ori_image;
 		}
 		else {
-			temp_hei = temp_hei + base_height;
-			temp_wid = temp_wid + base_width;
+			//temp_hei = temp_hei + base_height;
+			//temp_wid = temp_wid + base_width;
 			//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그		//INTER_AREA >> Bilinear_Interpolation에 자세히
 			cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
 
@@ -342,10 +446,11 @@ Mat ImageClass::GrayScale(Mat ori_image) {
 	//	CHAIN_APPROX_NONE); // 각 외곽선의 모든 화소 탐색
 	//ShowImage(GrayImage);
 
-	//clock_t start = clock();
+	clock_t start = clock();
 	Reverse_check(GrayImage);			// 1ms 이하
-	//clock_t end = clock();
-	//std::cout << "RecerseCheck : " << end - start << std::endl;
+
+	clock_t end = clock();
+	std::cout << "RecerseCheck : " << end - start << std::endl;
 
 	//cvtColor(GrayImage, ori_image, COLOR_GRAY2BGRA);			//4채널로 보내면 테서렉이 3~4ms 더 걸림
 	//Save2png(GrayImage, "Lastest_PNG");
@@ -375,6 +480,7 @@ Mat ImageClass::Thresholding(Mat ori_image) {
 
 	if (Reverse_Color == false) {		//Locally adaptive thresholding
 		adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 11, 13);			//11이 적당해 보이임.
+		//ShowImage(ThreshImage);
 		//(ori_image, ThreshImage, 127, 255, THRESH_BINARY);
 		//Save2png(ThreshImage, "adaptiveThreshold_13");
 		return ThreshImage;
