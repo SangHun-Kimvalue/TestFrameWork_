@@ -188,8 +188,8 @@ bool ImageClass::Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) 
 	//std::string Ipath = IMAGEPATH;
 	//Ipath = Ipath + "ocr.bmp";
 
-	base_height = 75;											// 사용자가 평균적으로 지정한 영역내에서 글자의 높이 비율을 50 ~ 70% 로 분포 되어 있고 
-	base_width = 100;											// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
+	//base_height = 150;											// 사용자가 평균적으로 지정한 영역내에서 글자의 높이 비율을 50 ~ 70% 로 분포 되어 있고 
+	//base_width = 200;												// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
 																
 	c_x = x; 	c_y = y;  	c_wid = wid; 	c_hei = hei;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
 															
@@ -298,43 +298,6 @@ Mat ImageClass::Resize_Num(Mat ori_image) {
 //String_Type이 문자일때 높이를 중심으로 변환		//폐기	//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
 Mat ImageClass::Resize_String(Mat ori_image, int String_length) {		//문장이 아닌 단어에 초점을 맞춤.	//버그의 여지가 쬐큼 있긴있음.		>> 모든 경우의 수를 생각해봐야함/
 	
-	Mat resize_image;
-
-	//resize_image = Resize_String(ori_image, String_length);
-
-	return resize_image;
-}
-
-//인식률이 너무 않좋아서 폐기.		윤곽선 추출
-Mat ImageClass::C_Canny(Mat ori_image) {
-
-	Mat canny_image;
-	int lowThreshold = 50;
-	int highThreshold = 150;
-
-	//그레이, 가우시안, 소벨 커널로 수평 수직 엣지 검출, 엣지 양옆의 값으로 엣지 검출, 이진화   순서(캐니 엣지 디텍트 이론)
-	//void cv::Canny(InputArray image, OutputArray edges, double threshold1, double threshold2, int apertureSize = 3, bool 	L2gradient = false)
-	Canny(ori_image, canny_image, lowThreshold, highThreshold);			//낮은 임계값, 높은 임계값은 1 : 2 나 1 : 3 정도가 좋음.
-	ShowImage(canny_image);
-
-	return canny_image;
-}
-
-//이미지 자르기
-Mat ImageClass::Crop(Mat ori_image) {
-
-	Mat crop_image;
-	Rect rect(c_x, c_y, c_wid, c_hei);							// x, y ,wid, hei
-
-	(ori_image(rect)).copyTo(crop_image);						//rect 만큼 crop
-	//fix_image = ori_image(rect);			//rect 만큼 crop
-
-	return crop_image;
-}
-
-//이미지 사이즈 변경		//Base_String의 길이에 최적화 하여 변경함 	//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
-Mat ImageClass::Resize(Mat ori_image, int String_length) {
-	
 	Mat re_image;
 	int temp_wid;
 	int temp_hei;
@@ -387,7 +350,88 @@ Mat ImageClass::Resize(Mat ori_image, int String_length) {
 	}
 
 	return re_image;
+}
+
+//인식률이 너무 않좋아서 폐기.		윤곽선 추출
+Mat ImageClass::C_Canny(Mat ori_image) {
+
+	Mat canny_image;
+	int lowThreshold = 50;
+	int highThreshold = 150;
+
+	//그레이, 가우시안, 소벨 커널로 수평 수직 엣지 검출, 엣지 양옆의 값으로 엣지 검출, 이진화   순서(캐니 엣지 디텍트 이론)
+	//void cv::Canny(InputArray image, OutputArray edges, double threshold1, double threshold2, int apertureSize = 3, bool 	L2gradient = false)
+	Canny(ori_image, canny_image, lowThreshold, highThreshold);			//낮은 임계값, 높은 임계값은 1 : 2 나 1 : 3 정도가 좋음.
+	ShowImage(canny_image);
+
+	return canny_image;
+}
+
+//이미지 자르기
+Mat ImageClass::Crop(Mat ori_image) {
+
+	Mat crop_image;
+	Rect rect(c_x, c_y, c_wid, c_hei);							// x, y ,wid, hei
+
+	(ori_image(rect)).copyTo(crop_image);						//rect 만큼 crop
+	//fix_image = ori_image(rect);			//rect 만큼 crop
+
+	return crop_image;
+}
+
+//이미지 사이즈 변경		//Base_String의 길이에 최적화 하여 변경함 	//INTER_AREA >> Bilinear_Interpolation에 자세히			//양선형 보간법  >>  Bilinear_Interpolation 
+Mat ImageClass::Resize(Mat ori_image, int String_length) {
 	
+	Mat re_image;
+	int wid = ori_image.cols;		int hei = ori_image.rows; 
+	int temp_wid = 0;				int temp_hei = 0;
+	int base = 0;					float percent = 0;
+
+	base_width = String_length * 75;		//어자피 베이스 문자의 길이보다는 크게 조절해야함(그 보다 작으면 추출이 힘듬) (37포인트가 제일 이상적인 길이)
+
+	base = wid - base_width;
+	percent = ((float)wid - (float)base) / (float)wid;
+
+	if(base >= 0){
+	//if (base == 0)
+	//		return ori_image;
+	//else if (base > 0) {	//축소
+		//temp_hei = hei * percent;
+		//temp_wid = base_width;
+		//if (temp_hei >= base_height) {
+		//	//이미지 데시메이션 (보간법의 반대되는 유사용어 LowPass 필터도 사용됨)에 선호되는 플레그		//INTER_AREA >> Bilinear_Interpolation에 자세히
+		//	cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
+		//	return re_image;
+		//}
+		//else {
+		//	base = base_height - temp_hei;
+		//	percent = (float)(temp_hei + base) / (float)temp_hei;
+		//	temp_wid = temp_wid * percent;
+		//	temp_hei = temp_hei * percent;
+		//
+		//	cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_AREA);
+		//	return re_image;
+		//}
+		return ori_image;
+	}
+	else if (base < 0) {	//확대
+
+		temp_hei = hei * percent;
+		temp_wid = base_width;
+
+		if (percent > 1.5) {
+			percent = 1.5;
+			temp_hei = hei * percent;
+			temp_wid = wid * percent;
+		}
+
+		cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
+		//ShowImage(re_image);
+
+		return re_image;
+	}
+
+	return ori_image;
 }
 
 //그레이 이미지 변경 >> BGRA 4채널에서 1채널로 변경되기 때문에 다시 4채널 BGRA로 변경 작업 포함.  >> 테세렉에서 1채널로 셋이미지로 변경함
