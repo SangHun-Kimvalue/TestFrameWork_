@@ -74,12 +74,17 @@ bool TextMatchClass::Find_Base_String(std::string input_string) {
 int TextMatchClass::Remain_Num(std::string input_string) {
 
 	std::string temp;
+	int leng = input_string.length();
 
-	for (int i = 0; i < input_string.length(); i++) {		//타입 검출
-		
-		if (isdigit(input_string.at(i)) != 0) {		//숫자
+	for (int i = 0; i < leng; i++) {				//타입 검출
+		if (input_string.at(i) < 0)
+			continue;
+		if (isdigit(input_string.at(i)) != 0) {		//(48 <= input_string.at(i) || 57 >= input_string.at(i)){//		//숫자
 			temp = temp + input_string.at(i);
 		}
+	}
+	if (temp == "") {
+		return -1;
 	}
 
 	return atoi(temp.c_str());

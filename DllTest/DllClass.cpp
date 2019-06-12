@@ -20,8 +20,8 @@ DllClass::DllClass()
 	RECT rect;
 	rect.left = 44;
 	rect.top = 0;
-	rect.right = rect.left + 150;
-	rect.bottom = rect.top + 40;
+	rect.right = rect.left + 40;
+	rect.bottom = rect.top + 150;
 
 	/*rect.left = 100;
 	rect.top = 100;
@@ -96,7 +96,7 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
 	bool res = false;
 	formula = "EQUAL";
-	Base_String = "asdfasdf";
+	Base_String = "5805";
 	Base_Num = 50;
 	moduletype = "STR";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
@@ -143,9 +143,9 @@ void DllClass::PreImageProcess(int String_length, std::shared_ptr<unsigned char[
 	ImageCV->fix_image = ImageCV->Create_Mat(Capturer->nWidth, Capturer->nHeight, img.get());
 
 	ImageCV->fix_image = ImageCV->Crop(ImageCV->fix_image);					//0ms
-	//ImageCV->ShowImage(ImageCV->fix_image);
+	ImageCV->ShowImage(ImageCV->fix_image);
 	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_length);		//1~2ms
-	//ImageCV->ShowImage(ImageCV->fix_image);
+	ImageCV->ShowImage(ImageCV->fix_image);
 
 	ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);				//4~5ms
 	//ImageCV->ShowImage(ImageCV->fix_image);
