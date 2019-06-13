@@ -98,7 +98,7 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	formula = "EQUAL";
 	Base_String = "warning";
 	Base_Num = -50;
-	moduletype = "NUM";		//임시 타입 변수		//NUM or STR
+	moduletype = "STR";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
 
 	if (NUMTYPE != moduletype)
@@ -156,7 +156,7 @@ void DllClass::PreImageProcess(int String_length, std::shared_ptr<unsigned char[
 	}
 
 	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image);				//1~2ms
-	ImageCV->ShowImage(ImageCV->fix_image);
+	//ImageCV->ShowImage(ImageCV->fix_image);
 
 	Iinfo.data = ImageCV->fix_image.data;
 	Iinfo.step = ImageCV->fix_image.step1();

@@ -419,14 +419,20 @@ Mat ImageClass::Resize(Mat ori_image, int String_length) {
 		temp_hei = hei * percent;
 		temp_wid = base_width;
 
-		if (percent > 1.5) {
-			percent = 1.5;
+		if (percent > 2) {
+			percent = 2;
 			temp_hei = hei * percent;
 			temp_wid = wid * percent;
 		}
+		//clock_t start = clock();
 
-		cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation 
-		//ShowImage(re_image);
+		cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_CUBIC);			//3차 다항식 입체 보간법		//0~1ms
+		//cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation	//1~3ms
+		//clock_t end = clock();
+
+		//std::cout << "INTER_LINEAR : " << end - start << std::endl;
+																									//ShowImage(re_image);
+		//Save2png(re_image, "INTER_CUBIC4");
 
 		return re_image;
 	}

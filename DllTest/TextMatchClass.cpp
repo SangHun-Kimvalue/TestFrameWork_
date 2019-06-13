@@ -52,9 +52,9 @@ bool TextMatchClass::Han_Delete(std::string input_string) {
 //위 두 메서드에서 처리한 문자열을 가지고 베이스 문자열 찾기
 bool TextMatchClass::Find_Base_String(std::string input_string) {
 
-	std::string Deleted_String = Delete_Enter(input_string);
+	//std::string Deleted_String = Delete_Enter(input_string);
 
-	if (strstr(Deleted_String.c_str(), Base_String.c_str()) != NULL) {
+	if (strstr(input_string.c_str(), Base_String.c_str()) != NULL) {
 		if (Consistent == true) {
 			Detect = true;
 			return Detect;
