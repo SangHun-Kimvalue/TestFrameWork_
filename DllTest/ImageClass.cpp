@@ -454,15 +454,21 @@ Mat ImageClass::Thresholding(Mat ori_image) {
 	//	threshold); // threshold used
 
 	if (Reverse_Color == false) {		//Locally adaptive thresholding
+
 		adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 11, 13);			//11이 적당해 보이임.
-		//ShowImage(ThreshImage);
-		//(ori_image, ThreshImage, 127, 255, THRESH_BINARY);
-		//Save2png(ThreshImage, "adaptiveThreshold_13");
+		fix_image = Gaussian_Blur(ThreshImage);				//1~2ms
+		ShowImage(ThreshImage);
 		return ThreshImage;
 	}
-	else 
-		return ori_image;
+	else {
 
+		ThreshImage = Gaussian_Blur(ori_image);
+		threshold(ThreshImage, ThreshImage, 0, 255, THRESH_OTSU);
+		ShowImage(ThreshImage);
+
+		return ThreshImage;
+	}
+		
 	//fix_image = Gaussian_Blur(ThreshImage, 3, 3);
 	//Save2png(fix_image, "Thresh_11_5_blur");
 	//adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 21, 5);
