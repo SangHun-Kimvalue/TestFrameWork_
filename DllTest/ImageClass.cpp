@@ -51,6 +51,7 @@ void Save2png(Mat inputimage, std::string name) {
 
 	imwrite(temp.c_str(), inputimage);
 }
+
 ImageClass::ImageClass() : Reverse_Color(false) {}
 
 ImageClass::ImageClass(int i): Reverse_Color(false) {}
@@ -59,45 +60,6 @@ ImageClass::~ImageClass()
 {
 	Release();
 }
-
-//void ImageClass::Reverse_check(int ori_wid, int ori_hei, unsigned char* src) {
-//	
-//	Mat InputMat;
-//	//Mat ori_image;
-//
-//	InputMat = Create_Mat(ori_wid, ori_hei, src);
-//	InputMat = Crop(InputMat);
-//	InputMat = GrayScale(InputMat);
-//
-//	//ori_image = InputMat.clone();
-//	int count = 10;
-//
-//	if (InputMat.cols > 50 && InputMat.rows > 10) {
-//
-//		uchar pixsum = 0;
-//		int temp = 0;
-//
-//		for (int i = 0; i < count; i++) {
-//
-//			int pos = rand() % (InputMat.rows * InputMat.cols);
-//			pixsum = InputMat.at<uchar>(pos);
-//			temp += (int)pixsum;
-//			InputMat.at<uchar>(pos) = 0;
-//		}
-//
-//		//ShowImage(ori_image);
-//		//ShowImage(InputMat);
-//
-//		if (temp / count < 127) {
-//			Reverse_Color = true;
-//		}
-//		else
-//			Reverse_Color = false;
-//	}
-//	//std::cout << "Reverse_Color : " << Reverse_Color << std::endl;
-//	InputMat.release();
-//
-//}
 
 void ImageClass::Reverse_check(Mat fix_image) {
 
@@ -203,7 +165,6 @@ bool ImageClass::Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) 
 	}
 
 	srand((unsigned int)time(NULL));
-	//Reverse_check(ori_wid, ori_hei, src);
 
 	return true;
 }
@@ -384,7 +345,7 @@ Mat ImageClass::Resize(Mat ori_image, int String_length) {
 	
 	Mat re_image;
 	int wid = ori_image.cols;		int hei = ori_image.rows; 
-	int temp_wid = 0;				int temp_hei = 0;
+	float temp_wid = 0;				float temp_hei = 0;
 	int base = 0;					float percent = 0;
 
 	base_width = String_length * 75;		//어자피 베이스 문자의 길이보다는 크게 조절해야함(그 보다 작으면 추출이 힘듬) (37포인트가 제일 이상적인 길이)
@@ -419,19 +380,19 @@ Mat ImageClass::Resize(Mat ori_image, int String_length) {
 		temp_hei = hei * percent;
 		temp_wid = base_width;
 
-		if (percent > 2) {
-			percent = 2;
+		if (percent > 2.5) {
+			percent = 2.5;
 			temp_hei = hei * percent;
 			temp_wid = wid * percent;
 		}
 		//clock_t start = clock();
 
-		cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_CUBIC);			//3차 다항식 입체 보간법		//0~1ms
+		cv::resize(ori_image, re_image, cv::Size((int)temp_wid+0.5, (int)temp_hei+0.5), 0, 0, INTER_CUBIC);				//3차 다항식 입체 보간법		//0~1ms
 		//cv::resize(ori_image, re_image, cv::Size(temp_wid, temp_hei), 0, 0, INTER_LINEAR);			//양선형 보간법  >>  Bilinear_Interpolation	//1~3ms
 		//clock_t end = clock();
 
 		//std::cout << "INTER_LINEAR : " << end - start << std::endl;
-																									//ShowImage(re_image);
+		//ShowImage(re_image);
 		//Save2png(re_image, "INTER_CUBIC4");
 
 		return re_image;
@@ -484,7 +445,7 @@ Mat ImageClass::Thresholding(Mat ori_image) {
 	//adaptiveThreshold(image, // 입력영상 
 	//	binaryAdaptive, // 이진화 결과 영상 
 	//	255, // 최대 화소 값 
-	//	ADAPTIVE_THRESH_MEAN_C, // Adaptive 함수 
+	//	ADAPTIVE_THRESH_MEAN_C, // Adaptive 함수		//가중치를 안줌   //ADAPTIVE_THRESH_GAUSSIAN_C 가중치를 줌
 	//	THRESH_BINARY, // 이진화 타입 
 	//	blockSize, // 이웃크기 
 	//	threshold); // threshold used
@@ -563,31 +524,3 @@ Mat ImageClass::Gaussian_Blur(Mat ori_image) {			//시그마가 0이면 자동으로 계산�
 
 	return Gasu_image;
 }
-
-////이미지를 다시 BYTE 형으로 변경 (저장x)
-//BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth) {				//수정
-//
-//	int size = input_image.rows * input_image.cols;
-//	
-//	//std::memcpy(src, fix_image.data, size * sizeof(BYTE));
-//	//imencode(".png", fix_image, src, src);
-//
-//	this->src = (BYTE*)input_image.data;
-//	//RGBSaveBMP(this->src, input_image.rows, input_image.cols, index, depth);
-//
-//	return src;
-//}
-//
-////이미지를 다시 BYTE 형으로 변경 (저장o)
-//BYTE* ImageClass::Mat2Byte(Mat input_image, int index, int depth, int save) {				//수정
-//
-//	int size = input_image.rows * input_image.cols;
-//
-//	//std::memcpy(src, fix_image.data, size * sizeof(BYTE));
-//	//imencode(".png", fix_image, src, src);
-//
-//	this->src = (BYTE*)input_image.data;
-//	RGBSaveBMP(this->src, 1000, 1000, index, depth);
-//
-//	return src;
-//}
