@@ -1,7 +1,8 @@
 #include "TextMatchClass.h"
 
 TextMatchClass::TextMatchClass(std::string Base_String, int Base_Num, std::string fomula)
-	: Base_String(Base_String), Base_Num(Base_Num), Detect(false), Consistent(true), ENumFomula(EQUAL), StringFomula(fomula) {
+	: Base_String(Base_String), Base_Num(Base_Num), Detect(false), Consistent(true), ENumFomula(EQUAL),
+	StringFomula(fomula), minor(false){
 	
 	ConvFomula();
 }
@@ -82,8 +83,11 @@ int TextMatchClass::Remain_Num(std::string input_string) {
 		if (isdigit(input_string.at(i)) != 0) {		//(48 <= input_string.at(i) || 57 >= input_string.at(i)){//		//숫자
 			temp = temp + input_string.at(i);
 		}
+		//if (input_string.at(i) == '-') {
+		//	minor = true;
+		//}
 	}
-	if (temp == "") {
+	if (temp == "" && minor == false) {
 		return -1;
 	}
 
@@ -91,6 +95,10 @@ int TextMatchClass::Remain_Num(std::string input_string) {
 }
 
 void TextMatchClass::ConvFomula() {
+
+	if (Base_Num < 0) {
+		minor = true;
+	}
 
 	if (strstr(StringFomula.c_str(), "NOTEQUAL") != NULL) {
 		ENumFomula = NEQUAL;
@@ -115,6 +123,12 @@ void TextMatchClass::ConvFomula() {
 
 //Formula에 따라 숫자 찾기
 bool TextMatchClass::Find_Scope(std::string Input_Num) {
+
+	if (minor == true) {
+		Base_String = std::to_string(Base_Num);
+
+		return Find_Base_String(Input_Num);
+	}
 
 	int Only_Num = Remain_Num(Input_Num);
 

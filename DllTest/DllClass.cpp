@@ -18,15 +18,15 @@ DllClass::DllClass()
 	ModuleInfo info;
 
 	RECT rect;
-	//rect.left = 44;
-	//rect.top = 0;
-	//rect.right = rect.left + 150;
-	//rect.bottom = rect.top + 40;
+	rect.left = 44;
+	rect.top = 0;
+	rect.right = rect.left + 150;
+	rect.bottom = rect.top + 40;
 
-	rect.left = 550;
-	rect.top = 380;
-	rect.right = rect.left + 500;
-	rect.bottom = rect.top + 700;
+	//rect.left = 550;
+	//rect.top = 380;
+	//rect.right = rect.left + 500;
+	//rect.bottom = rect.top + 700;
 	RECT* displayrect = &rect;
 	//rect(44, 0, 150, 40);
 
@@ -97,8 +97,8 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	bool res = false;
 	formula = "EQUAL";
 	Base_String = "warning";
-	Base_Num = 50;
-	moduletype = "STR";		//임시 타입 변수		//NUM or STR
+	Base_Num = -50;
+	moduletype = "NUM";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
 
 	if (NUMTYPE != moduletype)
@@ -143,16 +143,16 @@ void DllClass::PreImageProcess(int String_length, std::shared_ptr<unsigned char[
 	ImageCV->fix_image = ImageCV->Create_Mat(Capturer->nWidth, Capturer->nHeight, img.get());
 
 	ImageCV->fix_image = ImageCV->Crop(ImageCV->fix_image);					//0ms
-	ImageCV->ShowImage(ImageCV->fix_image);
+	//ImageCV->ShowImage(ImageCV->fix_image);
 	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_length);		//1~2ms
-	ImageCV->ShowImage(ImageCV->fix_image);
+	//ImageCV->ShowImage(ImageCV->fix_image);
 
 	ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);				//4~5ms
-	ImageCV->ShowImage(ImageCV->fix_image);
+	//ImageCV->ShowImage(ImageCV->fix_image);
 
 	if (String_Type_Num != (int)KOR) {
 		ImageCV->fix_image = ImageCV->Thresholding(ImageCV->fix_image);				//2ms		테서렉에서 3ms정도 더 걸림
-		ImageCV->ShowImage(ImageCV->fix_image);
+		//ImageCV->ShowImage(ImageCV->fix_image);
 	}
 
 	ImageCV->fix_image = ImageCV->Gaussian_Blur(ImageCV->fix_image);				//1~2ms
