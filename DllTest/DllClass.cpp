@@ -34,7 +34,7 @@ DllClass::DllClass()
 
 	InitModule(info, displayrect);
 
-	while (1) {
+	while (!m_stopThreadAnalyze) {
 
 		Capturer->GetScreen();					//30~33
 		unsigned char* temp = (unsigned char*)Capturer->src;						//테스트용
@@ -94,11 +94,24 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	//ocrmodule::ModuleConfig config = json::parse(info.moduleconfig.c_str());
 	//ocrmodule::SenderConfig senderconfig = json::parse(info.senderconfig.c_str());
 
+	this->m_DisplayWidth = displayrect->right - displayrect->left;
+	this->m_DisplayHeight = displayrect->bottom - displayrect->top;
+
+	float startx = displayrect->left;								//(this->m_DisplayWidth / 100.f) * this->rect[0];			//모니터의 해상도에 맞게 재설정?
+	float starty = displayrect->top;								//(this->m_DisplayHeight / 100.f) * this->rect[1];
+	float fWidth = displayrect->right - displayrect->left;			//(this->m_DisplayWidth / 100.f) * this->rect[2];
+	float fHeight = displayrect->bottom - displayrect->top;			// (this->m_DisplayHeight / 100.f) * this->rect[3];
+	m_FocusArea.x = startx;
+	m_FocusArea.y = starty;
+	m_FocusArea.width = fWidth;
+	m_FocusArea.height = fHeight;
+	this->m_totalCount = m_FocusArea.width * m_FocusArea.height;
+
 	bool res = false;
 	formula = "EQUAL";
 	Base_String = "warning";
-	Base_Num = -50;
-	moduletype = "STR";		//임시 타입 변수		//NUM or STR
+	Base_Num = 5;
+	moduletype = "NUM";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
 
 	if (NUMTYPE != moduletype)
@@ -113,8 +126,13 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	Match = new TextMatchClass(Base_String, Base_Num, formula);
 
 	//oriwid, orihei, x, y, wid, hei(crop용 변수)
-	res = ImageCV->Init(Capturer->nWidth, Capturer->nHeight, displayrect->left, displayrect->top,			
-		displayrect->right - displayrect->left, displayrect->bottom - displayrect->top);
+	//res = ImageCV->Init(Capturer->nWidth, Capturer->nHeight, 
+	//	m_FocusArea.x, m_FocusArea.y,m_FocusArea.width, m_FocusArea.height);
+  
+	res = ImageCV->Init(Capturer->nWidth, Capturer->nHeight,
+		displayrect->left, displayrect->top,displayrect->right - displayrect->left, displayrect->bottom - displayrect->top);
+		//displayrect->left, displayrect->top,
+		//displayrect->right - displayrect->left, displayrect->bottom - displayrect->top
 	if(res)
 		res = Tesseract->Init(Base_String, moduletype, Base_Num);
 
@@ -175,7 +193,7 @@ double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 
 	bool Detect = CompareText(OutText);
 	//clock_t end = clock();
-	//std::cout << "ImageProcessTime : " << end - start << std::endl;
+	//std::cout << "GetText : " << end - start << std::endl;
 
 
 	ImageCV->Release();

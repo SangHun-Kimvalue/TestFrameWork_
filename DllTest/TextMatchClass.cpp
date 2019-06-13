@@ -1,5 +1,9 @@
 #include "TextMatchClass.h"
 
+TextMatchClass::TextMatchClass() : Base_Num(0) {
+	ConvFomula();
+}
+
 TextMatchClass::TextMatchClass(std::string Base_String, int Base_Num, std::string fomula)
 	: Base_String(Base_String), Base_Num(Base_Num), Detect(false), Consistent(true), ENumFomula(EQUAL),
 	StringFomula(fomula), minor(false){
@@ -115,7 +119,7 @@ void TextMatchClass::ConvFomula() {
 		ENumFomula = MORET;
 	}
 	else {
-		std::cout << "Formual Error" << std::endl;
+		std::cerr << "Formual Error" << std::endl;
 	}
 	return ;
 }
@@ -168,7 +172,7 @@ bool TextMatchClass::Find_Scope(std::string Input_Num) {
 		return Detect;
 	}
 	else {
-		std::cout << "Formual Error" << std::endl;
+		std::cerr << "Formual Error" << std::endl;
 		Detect = false;
 		return Detect;
 	}

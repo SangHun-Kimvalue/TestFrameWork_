@@ -21,9 +21,9 @@ class TesseractClass
 {
 public:
 	TesseractClass();
-	TesseractClass(std::string Base_string, int wid, int hei, BYTE* src);
-	TesseractClass(std::string Base_string, int Base_Num);
-	TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string, int InputType);
+	//TesseractClass(std::string Base_string, int wid, int hei, BYTE* src);
+	//TesseractClass(std::string Base_string, int Base_Num);
+	//TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_string, int InputType);
 	~TesseractClass();
 
 	bool Test(int wid, int hei, BYTE* src);
@@ -32,26 +32,22 @@ public:
 
 	TextType String_Type;
 	int Base_length;
-
-private:
 	
+private:
+
 	bool Open();
 	void Release();
-	std::string UniToANSI(char* outText);
+	std::string Uni8To16(char* outText);
 
 	tesseract::TessBaseAPI *api;
 	Pix *image;
-
 	std::string OutPutstr;
 
 	std::string datapath;
 	std::string imagepath;
 	std::string imagename;
-	std::string bmpimagename;
-	std::string hangulname;
-
-	const std::string Base_String;
 
 	TextType FindTextType(int Base_Type[256]);
-	int FindEachText(std::string Base_String, std::string InputType, int Base_Num);
+	int FindTextLength(std::string Base_String, std::string InputType, int Base_Num);
+
 };

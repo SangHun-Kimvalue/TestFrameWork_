@@ -53,6 +53,7 @@ private:
 	int base_height;
 	int base_width;
 	int base_length;
+	int best_font_size;
 
 	void Reverse_check(Mat fix_image);
 	void Reverse_check_Ran(Mat fix_image);

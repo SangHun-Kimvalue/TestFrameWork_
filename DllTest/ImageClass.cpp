@@ -152,7 +152,8 @@ bool ImageClass::Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) 
 
 	//base_height = 150;											// 사용자가 평균적으로 지정한 영역내에서 글자의 높이 비율을 50 ~ 70% 로 분포 되어 있고 
 	//base_width = 200;												// 글자의 크기를 35와 비슷한 크기로 만들기 위해서는 영역 높이를 75로 변경해야함.
-																
+	best_font_size = 75;
+
 	c_x = x; 	c_y = y;  	c_wid = wid; 	c_hei = hei;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
 															
 	if (c_x + c_wid > ori_wid) {
@@ -348,7 +349,9 @@ Mat ImageClass::Resize(Mat ori_image, int String_length) {
 	float temp_wid = 0;				float temp_hei = 0;
 	int base = 0;					float percent = 0;
 
-	base_width = String_length * 75;		//어자피 베이스 문자의 길이보다는 크게 조절해야함(그 보다 작으면 추출이 힘듬) (37포인트가 제일 이상적인 길이)
+	if (String_length < 3)					//wid가 300정도는 되야 Tesseract 에서 최소한의 부하가 걸림
+		String_length = 3;
+	base_width = String_length * best_font_size;		//어자피 베이스 문자의 길이보다는 크게 조절해야함(그 보다 작으면 추출이 힘듬) (37포인트가 제일 이상적인 길이)
 
 	base = wid - base_width;
 	percent = ((float)wid - (float)base) / (float)wid;

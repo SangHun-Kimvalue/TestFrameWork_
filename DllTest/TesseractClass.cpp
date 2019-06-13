@@ -1,35 +1,49 @@
 #include "TesseractClass.h"
 
-TesseractClass::TesseractClass(): Base_String("") {}
-
-TesseractClass::TesseractClass(std::string Base_string, int Base_Num)
-	: Base_String(Base_string), String_Type(TNULL) 
-{
-}
-
-TesseractClass::TesseractClass(std::string Base_string, int wid, int hei, BYTE* src)
-	: Base_String(Base_string), String_Type(TNULL)						//지금 베이스 넘버는 인트로 들어오는 것을 고려해야되는데 스트링에 맞춰져있음.
-{
-	//Init(InputType);
-	//Init();
-	//Test(wid, hei, src);
-}
-
-TesseractClass::TesseractClass(int Select, int Iwidth, int Iheight, BYTE* Isrc, std::string Base_String, int InputType)
-	: Base_String(Base_String), String_Type((TextType)InputType) {
-
-}
+TesseractClass::TesseractClass(): String_Type(TNULL), Base_length(0){}
 
 TesseractClass::~TesseractClass()
 {
 	Release();
 }
 
-//Base_String 길이를 반환
-int TesseractClass::FindEachText(std::string Base_String, std::string InputType, int Base_Num) {
+//Base_String 타입을 반환
+TextType TesseractClass::FindTextType(int Base_Type[256])
+{
 
-	
-	//int *Base_Type = (int *)malloc(sizeof(int)*Base_length);
+	for (int i = 0; i < Base_length; i++) {
+		switch (Base_Type[i])
+		{
+		case SPACE:
+		case SPEC:
+		case NUM:
+		case TNULL:
+		default:
+			if (i == Base_length - 1 && String_Type == TNULL) {
+				return NUM;
+			}
+			continue;
+			//case NUM :
+			//	Numchecker = true;
+			//	if (i == Base_length - 1 && (String_Type == TNULL || String_Type == NUM)) {
+			//		Base_Num = atoi(Base_String.c_str());
+			//		return NUM;
+			//	}
+			//	break;
+		case KOR:
+			return KOR;
+
+		case ENG:
+			return ENG;
+		}
+	}
+
+	return TNULL;
+
+}
+
+//Base_String 길이를 반환
+int TesseractClass::FindTextLength(std::string Base_String, std::string InputType, int Base_Num) {
 
 	int point = -1;
 	bool detec_han = 0;
@@ -97,40 +111,6 @@ int TesseractClass::FindEachText(std::string Base_String, std::string InputType,
 	return Base_length;
 }
 
-//Base_String 타입을 반환
-TextType TesseractClass::FindTextType(int Base_Type[]) {
-
-	for (int i = 0; i < Base_length; i++) {
-		switch (Base_Type[i])
-		{
-		case SPACE :
-		case SPEC :
-		case NUM :
-		case TNULL :
-		default :
-			if (i == Base_length - 1 && String_Type == TNULL) {
-				return NUM;
-			}
-			continue;
-		//case NUM :
-		//	Numchecker = true;
-		//	if (i == Base_length - 1 && (String_Type == TNULL || String_Type == NUM)) {
-		//		Base_Num = atoi(Base_String.c_str());
-		//		return NUM;
-		//	}
-		//	break;
-		case KOR :
-			return KOR;
-			
-		case ENG :
-			return ENG;
-		}
-	}
-	
-	return TNULL;
-
-}
-
 //테스트 호출용
 bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 
@@ -144,7 +124,7 @@ bool TesseractClass::Test(int wid, int hei, BYTE* src) {
 	api->SetImage(image);
 
 	outText = api->GetUTF8Text();
-	std::string temp = UniToANSI(outText);
+	std::string temp = Uni8To16(outText);
 	std::cout << temp << std::endl;
 
 	//delete m_Test;
@@ -162,7 +142,7 @@ std::string TesseractClass::GetTextUTF8(int wid, int hei, unsigned char* src, in
 
 	outText = api->GetUTF8Text();
 
-	std::string temp = UniToANSI(outText);
+	std::string temp = Uni8To16(outText);
 	std::cout << temp << std::endl;
 	
 	api->Clear();
@@ -191,7 +171,7 @@ bool TesseractClass::Init(std::string Base_String, std::string InputType, int Ba
 	datapath = DATAPATH;
 #endif
 
-	Base_length = FindEachText(Base_String, InputType, Base_Num);
+	Base_length = FindTextLength(Base_String, InputType, Base_Num);
 	//OMP_THREAD_LIMIT;
 	std::string Init_Type = "";
 	if (String_Type == KOR) {
@@ -216,6 +196,8 @@ bool TesseractClass::Init(std::string Base_String, std::string InputType, int Ba
 		return false;
 
 	}
+
+	//api->SetVariable("tessedit_parallelize", "0");			//1로 하면 더 느려짐 0은 별 차이 없는듯.
 
 	return true;
 }
@@ -246,7 +228,7 @@ bool TesseractClass::Open() {
 
 }
 
-std::string TesseractClass::UniToANSI(char* outText) {
+std::string TesseractClass::Uni8To16(char* outText) {
 
 	BSTR    bstrWide;
 	char*   pszAnsi;

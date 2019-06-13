@@ -8,17 +8,17 @@ class TextMatchClass
 {
 public:
 
-	TextMatchClass(std::string find_string, int Base_Num, std::string fomula);
+	TextMatchClass();
+	TextMatchClass(const std::string find_string, const int Base_Num, const std::string fomula);
 	~TextMatchClass();
 
 	bool Han_Delete(std::string input_string);
 	bool Find_Base_String(std::string input_string);
 	bool Find_Scope(std::string Input_Num);
 	
-	std::string StringFomula;
-	bool Detect;
-
 	const int Base_Num;
+	const std::string StringFomula;
+	bool Detect;
 
 private:
 
