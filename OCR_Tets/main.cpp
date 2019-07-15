@@ -47,7 +47,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	//ReleaseDC(hWnd, hdc);
 	//InvalidateRect(NULL, NULL, FALSE);
 	//UpdateWindow(hWnd);
-
+	//rebase test1
+	//rebase test2
 
 	hDLL = LoadLibrary(L"DllTest.dll");
 	if (hDLL == NULL) {
