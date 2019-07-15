@@ -155,7 +155,7 @@ bool ImageClass::Init(int ori_wid, int ori_hei, int x, int y, int wid, int hei) 
 	best_font_size = 75;
 
 	c_x = x; 	c_y = y;  	c_wid = wid; 	c_hei = hei;		//wid, hei 원본 사이즈 넘으면 안됨 주의.
-															
+												
 	if (c_x + c_wid > ori_wid) {
 		std::cerr << "넓이 오류" << std::endl;
 		return false;
@@ -452,20 +452,27 @@ Mat ImageClass::Thresholding(Mat ori_image) {
 	//	THRESH_BINARY, // 이진화 타입 
 	//	blockSize, // 이웃크기 
 	//	threshold); // threshold used
-
+	
 	if (Reverse_Color == false) {		//Locally adaptive thresholding
-
+		//clock_t start = clock();
 		adaptiveThreshold(ori_image, ThreshImage, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 11, 13);			//11이 적당해 보이임.
 		fix_image = Gaussian_Blur(ThreshImage);				//1~2ms
-		ShowImage(ThreshImage);
+		//ShowImage(ThreshImage);
+		//clock_t end = clock();
+		//std::cout << "adaptiveThreshold : " << end - start << std::endl;
 		return ThreshImage;
 	}
 	else {
-
+		//clock_t start = clock();					//오츠 속도가 월등히 빠름.
+		//임의의 값으로 블랙이 될 픽셀의 값들의 평균을 구해 분산을 구하고 임시 임계값을 
+		//다른 임의의 값에 대한 임계값과 비교해 분산이 더 적은 값을 임계값으로 설정해 이진화 
+		//다른 클래스와의 분산은 크게, 클래스 내부의 분산은 최소가 되는 값으로.
+		//두 클래스의 분산차이가 가장 큰 값을 설정.
 		ThreshImage = Gaussian_Blur(ori_image);
-		threshold(ThreshImage, ThreshImage, 0, 255, THRESH_OTSU);
-		ShowImage(ThreshImage);
-
+		threshold(ThreshImage, ThreshImage, 0, 255, THRESH_OTSU);				
+		//ShowImage(ThreshImage);
+		//clock_t end = clock();
+		//std::cout << "THRESH_OTSU : " << end - start << std::endl;
 		return ThreshImage;
 	}
 		

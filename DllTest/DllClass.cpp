@@ -5,12 +5,6 @@
 using nlohmann::json;
 using namespace ocrmodule;
 
-extern "C" {
-	_API DllClass* _GetInstance() {
-		return new DllClass;
-	}
-}
-
 DllClass::DllClass()
 {
 	m_hwnd = GetDesktopWindow();
@@ -23,11 +17,17 @@ DllClass::DllClass()
 	//rect.right = rect.left + 150;
 	//rect.bottom = rect.top + 40;
 
-	rect.left = 550;
-	rect.top = 380;
-	rect.right = rect.left + 500;
+	//rect.left = 550;
+	//rect.top = 380;
+	//rect.right = rect.left + 500;
+	//rect.bottom = rect.top + 700;
+
+	rect.left = 300;
+	rect.top = 230;
+	rect.right = rect.left + 1200;
 	rect.bottom = rect.top + 700;
 	RECT* displayrect = &rect;
+
 	//rect(44, 0, 150, 40);
 
 	m_stopThreadAnalyze = false;
@@ -72,7 +72,7 @@ DllClass::DllClass()
 	Match = new TextMatchClass("qwertyuiopasdfghjklzxcvbnm", "zxcv", (int)Tesseract->String_Type, 3, "EQUAL");*/
 
 }
-//reset test
+
 DllClass::~DllClass()
 {
 	//if (data != nullptr)
@@ -97,10 +97,16 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	this->m_DisplayWidth = displayrect->right - displayrect->left;
 	this->m_DisplayHeight = displayrect->bottom - displayrect->top;
 
-	float startx = displayrect->left;								//(this->m_DisplayWidth / 100.f) * this->rect[0];			//모니터의 해상도에 맞게 재설정?
-	float starty = displayrect->top;								//(this->m_DisplayHeight / 100.f) * this->rect[1];
-	float fWidth = displayrect->right - displayrect->left;			//(this->m_DisplayWidth / 100.f) * this->rect[2];
-	float fHeight = displayrect->bottom - displayrect->top;			// (this->m_DisplayHeight / 100.f) * this->rect[3];
+	//float startx = displayrect->left;								//(this->m_DisplayWidth / 100.f) * this->rect[0];			//모니터의 해상도에 맞게 재설정?
+	//float starty = displayrect->top;								//(this->m_DisplayHeight / 100.f) * this->rect[1];
+	//float fWidth = displayrect->right - displayrect->left;			//(this->m_DisplayWidth / 100.f) * this->rect[2];
+	//float fHeight = displayrect->bottom - displayrect->top;			// (this->m_DisplayHeight / 100.f) * this->rect[3];
+	
+	float startx = 465;					//x좌표 시작 퍼센트
+	float starty = 320;					//y좌표 시작 퍼센트
+	float fWidth = 140;	
+	float fHeight = 60;
+
 	m_FocusArea.x = startx;
 	m_FocusArea.y = starty;
 	m_FocusArea.width = fWidth;
@@ -109,7 +115,7 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 
 	bool res = false;
 	formula = "EQUAL";
-	Base_String = "버전의";
+	Base_String = "bemwonyo";
 	Base_Num = 5;
 	moduletype = "STR";		//임시 타입 변수		//NUM or STR
 	std::string NUMTYPE = "NUM";
@@ -122,6 +128,7 @@ bool DllClass::InitModule(ModuleInfo info, RECT* displayrect) {
 	Capturer = new GDICaptureClass(m_hwnd);
 
 	ImageCV = new ImageClass();
+	ImageCV->ori_image;
 	Tesseract = new TesseractClass();
 	Match = new TextMatchClass(Base_String, Base_Num, formula);
 
@@ -160,14 +167,14 @@ void DllClass::PreImageProcess(int String_length, std::shared_ptr<unsigned char[
 
 	ImageCV->fix_image = ImageCV->Create_Mat(Capturer->nWidth, Capturer->nHeight, img.get());
 
-	ImageCV->fix_image = ImageCV->Crop(ImageCV->fix_image);					//0ms
+	ImageCV->fix_image = ImageCV->Crop(ImageCV->fix_image);							//0ms
 	//ImageCV->ShowImage(ImageCV->fix_image);
 	ImageCV->fix_image = ImageCV->Resize(ImageCV->fix_image, String_length);		//1~2ms
 	//ImageCV->ShowImage(ImageCV->fix_image);
 
-	ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);				//4~5ms
+	ImageCV->fix_image = ImageCV->GrayScale(ImageCV->fix_image);					//4~5ms
 	//ImageCV->ShowImage(ImageCV->fix_image);
-	ImageCV->fix_image = ImageCV->Thresholding(ImageCV->fix_image);				//2ms		테서렉에서 3ms정도 더 걸림
+	ImageCV->fix_image = ImageCV->Thresholding(ImageCV->fix_image);					//1 ~ 6ms		테서렉에서 3ms정도 더 걸림
 	//ImageCV->ShowImage(ImageCV->fix_image);
 
 	//if (String_Type_Num != (int)KOR) {
@@ -197,7 +204,6 @@ double DllClass::ProcessAnalyze(std::shared_ptr<unsigned char[]> img) {
 	bool Detect = CompareText(OutText);
 	//clock_t end = clock();
 	//std::cout << "GetText : " << end - start << std::endl;
-
 
 	ImageCV->Release();
 

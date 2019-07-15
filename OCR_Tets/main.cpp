@@ -31,13 +31,31 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	TestClass fptr;
 	HMODULE hDLL;
 
+	RECT rect = {
+			0,
+			0,
+			1920,
+			1080};
+
+	RECT m_ScreenRECT = rect;
+
+	//HWND hWnd = GetDesktopWindow();
+	//HDC hdc = GetWindowDC(hWnd);
+	//SetPixel(hdc, m_ScreenRECT.left, m_ScreenRECT.top, RGB(1, 1, 1));
+	//SetPixel(hdc, m_ScreenRECT.right, m_ScreenRECT.bottom, RGB(1, 1, 1));
+	////SetPixel(hdc, m_ScreenRECT.right/2, m_ScreenRECT.bottom/2, RGB(1, 1, 1));
+	//ReleaseDC(hWnd, hdc);
+	//InvalidateRect(NULL, NULL, FALSE);
+	//UpdateWindow(hWnd);
+
+
 	hDLL = LoadLibrary(L"DllTest.dll");
 	if (hDLL == NULL) {
 		std::cerr << "FIle Not Found" << std::endl;
 		return -1;
 	}
 
-	fptr = (TestClass)::GetProcAddress(hDLL, "_GetInstance");
+	fptr = (TestClass)::GetProcAddress(hDLL, "GetInstance");
 	//DllClass* GetInstance = (DllClass*)GetProcAddress(hdll, "_GetInstance");
 	if (fptr == NULL) {
 		std::cerr << "File Not Found" << std::endl;

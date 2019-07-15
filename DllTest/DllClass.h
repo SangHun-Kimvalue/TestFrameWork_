@@ -9,11 +9,11 @@
 
 //#define _API __declspec(dllexport)
 
-#ifdef _EXPORTS
-#define _API __declspec(dllexport)
-#else
-#define _API __declspec(dllexport)
-#endif
+//#ifdef _EXPORTS
+//#define _API __declspec(dllexport)
+//#else
+//#define _API __declspec(dllimport)
+//#endif
 
 class DllClass : public BaseAlertModule
 {
@@ -103,8 +103,4 @@ private:
 	Rect2f			m_FocusArea;
 
 };
-
-extern "C" _API DllClass* _GetInstance();
-
-
 

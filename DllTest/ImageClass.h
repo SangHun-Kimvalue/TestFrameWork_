@@ -27,7 +27,7 @@ public:
 	int c_wid;
 	int c_hei;
 
-
+	Mat ori_image;
 	Mat fix_image;
 
 	Mat Create_Mat(int ori_wid, int ori_hei, unsigned char* src);
@@ -48,7 +48,7 @@ public:
 
 private:
 
-	Mat ori_image;
+	
 
 	int base_height;
 	int base_width;

@@ -158,6 +158,7 @@ copy $(SolutionDir)Libs\tesseract\tesseract50.lib $(OutDir)
     <ClCompile Include="GDICaptureClass.cpp" />
     <ClCompile Include="ImageClass.cpp" />
     <ClCompile Include="msgcontrol.cpp" />
+    <ClCompile Include="ocrdll.cpp" />
     <ClCompile Include="TesseractClass.cpp" />
     <ClCompile Include="TextMatchClass.cpp" />
   </ItemGroup>
