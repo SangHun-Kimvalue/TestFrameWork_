@@ -72,7 +72,7 @@ DllClass::DllClass()
 	Match = new TextMatchClass("qwertyuiopasdfghjklzxcvbnm", "zxcv", (int)Tesseract->String_Type, 3, "EQUAL");*/
 
 }
-
+//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 DllClass::~DllClass()
 {
 	//if (data != nullptr)
