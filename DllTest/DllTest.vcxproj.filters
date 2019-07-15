@@ -36,6 +36,9 @@
     <ClCompile Include="msgcontrol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ocrdll.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
