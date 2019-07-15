@@ -72,9 +72,8 @@ DllClass::DllClass()
 	Match = new TextMatchClass("qwertyuiopasdfghjklzxcvbnm", "zxcv", (int)Tesseract->String_Type, 3, "EQUAL");*/
 
 }
-//reset test
 
-DllClass::~DllClass(){
+DllClass::~DllClass(){//aa
 	//if (data != nullptr)
 	//{
 	//	m_img_input.release();
