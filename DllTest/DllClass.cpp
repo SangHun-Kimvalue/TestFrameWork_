@@ -74,8 +74,6 @@ DllClass::DllClass()
 }
 //reset test
 
-//asdf
-
 DllClass::~DllClass(){
 	//if (data != nullptr)
 	//{
