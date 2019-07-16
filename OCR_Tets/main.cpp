@@ -49,6 +49,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	//UpdateWindow(hWnd);
 
 
+	//ÇÑ±Û±úÁü ÀÌ½´ Å×½ºÆ®
+
 	hDLL = LoadLibrary(L"DllTest.dll");
 	if (hDLL == NULL) {
 		std::cerr << "FIle Not Found" << std::endl;
