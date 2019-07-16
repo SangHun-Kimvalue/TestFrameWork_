@@ -73,7 +73,8 @@ DllClass::DllClass()
 
 }
 
-DllClass::~DllClass(){
+DllClass::~DllClass()
+{
 	//if (data != nullptr)
 	//{
 	//	m_img_input.release();
