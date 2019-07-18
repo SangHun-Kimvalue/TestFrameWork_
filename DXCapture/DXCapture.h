@@ -3,6 +3,8 @@
 #include "pch.h"
 #include <iostream>
 #include <vector>
+#include <shlobj.h>
+#include <algorithm>
 
 #include <d3d11.h>
 #include <dxgi1_2.h>
@@ -25,8 +27,8 @@ private:
 	void Release();
 	HRESULT Capture();
 	std::vector<IDXGIAdapter*> GetAdapter();
-	HRESULT CreateDevice(std::vector<IDXGIAdapter*> AdapterLists, int Monitor_index);
-	HRESULT InitResource(std::vector<IDXGIAdapter*> AdapterList, int Monitor_index);
+	HRESULT CreateDevice();
+	HRESULT InitResource();
 
 	// Driver types supported
 	ID3D11Device* lDevice;
@@ -38,5 +40,8 @@ private:
 
 	DXGI_OUTPUT_DESC lOutputDesc;
 	DXGI_OUTDUPL_DESC lOutputDuplDesc;
+
+	std::vector<IDXGIAdapter*> AdapterList;
+	IDXGIAdapter* lDxgiAdapter;
 
 };

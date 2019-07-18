@@ -32,3 +32,5 @@
 /MemoryDetect/pch.cpp
 /MemoryDetect/MemoryDetect.vcxproj.filters
 /MemoryDetect/MemoryDetect.vcxproj
+/DXCapture/x64/Debug/DXCapture.tlog
+/DXCapture/x64/Debug/*.idb
