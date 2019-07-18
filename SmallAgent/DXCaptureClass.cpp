@@ -1,7 +1,7 @@
-// DXCapture.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// DXCapClassapture.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 #include "pch.h"
-#include "DXCapture.h"
+#include "DXCaptureClass.h"
 
 D3D_DRIVER_TYPE gDriverTypes[] =
 {
@@ -31,23 +31,22 @@ void Check(HRESULT hr, const char* string) {
 	}
 }
 
-DXC::DXC() {
+DXCapClass::DXCapClass() {
 
 	HRESULT hr;
 
 	InitCap();
 
-	hr = Capture();
-	Check(hr, "Capture Error");
-
+	
+		
 }
 
-DXC::~DXC() {
+DXCapClass::~DXCapClass() {
 
 	Release();
 }
 
-void DXC::InitCap() {
+void DXCapClass::InitCap() {
 
 	HRESULT hr = E_FAIL;
 
@@ -63,7 +62,7 @@ void DXC::InitCap() {
 	return;
 }
 
-std::vector<IDXGIAdapter*> DXC::GetAdapter() {
+std::vector<IDXGIAdapter*> DXCapClass::GetAdapter() {
 
 	IDXGIAdapter * pAdapter;
 	std::vector <IDXGIAdapter*> vAdapters;
@@ -87,7 +86,7 @@ std::vector<IDXGIAdapter*> DXC::GetAdapter() {
 	return vAdapters;
 }
 
-HRESULT DXC::InitResource() {
+HRESULT DXCapClass::InitResource() {
 
 	HRESULT hr = E_FAIL;
 
@@ -159,7 +158,7 @@ HRESULT DXC::InitResource() {
 	return hr;
 }
 
-HRESULT DXC::CreateDevice() {
+HRESULT DXCapClass::CreateDevice() {
 
 	HRESULT hr = E_FAIL;
 	D3D_FEATURE_LEVEL lFeatureLevel;
@@ -226,7 +225,7 @@ HRESULT DXC::CreateDevice() {
 	return hr;
 }
 
-void DXC::Release() {
+void DXCapClass::Release() {
 
 
 	if (lDevice) {
@@ -268,7 +267,7 @@ void DXC::Release() {
 	return;
 }
 
-HRESULT DXC::Capture() {
+HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 
 	HRESULT hr = S_OK;
 
@@ -320,7 +319,7 @@ HRESULT DXC::Capture() {
 	lImmediateContext->CopyResource(lGDIImage, lAcquiredDesktopImage);
 	
 	IDXGISurface1* lIDXGISurface1;
-
+	
 	hr = lGDIImage->QueryInterface(IID_PPV_ARGS(&lIDXGISurface1)); 
 	if (FAILED(hr))
 	{
@@ -359,17 +358,22 @@ HRESULT DXC::Capture() {
 		}
 
 	}
-	//lIDXGISurface1->Release();
+	lIDXGISurface1->Release();
 
 	// Copy image into CPU access texture
 	lImmediateContext->CopyResource(lDestImage, lGDIImage);
 
 	D3D11_MAPPED_SUBRESOURCE resource;
-	UINT subresource = D3D11CalcSubresource(0, 0, 0);
-	lImmediateContext->Map(lDestImage, subresource, D3D11_MAP_READ_WRITE, 0, &resource);
-	//BYTE* sptr = reinterpret_cast<BYTE*>(resource.pData);
-	BITMAPINFO	lBmpInfo;
+	lImmediateContext->Map(lDestImage, 0, D3D11_MAP_READ_WRITE, 0, &resource);
 
+	BYTE* sptr = reinterpret_cast<BYTE*>(resource.pData);
+	memcpy(I_data.get(), sptr, resource.RowPitch * lOutputDuplDesc.ModeDesc.Height);
+
+	lImmediateContext->Unmap(lDestImage, 0);
+	lDeskDupl->ReleaseFrame();
+
+	BITMAPINFO	lBmpInfo;
+	
 	// BMP 32 bpp
 
 	ZeroMemory(&lBmpInfo, sizeof(BITMAPINFO));
@@ -389,14 +393,11 @@ HRESULT DXC::Capture() {
 	lBmpInfo.bmiHeader.biSizeImage = lOutputDuplDesc.ModeDesc.Width
 		* lOutputDuplDesc.ModeDesc.Height * 4;
 
-
-	std::unique_ptr<BYTE> pBuf(new BYTE[lBmpInfo.bmiHeader.biSizeImage]);
-
-
 	UINT lBmpRowPitch = lOutputDuplDesc.ModeDesc.Width * 4;
-
-	BYTE* sptr = reinterpret_cast<BYTE*>(resource.pData);
+	std::unique_ptr<BYTE> pBuf(new BYTE[lBmpInfo.bmiHeader.biSizeImage]);
 	BYTE* dptr = pBuf.get() + lBmpInfo.bmiHeader.biSizeImage - lBmpRowPitch;
+	
+	
 
 	UINT lRowPitch = std::min<UINT>(lBmpRowPitch, resource.RowPitch);
 
@@ -452,7 +453,9 @@ HRESULT DXC::Capture() {
 		//ShellExecute(0, 0, lFilePath.c_str(), 0, 0, SW_SHOW);
 
 		//lresult = 0;
-
+		std::string temp;
+		temp.assign(lFilePath.begin(), lFilePath.end());
+		std::cout << "Save File to bmp : \t" << temp.c_str() << std::endl;
 	}
 	return hr;
 

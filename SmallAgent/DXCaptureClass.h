@@ -5,6 +5,7 @@
 #include <vector>
 #include <shlobj.h>
 #include <algorithm>
+#include <thread>
 
 #include <d3d11.h>
 #include <dxgi1_2.h>
@@ -14,21 +15,24 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
 
-class DXC {
+class DXCapClass {
 
 public:
 
-	DXC();
-	~DXC();
+	DXCapClass();
+	~DXCapClass();
+	HRESULT Capture(std::shared_ptr<BYTE> I_data);
+
 
 private:
 
 	void InitCap();
 	void Release();
-	HRESULT Capture();
+	
 	std::vector<IDXGIAdapter*> GetAdapter();
 	HRESULT CreateDevice();
 	HRESULT InitResource();
+	//HRESULT Capture(std::shared_ptr<BYTE> I_data);
 
 	// Driver types supported
 	ID3D11Device* lDevice;
@@ -43,5 +47,7 @@ private:
 
 	std::vector<IDXGIAdapter*> AdapterList;
 	IDXGIAdapter* lDxgiAdapter;
+
+	std::thread t_capture;
 
 };
