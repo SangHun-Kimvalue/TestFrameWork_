@@ -34,3 +34,10 @@
 /MemoryDetect/MemoryDetect.vcxproj
 /DXCapture/x64/Debug/DXCapture.tlog
 /DXCapture/x64/Debug/*.idb
+/SmallAgent/.vs/DXCapture/v15/ipch
+/SmallAgent/Debug/DXCapture.tlog
+/SmallAgent/Debug/vc141.idb
+/SmallAgent/.vs/DXCapture/v15
+/SmallAgent/x64/Debug/DXCapture.tlog
+/SmallAgent/x64/Debug/vc141.idb
+/SmallAgent/ScreenShot.bmp

@@ -411,9 +411,12 @@ HRESULT DXC::Capture() {
 
 	// Save bitmap buffer into the file ScreenShot.bmp
 
-	WCHAR lMyDocPath[MAX_PATH];
+	//WCHAR lMyDocPath[MAX_PATH];
 
-	hr = SHGetFolderPath(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_CURRENT, lMyDocPath);
+	//hr = SHGetFolderPath(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_CURRENT, lMyDocPath);
+	
+	std::wstring lMyDocPath = L"D:\\Visual_Local_Repo\\SmallAgent";
+
 
 	if (FAILED(hr))
 		return hr ;
