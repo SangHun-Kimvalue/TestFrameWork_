@@ -1,7 +1,6 @@
 #pragma once
 
 #include "pch.h"
-#include <iostream>
 #include <vector>
 #include <shlobj.h>
 #include <algorithm>
@@ -29,9 +28,9 @@ private:
 	void InitCap();
 	void Release();
 	
-	std::vector<IDXGIAdapter*> GetAdapter();
+	HRESULT GetAdapter();
 	HRESULT CreateDevice();
-	HRESULT InitResource();
+	HRESULT InitResource(int index);
 	//HRESULT Capture(std::shared_ptr<BYTE> I_data);
 
 	// Driver types supported
@@ -45,8 +44,10 @@ private:
 	DXGI_OUTPUT_DESC lOutputDesc;
 	DXGI_OUTDUPL_DESC lOutputDuplDesc;
 
-	std::vector<IDXGIAdapter*> AdapterList;
+	//std::vector<IDXGIAdapter*> AdapterList;
 	IDXGIAdapter* lDxgiAdapter;
+	bool Savetobmp(int wid, int hei, unsigned char * sptr);
+
 
 	std::thread t_capture;
 

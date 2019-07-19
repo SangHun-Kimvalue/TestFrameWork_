@@ -7,7 +7,8 @@ int main()
 {
 	HRESULT hr;
 	DXCapClass* Capture = new DXCapClass();
-	NVEClass* Encode = new NVEClass;
+	NVEClass* Encode = new NVEClass(1920, 1080);			//넓이 높이 받아와야함.
+
 
 	//std::shared_ptr<BYTE> I_data(new BYTE[m_CaptureWidth * m_CaptureHeight * 4], std::default_delete<BYTE[]>());
 	std::shared_ptr<BYTE> I_data(new BYTE[1920 * 1080 * 4], std::default_delete<BYTE[]>());

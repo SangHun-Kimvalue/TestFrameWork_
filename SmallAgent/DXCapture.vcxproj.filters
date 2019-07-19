@@ -13,6 +13,15 @@
     <ClCompile Include="NVEClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NVDClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NvEncoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NvEncoderD3D11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -22,6 +31,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NVEClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Frame_Info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NVDClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NvEncoderD3D11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NvEncoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

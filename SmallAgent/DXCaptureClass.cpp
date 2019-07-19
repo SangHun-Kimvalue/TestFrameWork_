@@ -3,42 +3,12 @@
 #include "pch.h"
 #include "DXCaptureClass.h"
 
-D3D_DRIVER_TYPE gDriverTypes[] =
-{
-	D3D_DRIVER_TYPE_HARDWARE
-};
-UINT gNumDriverTypes = ARRAYSIZE(gDriverTypes);
-
-// Feature levels supported
-D3D_FEATURE_LEVEL gFeatureLevels[] =
-{
-	D3D_FEATURE_LEVEL_11_0,
-	D3D_FEATURE_LEVEL_10_1,
-	D3D_FEATURE_LEVEL_10_0,
-	D3D_FEATURE_LEVEL_9_1
-};
-
-UINT gNumFeatureLevels = ARRAYSIZE(gFeatureLevels);
-
-void Check(HRESULT hr, const char* string) {
-
-	if (FAILED(hr))
-	{
-		std::cerr << string << std::endl;
-		Sleep(1000);
-		std::cin; std::cin; std::cin;
-		return;
-	}
-}
-
 DXCapClass::DXCapClass() {
 
 	HRESULT hr;
 
 	InitCap();
 
-	
-		
 }
 
 DXCapClass::~DXCapClass() {
@@ -50,50 +20,142 @@ void DXCapClass::InitCap() {
 
 	HRESULT hr = E_FAIL;
 
-	int Monitor_index = 0;
+	int Monitor_index = 1;
 
-	//std::vector<IDXGIAdapter*> AdapterList = GetAdapter();
-	
+	//GetAdapter();
+
 	hr = CreateDevice();
 	Check(hr,"CreateDevice");
-	hr = InitResource();
+	hr = InitResource(Monitor_index);
 	Check(hr, "InitResource");
 
 	return;
 }
 
-std::vector<IDXGIAdapter*> DXCapClass::GetAdapter() {
+HRESULT DXCapClass::GetAdapter() {
 
 	IDXGIAdapter * pAdapter;
-	std::vector <IDXGIAdapter*> vAdapters;
+
 	IDXGIFactory* pFactory = NULL;
 
+
 	// Create a DXGIFactory object.
-	if (FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&pFactory))){
-		return vAdapters;
+	if (FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&pFactory))) {
+		return E_FAIL;
 	}
 
 	for (UINT i = 0;
 		pFactory->EnumAdapters(i, &pAdapter) != DXGI_ERROR_NOT_FOUND;
-		++i){
-		vAdapters.push_back(pAdapter);
+		++i) {
+		//AdapterList.push_back(pAdapter);
 	}
+
+	IDXGIOutput *ppOutput;
+	std::vector<IDXGIOutput*> OutputList;
+	//for (UINT i = 0; AdapterList.at(0)->EnumOutputs(i, &ppOutput) != DXGI_ERROR_NOT_FOUND; ++i) {
+	//	OutputList.push_back(ppOutput);
+	//}
 
 	if (pFactory){
 		pFactory->Release();
 	}
 
-	return vAdapters;
+	return S_OK;
 }
 
-HRESULT DXCapClass::InitResource() {
+HRESULT DXCapClass::CreateDevice() {
+
+	HRESULT hr = E_FAIL;
+	D3D_FEATURE_LEVEL lFeatureLevel;
+
+	D3D_DRIVER_TYPE gDriverTypes[] =
+	{
+		D3D_DRIVER_TYPE_HARDWARE
+	};
+	UINT gNumDriverTypes = ARRAYSIZE(gDriverTypes);
+
+	// Feature levels supported
+	D3D_FEATURE_LEVEL gFeatureLevels[] =
+	{
+		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_1,
+		D3D_FEATURE_LEVEL_10_0,
+		D3D_FEATURE_LEVEL_9_1
+	};
+
+	UINT gNumFeatureLevels = ARRAYSIZE(gFeatureLevels);
+
+
+	//IDXGIAdapter* tempAdap = AdapterList.at(Monitor_index);
+
+	for (UINT DriverTypeIndex = 0; DriverTypeIndex < gNumDriverTypes; ++DriverTypeIndex)
+	{
+
+		hr = D3D11CreateDevice(
+			nullptr,
+			gDriverTypes[DriverTypeIndex],
+			nullptr,
+			0,
+			gFeatureLevels,
+			gNumFeatureLevels,
+			D3D11_SDK_VERSION,
+			&lDevice,
+			&lFeatureLevel,
+			&lImmediateContext);
+
+		if (SUCCEEDED(hr))
+		{
+			// Device creation success, no need to loop anymore
+			break;
+		}
+
+		lDevice->Release();
+
+		lImmediateContext->Release();
+	}
+
+	if (FAILED(hr))
+		return hr;
+
+	Sleep(100);
+
+	if (lDevice == nullptr)
+		return hr;
+
+	Check(hr, "D3D11CreateDevice");
+
+	// Get DXGI device
+	IDXGIDevice* lDxgiDevice;
+
+	hr = lDevice->QueryInterface(IID_PPV_ARGS(&lDxgiDevice));
+
+	if (FAILED(hr))
+		return hr;
+
+	// Get DXGI adapter
+
+	hr = lDxgiDevice->GetParent(
+		__uuidof(IDXGIAdapter),
+		reinterpret_cast<void**>(&lDxgiAdapter));
+
+	if (FAILED(hr))
+		return hr;
+
+	lDxgiDevice->Release();
+
+	//AdapterList.push_back(lDxgiAdapter);
+
+	return hr;
+}
+
+HRESULT DXCapClass::InitResource(int index) {
 
 	HRESULT hr = E_FAIL;
 
-	UINT Output = 0;
+	UINT Output = index;
 
 	IDXGIOutput* lDxgiOutput;
-	IDXGIAdapter* Adaptertemp = AdapterList.at(0);
+	IDXGIAdapter* Adaptertemp = lDxgiAdapter;
 	hr = Adaptertemp->EnumOutputs(Output, &lDxgiOutput);
 	Check(hr, "EnumOutputs");
 	if (Adaptertemp)
@@ -158,73 +220,6 @@ HRESULT DXCapClass::InitResource() {
 	return hr;
 }
 
-HRESULT DXCapClass::CreateDevice() {
-
-	HRESULT hr = E_FAIL;
-	D3D_FEATURE_LEVEL lFeatureLevel;
-
-
-	//IDXGIAdapter* tempAdap = AdapterList.at(Monitor_index);
-
-	for (UINT DriverTypeIndex = 0; DriverTypeIndex < gNumDriverTypes; ++DriverTypeIndex)
-	{
-		hr = D3D11CreateDevice(
-			nullptr,
-			gDriverTypes[DriverTypeIndex],
-			nullptr,
-			0,
-			gFeatureLevels,
-			gNumFeatureLevels,
-			D3D11_SDK_VERSION,
-			&lDevice,
-			&lFeatureLevel,
-			&lImmediateContext);
-
-		if (SUCCEEDED(hr))
-		{
-			// Device creation success, no need to loop anymore
-			break;
-		}
-
-		lDevice->Release();
-
-		lImmediateContext->Release();
-	}
-
-	if (FAILED(hr))
-		return hr;
-
-	Sleep(100);
-
-	if (lDevice == nullptr)
-		return hr;
-
-	Check(hr, "D3D11CreateDevice");
-
-		// Get DXGI device
-	IDXGIDevice* lDxgiDevice;
-
-	hr = lDevice->QueryInterface(IID_PPV_ARGS(&lDxgiDevice));
-
-	if (FAILED(hr))
-		return hr;
-
-	// Get DXGI adapter
-	
-	hr = lDxgiDevice->GetParent(
-		__uuidof(IDXGIAdapter),
-		reinterpret_cast<void**>(&lDxgiAdapter));
-
-	if (FAILED(hr))
-		return hr;
-
-	lDxgiDevice->Release();
-
-	AdapterList.push_back(lDxgiAdapter);
-
-	return hr;
-}
-
 void DXCapClass::Release() {
 
 
@@ -258,11 +253,11 @@ void DXCapClass::Release() {
 		lDestImage = NULL;
 	}
 
-	if (AdapterList.empty() == false) {
-		for(int i = 0 ; i < AdapterList.size(); i++)
-			AdapterList.at(i)->Release();
-		AdapterList.clear();
-	}
+	//if (AdapterList.empty() == false) {
+	//	for(int i = 0 ; i < AdapterList.size(); i++)
+	//		AdapterList.at(i)->Release();
+	//	AdapterList.clear();
+	//}
 
 	return;
 }
@@ -372,8 +367,16 @@ HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 	lImmediateContext->Unmap(lDestImage, 0);
 	lDeskDupl->ReleaseFrame();
 
+	Savetobmp(lOutputDuplDesc.ModeDesc.Width, lOutputDuplDesc.ModeDesc.Height, I_data.get());
+
+	return hr;
+
+}
+
+bool DXCapClass::Savetobmp(int wid, int hei, unsigned char * sptr) {
+
 	BITMAPINFO	lBmpInfo;
-	
+
 	// BMP 32 bpp
 
 	ZeroMemory(&lBmpInfo, sizeof(BITMAPINFO));
@@ -384,29 +387,28 @@ HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 
 	lBmpInfo.bmiHeader.biCompression = BI_RGB;
 
-	lBmpInfo.bmiHeader.biWidth = lOutputDuplDesc.ModeDesc.Width;
+	lBmpInfo.bmiHeader.biWidth = wid;
 
-	lBmpInfo.bmiHeader.biHeight = lOutputDuplDesc.ModeDesc.Height;
+	lBmpInfo.bmiHeader.biHeight = hei;
 
 	lBmpInfo.bmiHeader.biPlanes = 1;
 
-	lBmpInfo.bmiHeader.biSizeImage = lOutputDuplDesc.ModeDesc.Width
-		* lOutputDuplDesc.ModeDesc.Height * 4;
+	lBmpInfo.bmiHeader.biSizeImage = wid * hei * 4;
 
-	UINT lBmpRowPitch = lOutputDuplDesc.ModeDesc.Width * 4;
+	UINT lBmpRowPitch = wid * 4;
 	std::unique_ptr<BYTE> pBuf(new BYTE[lBmpInfo.bmiHeader.biSizeImage]);
 	BYTE* dptr = pBuf.get() + lBmpInfo.bmiHeader.biSizeImage - lBmpRowPitch;
-	
-	
-
-	UINT lRowPitch = std::min<UINT>(lBmpRowPitch, resource.RowPitch);
 
 
-	for (size_t h = 0; h < lOutputDuplDesc.ModeDesc.Height; ++h)
+
+	UINT lRowPitch = std::min<UINT>(lBmpRowPitch, wid * 4);
+
+
+	for (size_t h = 0; h < hei; ++h)
 	{
 
 		memcpy_s(dptr, lBmpRowPitch, sptr, lRowPitch);
-		sptr += resource.RowPitch;
+		sptr += wid * 4;
 		dptr -= lBmpRowPitch;
 	}
 
@@ -415,16 +417,10 @@ HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 	//WCHAR lMyDocPath[MAX_PATH];
 
 	//hr = SHGetFolderPath(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_CURRENT, lMyDocPath);
-	
+
 	std::wstring lMyDocPath = L"D:\\Visual_Local_Repo\\SmallAgent";
 
-
-	if (FAILED(hr))
-		return hr ;
-
 	std::wstring lFilePath = std::wstring(lMyDocPath) + L"\\ScreenShot.bmp";
-
-
 
 	FILE* lfile = nullptr;
 
@@ -457,6 +453,5 @@ HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 		temp.assign(lFilePath.begin(), lFilePath.end());
 		std::cout << "Save File to bmp : \t" << temp.c_str() << std::endl;
 	}
-	return hr;
-
+	return true;
 }
