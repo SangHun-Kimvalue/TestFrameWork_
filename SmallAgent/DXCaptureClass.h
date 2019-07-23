@@ -26,8 +26,9 @@ public:
 	HRESULT Capture(std::shared_ptr<BYTE> I_data);
 	ID3D11Texture2D* GetTex();
 	ID3D11Device* GetDevice();
-	ID3D11Texture2D* lAcquiredDesktopImage;
 	ID3D11DeviceContext* GetDC();
+	int nwid;
+	int nhei;
 
 private:
 
@@ -43,6 +44,7 @@ private:
 	ID3D11Device* lDevice;
 	ID3D11DeviceContext* lImmediateContext;
 	ComPtr<IDXGIOutputDuplication> lDeskDupl;
+	ID3D11Texture2D* lAcquiredDesktopImage;
 	
 	ComPtr<ID3D11Texture2D> lGDIImage;
 	ComPtr<ID3D11Texture2D> lDestImage;
@@ -53,6 +55,7 @@ private:
 
 	//std::vector<IDXGIAdapter*> AdapterList;
 	IDXGIAdapter* lDxgiAdapter;
+	
 	bool Savetobmp(int wid, int hei, unsigned char * sptr);
 
 

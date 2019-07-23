@@ -178,7 +178,9 @@ HRESULT DXCapClass::InitResource(int index) {
 	}
 
 	lDeskDupl->GetDesc(&lOutputDuplDesc);
-	
+	nwid = lOutputDuplDesc.ModeDesc.Width;
+	nhei= lOutputDuplDesc.ModeDesc.Height;
+
 	D3D11_TEXTURE2D_DESC Due_desc;
 
 	Due_desc.Width = lOutputDuplDesc.ModeDesc.Width;
@@ -225,43 +227,32 @@ void DXCapClass::Release() {
 
 	if (lDevice) {
 		lDevice->Release();
-		//lDevice = NULL;
 	}
 
 	if (lImmediateContext) {
 		lImmediateContext->Release();
-		//lImmediateContext = NULL;
 	}
 
 	if (lDeskDupl) {
 		lDeskDupl->Release();
-		//lDeskDupl = NULL;
 	}
 
 	if (lAcquiredDesktopImage) {
 		lAcquiredDesktopImage->Release();
-		//lAcquiredDesktopImage = NULL;
 	}
 
-	if (lGDIImage) {
-		lGDIImage->Release();
-		//lGDIImage = NULL;
-	}
+	//if (lGDIImage) {
+	//	lGDIImage->Release();
+	//	//lGDIImage = NULL;
+	//}
 
 	if (lDestImage) {
 		lDestImage->Release();
-		//lDestImage = NULL;
 	}
 
 	if (DesktopResource) {
 		DesktopResource->Release();
 	}
-
-	//if (AdapterList.empty() == false) {
-	//	for(int i = 0 ; i < AdapterList.size(); i++)
-	//		AdapterList.at(i)->Release();
-	//	AdapterList.clear();
-	//}
 
 	return;
 }
@@ -296,7 +287,6 @@ HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 	if (lAcquiredDesktopImage)
 	{
 		lAcquiredDesktopImage->Release();
-		//lAcquiredDesktopImage = NULL;
 	}
 
 	// QI for IDXGIResource
@@ -306,8 +296,6 @@ HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 		std::cerr << "DesktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&lAcquiredDesktopImage));" << std::endl;
 		return hr;
 	}
-	
-	//lDestImage = NULL;
 
 	if (lAcquiredDesktopImage == nullptr) {
 		std::cerr << "lAcquiredDesktopImage Capture Error" << std::endl;
@@ -356,7 +344,7 @@ HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 		}
 
 	}
-	lIDXGISurface1->Release();
+	//lIDXGISurface1->Release();
 
 	// Copy image into CPU access texture
 	lImmediateContext->CopyResource(lDestImage.Get(), lGDIImage.Get());
