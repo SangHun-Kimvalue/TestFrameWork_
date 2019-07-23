@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "DXCaptureClass.h"
 #include "NVEClass.h"
+#include "F_DecodeClass.h"
 #include <thread>
 
 int main()

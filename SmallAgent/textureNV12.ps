@@ -1,0 +1,122 @@
+/*
+////////////////////////////////////////////////////////////////////////////////
+// Filename: texture.ps
+////////////////////////////////////////////////////////////////////////////////
+
+/////////////
+// GLOBALS //
+/////////////
+Texture2D shaderTextureY : register(t0);
+Texture2D shaderTextureUV : register(t1);
+SamplerState SampleType;
+
+//////////////
+// TYPEDEFS //
+//////////////
+struct PixelInputType
+{
+	float4 position : SV_POSITION;
+	float2 tex : TEXCOORD0;
+};
+
+struct PixelOutputType
+{
+	float4 tex : TEXCOORD0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Pixel Shader
+////////////////////////////////////////////////////////////////////////////////
+
+float4 YUV_Convert_RGB(PixelInputType input)
+{
+
+	float Y = (1.1643f *shaderTextureY.Sample(SampleType, input.tex).r) - 0.0625f;
+	float U = shaderTextureUV.Sample(SampleType, input.tex).r - 0.5f;
+	float V = shaderTextureUV.Sample(SampleType, input.tex).r - 0.5f;
+
+	float4	color;
+	color.r = Y + 1.13983f * V;
+	color.g = Y - 0.39465f * U - 0.58060f * V;
+	color.b = Y + 2.03211f * U;
+	color.a = 1.0f;
+
+	return color;
+}
+
+float4 TexturePixelShader(PixelInputType input) : SV_TARGET
+{
+
+	return YUV_Convert_RGB(input);
+}
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//*********************************************************
+//
+// Copyright (c) Microsoft. All rights reserved.
+// This code is licensed under the MIT License (MIT).
+// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
+// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
+// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
+//
+//*********************************************************
+
+// Per-pixel color data passed through the pixel shader.
+struct PixelShaderInput
+{
+	float4 pos : SV_POSITION;
+	float2 texCoord : TEXCOORD0;
+};
+
+Texture2D<float>  luminanceChannel   : t0;
+Texture2D<float2> chrominanceChannel : t1;
+SamplerState      defaultSampler     : s0;
+
+// Derived from https://msdn.microsoft.com/en-us/library/windows/desktop/dd206750(v=vs.85).aspx
+// Section: Converting 8-bit YUV to RGB888
+static const float3x3 YUVtoRGBCoeffMatrix =
+{
+	1.164383f,  1.164383f, 1.164383f,
+	0.000000f, -0.391762f, 2.017232f,
+	1.596027f, -0.812968f, 0.000000f
+};
+
+float3 ConvertYUVtoRGB(float3 yuv)
+{
+	// Derived from https://msdn.microsoft.com/en-us/library/windows/desktop/dd206750(v=vs.85).aspx
+	// Section: Converting 8-bit YUV to RGB888
+
+	// These valuets are calculated from (16 / 255) and (128 / 255)
+	yuv -= float3(0.062745f, 0.501960f, 0.501960f);
+	yuv = mul(yuv, YUVtoRGBCoeffMatrix);
+
+	return saturate(yuv);
+}
+
+float4 TexturePixelShader(PixelShaderInput input) : SV_TARGET
+{
+	float y = luminanceChannel.Sample(defaultSampler, input.texCoord);
+	float2 uv = chrominanceChannel.Sample(defaultSampler, input.texCoord);
+
+	return float4(ConvertYUVtoRGB(float3(y, uv)), 1.f);
+}

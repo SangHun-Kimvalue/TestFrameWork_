@@ -25,6 +25,24 @@
     <ClCompile Include="NVDClass.cpp">
       <Filter>Source Files\Decode\NVDEC</Filter>
     </ClCompile>
+    <ClCompile Include="D3Dclass.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="FramequeueClass.cpp">
+      <Filter>Source Files\System&amp;Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="systemclass.cpp">
+      <Filter>Source Files\System&amp;Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="Local_fileClass.cpp">
+      <Filter>Source Files\System&amp;Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceClass.cpp">
+      <Filter>Source Files\System&amp;Queue</Filter>
+    </ClCompile>
+    <ClCompile Include="Decoder_f.cpp">
+      <Filter>Source Files\Decode\FFMPEG</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -50,6 +68,24 @@
     </ClInclude>
     <ClInclude Include="NVDClass.h">
       <Filter>Source Files\Decode\NVDEC</Filter>
+    </ClInclude>
+    <ClInclude Include="D3Dclass.h">
+      <Filter>Source Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="FramequeueClass.h">
+      <Filter>Source Files\System&amp;Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="systemclass.h">
+      <Filter>Source Files\System&amp;Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="Local_fileClass.h">
+      <Filter>Source Files\System&amp;Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="SourceClass.h">
+      <Filter>Source Files\System&amp;Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="Decoder_f.h">
+      <Filter>Source Files\Decode\FFMPEG</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +121,9 @@
     </Filter>
     <Filter Include="Source Files\Decode\FFMPEG">
       <UniqueIdentifier>{823aa5fa-0639-42b8-84f6-08ff7982ee12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\System&amp;Queue">
+      <UniqueIdentifier>{1e7c3c3b-a377-43f8-9740-154783395b92}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

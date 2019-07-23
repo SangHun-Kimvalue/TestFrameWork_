@@ -1,0 +1,41 @@
+////////////////////////////////////////////////////////////////////////////////
+// Filename: texture.ps
+////////////////////////////////////////////////////////////////////////////////
+
+/////////////
+// GLOBALS //
+/////////////
+Texture2D shaderTexture;
+SamplerState SampleType;
+
+//////////////
+// TYPEDEFS //
+//////////////
+struct PixelInputType
+{
+    float4 position : SV_POSITION;			//순서에 영향을 받음(폴리곤 때문)
+	float2 tex : TEXCOORD0;
+	//float4 color : COLOR;
+	float2 index : TEXCOORD0;
+};
+
+struct PixelOutputType
+{
+    float4 tex : TEXCOORD0;
+    //float4 color : COLOR;
+	float2 index : TEXCOORD0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Pixel Shader
+////////////////////////////////////////////////////////////////////////////////
+
+PixelOutputType TexturePixelShader(PixelInputType input) : SV_TARGET
+{
+	PixelOutputType Output;
+
+    // Sample the pixel color from the texture using the sampler at this texture coordinate location.
+	Output.tex		= shaderTexture.Sample(SampleType, input.tex);
+	
+	return Output;
+}
