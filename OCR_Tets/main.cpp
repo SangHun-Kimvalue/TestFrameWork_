@@ -50,6 +50,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	//rebase test1
 	//rebase test2
 
+	//ÇÑ±Û±úÁü ÀÌ½´ Å×½ºÆ®2
+
 	hDLL = LoadLibrary(L"DllTest.dll");
 	if (hDLL == NULL) {
 		std::cerr << "FIle Not Found" << std::endl;

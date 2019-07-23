@@ -32,3 +32,15 @@
 /MemoryDetect/pch.cpp
 /MemoryDetect/MemoryDetect.vcxproj.filters
 /MemoryDetect/MemoryDetect.vcxproj
+/DXCapture/x64/Debug/DXCapture.tlog
+/DXCapture/x64/Debug/*.idb
+/SmallAgent/.vs/DXCapture/v15/ipch
+/SmallAgent/Debug/DXCapture.tlog
+/SmallAgent/Debug/vc141.idb
+/SmallAgent/.vs/DXCapture/v15
+/SmallAgent/x64/Debug/DXCapture.tlog
+/SmallAgent/x64/Debug/vc141.idb
+/SmallAgent/ScreenShot.bmp
+/DXCapture/x64/Debug/Small_Agent.tlog
+/SmallAgent/x64/Debug/SmallAgent.tlog
+/Libs/NVENC/Lib/linux/stubs/x86_64

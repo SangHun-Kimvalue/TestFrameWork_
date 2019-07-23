@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NVEClass.cpp">
+      <Filter>Source Files\Encode\NVENC</Filter>
+    </ClCompile>
+    <ClCompile Include="NvEncoder.cpp">
+      <Filter>Source Files\Encode\NVENC</Filter>
+    </ClCompile>
+    <ClCompile Include="NvEncoderD3D11.cpp">
+      <Filter>Source Files\Encode\NVENC</Filter>
+    </ClCompile>
+    <ClCompile Include="Preproc.cpp">
+      <Filter>Source Files\Encode\NVENC</Filter>
+    </ClCompile>
+    <ClCompile Include="DXCaptureClass.cpp">
+      <Filter>Source Files\Capture\DXGICapture</Filter>
+    </ClCompile>
+    <ClCompile Include="NVDClass.cpp">
+      <Filter>Source Files\Decode\NVDEC</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Frame_Info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NVEClass.h">
+      <Filter>Source Files\Encode\NVENC</Filter>
+    </ClInclude>
+    <ClInclude Include="NvEncoder.h">
+      <Filter>Source Files\Encode\NVENC</Filter>
+    </ClInclude>
+    <ClInclude Include="NvEncoderD3D11.h">
+      <Filter>Source Files\Encode\NVENC</Filter>
+    </ClInclude>
+    <ClInclude Include="DXCaptureClass.h">
+      <Filter>Source Files\Capture\DXGICapture</Filter>
+    </ClInclude>
+    <ClInclude Include="Preproc.h">
+      <Filter>Source Files\Encode\NVENC</Filter>
+    </ClInclude>
+    <ClInclude Include="NVDClass.h">
+      <Filter>Source Files\Decode\NVDEC</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{49d395a9-adcf-434a-bcf7-795f62b5f199}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9b55bd39-4c8c-46ec-a32f-155de278dbc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{a3ba7dde-1f8d-467a-9a1c-18705826c2e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Encode">
+      <UniqueIdentifier>{b7412465-d6b4-42fd-9e02-2a3c3ce652e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Encode\NVENC">
+      <UniqueIdentifier>{b6ad0ce2-4b99-4e8b-9546-7fb4e0a1ceb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Capture">
+      <UniqueIdentifier>{61b8a50b-cfd2-4fed-b182-5350f27cff3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Capture\DXGICapture">
+      <UniqueIdentifier>{a7aa6e73-59a3-414c-905b-5585124b3263}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Decode">
+      <UniqueIdentifier>{e351b4fa-b123-479a-a7ea-9681c0b6e248}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Decode\NVDEC">
+      <UniqueIdentifier>{ad8dc4f6-bec2-429a-b487-6f51ec10651b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Render">
+      <UniqueIdentifier>{995a794f-38f3-4bcb-bd7e-9908fab1f728}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Decode\FFMPEG">
+      <UniqueIdentifier>{823aa5fa-0639-42b8-84f6-08ff7982ee12}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
