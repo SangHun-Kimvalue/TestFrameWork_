@@ -2,13 +2,16 @@
 #include "NVEClass.h"
 
 NVEClass::NVEClass(int wid, int hei)
-	: nwid(wid), nhei(hei), enc(Init(wid, hei)) {
-
+	: nwid(wid), nhei(hei) {
+	Init(wid, hei);
+	Create_Enc(nwid, nhei);
+	Capture();
+	Encode();
 }
 
 
 NVEClass::NVEClass(int wid, int hei,ComPtr<ID3D11Texture2D>Tex, ID3D11Device* eDevice, ID3D11DeviceContext* mDeviceContext)
-	: nwid(wid), nhei(hei), eDevice(eDevice), eImmediateContext(mDeviceContext), enc(Create_Enc(wid, hei)), Temp(Tex.Get()){
+	: nwid(wid), nhei(hei), eDevice(eDevice), eImmediateContext(mDeviceContext)/*, enc(Create_Enc(wid, hei)), Temp(Tex.Get())*/ {
 
 }
 
@@ -18,10 +21,14 @@ NVEClass::~NVEClass()
 	Release();
 }
 
-NvEncoderD3D11 NVEClass::Init(int wid, int hei) {
+HRESULT NVEClass::Init(int wid, int hei) {
 
-	int iGpu;
-	HRESULT hr = E_FAIL;
+	DWORD w = nwid;
+	DWORD h = nhei;
+
+	HRESULT hr = S_OK;
+
+	D3D_FEATURE_LEVEL lFeatureLevel;
 
 	D3D_DRIVER_TYPE gDriverTypes[] =
 	{
@@ -39,190 +46,355 @@ NvEncoderD3D11 NVEClass::Init(int wid, int hei) {
 	};
 
 	UINT gNumFeatureLevels = ARRAYSIZE(gFeatureLevels);
-	D3D_FEATURE_LEVEL eFeatureLevel;
 
-	//eDevice->AddRef();
-	//eImmediateContext->AddRef();
-
-	//CreateDXGIFactory1(__uuidof(IDXGIFactory1);
-	//if (FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&iFactory))) {
-	//	return E_FAIL;
-	//}
-	//hr = iFactory->EnumAdapters(0, &iAdapter);
-	//if (FAILED(hr)) {
-	//	return E_FAIL;
-	//}
-
-	//디바이스를 새로 안만들고 하나가지고 돌려 쓰는 것도 구현 해
 	hr = D3D11CreateDevice(
 		nullptr,
-		D3D_DRIVER_TYPE_HARDWARE,
+		gDriverTypes[0],
 		nullptr,
 		0,
 		gFeatureLevels,
 		gNumFeatureLevels,
 		D3D11_SDK_VERSION,
 		&eDevice,
-		&eFeatureLevel,
+		&lFeatureLevel,
 		&eImmediateContext);
-	Check(hr, "eDevice  D3D11CreateDevice");
 
-	//IDXGIDevice* lDxgiDevice;
-	//hr = eDevice->QueryInterface(IID_PPV_ARGS(&lDxgiDevice));
-	//Check(hr, "eDevice  QueryInterface");
+	IDXGIDevice* lDxgiDevice;
+	IDXGIAdapter* lDxgiAdapter;
 
-	//// Get DXGI adapter
-	//hr = lDxgiDevice->GetParent(
-	//	__uuidof(IDXGIAdapter),
-	//	reinterpret_cast<void**>(&eAdapter));
-	//
-	//lDxgiDevice->Release();
-	//
-	//DXGI_ADAPTER_DESC adapterDesc;
-	//eAdapter->GetDesc(&adapterDesc);
-	//char szDesc[80];
-	//wcstombs(szDesc, adapterDesc.Description, sizeof(szDesc));
-	//std::cout << "GPU in use: " << szDesc << std::endl;
+	hr = eDevice->QueryInterface(IID_PPV_ARGS(&lDxgiDevice));
+	if (FAILED(hr))
+	{
+		Check(hr, "D3D11CreateDevice");
+	}
+	// Get DXGI adapter
 
-	//멀티 GPU 사용시 선택해 어댑터를 생성함.
-	//ck(iFactory->EnumAdapters(iGpu, iAdapter->GetAddressOf()));
-	//ck(D3D11CreateDevice(iAdapter.Get(), D3D_DRIVER_TYPE_UNKNOWN, NULL, 0,
-	//	NULL, 0, D3D11_SDK_VERSION, pDevice.GetAddressOf(), NULL, pContext.GetAddressOf()));
+	hr = lDxgiDevice->GetParent(
+		__uuidof(IDXGIAdapter),
+		reinterpret_cast<void**>(&lDxgiAdapter));
 
-	//D3D11_SUBRESOURCE_DATA subdesc;
-	//subdesc.pSysMem;
-	//
-	//D3D11_TEXTURE2D_DESC desc;
-	//ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
-	//desc.Width = wid;
-	//desc.Height = hei;
-	//desc.MipLevels = 1;
-	//desc.ArraySize = 1;
-	//desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	//desc.SampleDesc.Count = 1;
-	//desc.Usage = D3D11_USAGE_STAGING;
-	//desc.BindFlags = 0;
-	//desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	//hr = eDevice->CreateTexture2D(&desc, NULL, &eTexSysMem);
-	//Check(hr, "eDevice->CreateTexture2D(&desc, NULL, &eTexSysMem);");
+	lDxgiDevice->Release();
+	if (FAILED(hr))
+	{
+		Check(hr, "D3D11CreateDevice");
+	}
 
-	return Create_Enc(wid, hei);
+	IDXGIOutput* lDxgiOutput;
+	IDXGIAdapter* Adaptertemp = lDxgiAdapter;
+	hr = Adaptertemp->EnumOutputs(0, &lDxgiOutput);
+	Check(hr, "EnumOutputs");
+	if (Adaptertemp)
+		Adaptertemp->Release();
+
+	HWND hWnd = GetDesktopWindow();
+	HDC hdc = GetWindowDC(hWnd);
+
+	
+
+	hr = lDxgiOutput->GetDesc(&lOutputDesc);
+	Check(hr, "lDxgiOutput->GetDesc");
+
+	IDXGIOutput1* Outputtemp;
+	hr = lDxgiOutput->QueryInterface(IID_PPV_ARGS(&Outputtemp));
+	Check(hr, "lDxgiOutput->QueryInterface");
+	if (lDxgiOutput)
+		lDxgiOutput->Release();
+
+	hr = Outputtemp->DuplicateOutput(eDevice, &lDeskDupl);
+	Check(hr, "Outputtemp->DuplicateOutput");
+	if (Outputtemp) {
+		Outputtemp->Release();
+		Outputtemp = NULL;
+	}
+
+	lDeskDupl->GetDesc(&lOutputDuplDesc);
+
+	D3D11_TEXTURE2D_DESC Due_desc;
+
+	Due_desc.Width = lOutputDuplDesc.ModeDesc.Width;
+	Due_desc.Height = lOutputDuplDesc.ModeDesc.Height;
+	Due_desc.Format = lOutputDuplDesc.ModeDesc.Format;		//DXGI_FORMAT_R8G8B8A8_UNORM
+	Due_desc.ArraySize = 1;
+	Due_desc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_RENDER_TARGET;
+	Due_desc.SampleDesc.Count = 1;
+	Due_desc.SampleDesc.Quality = 0;
+	Due_desc.Usage = D3D11_USAGE_DEFAULT;
+	Due_desc.MipLevels = 1;
+	Due_desc.CPUAccessFlags = 0;
+	Due_desc.MiscFlags = D3D11_RESOURCE_MISC_GDI_COMPATIBLE;
+
+	hr = eDevice->CreateTexture2D(&Due_desc, NULL, &lGDIImage);
+	Check(hr, "lDevice->CreateTexture2D(&Due_desc, NULL, &lGDIImage);");
+	//if (lGDIImage == nullptr)
+	//	return E_FAIL;
+
+	D3D11_TEXTURE2D_DESC CPUdesc;
+
+	CPUdesc.Width = lOutputDuplDesc.ModeDesc.Width;
+	CPUdesc.Height = lOutputDuplDesc.ModeDesc.Height;
+	CPUdesc.MipLevels = 1;
+	CPUdesc.Format = lOutputDuplDesc.ModeDesc.Format;
+	CPUdesc.ArraySize = 1;
+	CPUdesc.SampleDesc.Count = 1;
+	CPUdesc.SampleDesc.Quality = 0;
+	CPUdesc.Usage = D3D11_USAGE_STAGING;
+	CPUdesc.BindFlags = 0;
+	CPUdesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	CPUdesc.MiscFlags = 0;
+
+	hr = eDevice->CreateTexture2D(&CPUdesc, NULL, &lDestImage);
+	Check(hr, "lDevice->CreateTexture2D(&CPUdesc, NULL, &lDestImage);");
+	
+
+	return hr;
 }
 
-NvEncoderD3D11 NVEClass::Create_Enc(int nwid, int nhei) {
+NvEncoderD3D11* NVEClass::Create_Enc(int nwid, int nhei) {
 
-	HRESULT hr = E_FAIL;
-	NvEncoderD3D11 enc (eDevice, nwid, nhei, true ? NV_ENC_BUFFER_FORMAT_NV12 : NV_ENC_BUFFER_FORMAT_ARGB);
-	
-	/// NVENCODEAPI session intialization parameters
+	HRESULT hr = S_OK;
+
+	const static bool bNoVPBlt = false;
+	NV_ENC_BUFFER_FORMAT fmt = bNoVPBlt ? NV_ENC_BUFFER_FORMAT_ARGB : NV_ENC_BUFFER_FORMAT_NV12;
+	enc = new NvEncoderD3D11(eDevice, nwid, nhei, fmt);
+	if (FAILED(hr))
+	{
+		Check(hr, "D3D11CreateDevice"); 
+	}
 	NV_ENC_INITIALIZE_PARAMS encInitParams = { NV_ENC_INITIALIZE_PARAMS_VER };
 	/// NVENCODEAPI video encoding configuration parameters
-
-	NV_ENC_CONFIG encodeConfig = { NV_ENC_CONFIG_VER };
-	
+	NV_ENC_CONFIG encConfig = { NV_ENC_CONFIG_VER };
 	//NvEncoderInitParam* pEncodeCLIOptions = {0};
 	//pEncodeCLIOptions->SetInitParams();
 	ZeroMemory(&encInitParams, sizeof(encInitParams));
-	ZeroMemory(&encodeConfig, sizeof(encodeConfig));
-	encInitParams.encodeConfig = &encodeConfig;
+	ZeroMemory(&encConfig, sizeof(encConfig));
+	encInitParams.encodeConfig = &encConfig;
 	encInitParams.encodeWidth = nwid;
 	encInitParams.encodeHeight = nhei;
 	encInitParams.maxEncodeWidth = nwid;
 	encInitParams.maxEncodeHeight = nhei;
 
-	//NV_ENC_PRESET_LOSSLESS_HP_GUID 이랑 얼마나 china?
-	enc.CreateDefaultEncoderParams(&encInitParams, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
+	try
+	{
+		enc->CreateDefaultEncoderParams(&encInitParams, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
+
+		encInitParams.frameRateNum = 60;// einfo.fps;
+		encInitParams.frameRateDen = 1;
+		encInitParams.encodeConfig->rcParams.averageBitRate = 4096000;
+		encInitParams.encodeConfig->gopLength = 30;
+		encInitParams.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ;
 	
-	encInitParams.frameRateNum = 60;// einfo.fps;
-	encInitParams.frameRateDen = 1;
-	encInitParams.encodeConfig->rcParams.averageBitRate = 4096000;
-	encInitParams.encodeConfig->gopLength = 30;
-	encInitParams.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ;
+		if (FAILED(hr))
+		{
+			Check(hr, "D3D11CreateDevice");		
+		}
 
-	enc.CreateEncoder(&encInitParams);
-
-	//NV12 변환용		//나중에 다시 결정
-	hr = eDevice->QueryInterface(__uuidof(ID3D11VideoDevice), (void **)&eVideoDevice);
-	if (FAILED(hr))
+		enc->CreateEncoder(&encInitParams);
+	}
+	catch (...)
 	{
-		Check(hr, "eDevice->QueryInterface(__uuidof(ID3D11VideoDevice), (void **)&eVideoDevice)");
+		if (FAILED(hr))
+		{
+			Check(hr, "D3D11CreateDevice");
+		}
 	}
 
-	hr = eImmediateContext->QueryInterface(__uuidof(ID3D11VideoContext), (void **)&eVideoContext);
-	if (FAILED(hr))
-	{
-		Check(hr, "eImmediateContext->QueryInterface(__uuidof(ID3D11VideoContext), (void **)&eVideoContext)");
-	}
-
-	eSize = nwid * nhei * 4;
-
-	D3D11_VIDEO_PROCESSOR_CONTENT_DESC contentDesc =
-	{
-		D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE,
-		{ 1, 1 }, nwid, nhei,
-		{ 1, 1 }, nwid, nhei,
-		D3D11_VIDEO_USAGE_PLAYBACK_NORMAL
-	};
-	hr = eVideoDevice->CreateVideoProcessorEnumerator(&contentDesc, &eVideoProcessorEnumerator);
-	if (FAILED(hr))
-	{
-		Check(hr, "CreateVideoProcessorEnumerator");
-	}
-
-	hr = eVideoDevice->CreateVideoProcessor(eVideoProcessorEnumerator, 0, &eVideoProcessor);
-	if (FAILED(hr))
-	{
-		Check(hr, "CreateVideoProcessor");
-	}
-
-	D3D11_TEXTURE2D_DESC desc;
-	ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
-	desc.Width = nwid;
-	desc.Height = nhei;
-	desc.MipLevels = 1;
-	desc.MiscFlags = D3D11_RESOURCE_MISC_GDI_COMPATIBLE;
-	desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 0;
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_RENDER_TARGET;
-	desc.CPUAccessFlags = 0;
-
-	hr = eDevice->CreateTexture2D(&desc, NULL, &eTexSysMem);
-	if (FAILED(hr))
-	{
-		Check(hr, " eDevice->CreateTexture2D(&desc, NULL, &eTexSysMem);");
-	}
-	//desc.BindFlags =0;
-	//desc.MiscFlags = 0;
-	//desc.SampleDesc.Count = 1;
+	//HRESULT hr = E_FAIL;
+	//NvEncoderD3D11 enc (eDevice, nwid, nhei, true ? NV_ENC_BUFFER_FORMAT_NV12 : NV_ENC_BUFFER_FORMAT_ARGB);
+	//
+	///// NVENCODEAPI session intialization parameters
+	//NV_ENC_INITIALIZE_PARAMS encInitParams = { NV_ENC_INITIALIZE_PARAMS_VER };
+	///// NVENCODEAPI video encoding configuration parameters
+	//
+	//NV_ENC_CONFIG encodeConfig = { NV_ENC_CONFIG_VER };
+	//
+	////NvEncoderInitParam* pEncodeCLIOptions = {0};
+	////pEncodeCLIOptions->SetInitParams();
+	//ZeroMemory(&encInitParams, sizeof(encInitParams));
+	//ZeroMemory(&encodeConfig, sizeof(encodeConfig));
+	//encInitParams.encodeConfig = &encodeConfig;
+	//encInitParams.encodeWidth = nwid;
+	//encInitParams.encodeHeight = nhei;
+	//encInitParams.maxEncodeWidth = nwid;
+	//encInitParams.maxEncodeHeight = nhei;
+	//
+	////NV_ENC_PRESET_LOSSLESS_HP_GUID 이랑 얼마나 china?
+	//enc.CreateDefaultEncoderParams(&encInitParams, NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_LOW_LATENCY_HP_GUID);
+	//
+	//encInitParams.frameRateNum = 60;// einfo.fps;
+	//encInitParams.frameRateDen = 1;
+	//encInitParams.encodeConfig->rcParams.averageBitRate = 4096000;
+	//encInitParams.encodeConfig->gopLength = 30;
+	//encInitParams.encodeConfig->rcParams.rateControlMode = NV_ENC_PARAMS_RC_CBR_LOWDELAY_HQ;
+	//
+	//enc.CreateEncoder(&encInitParams);
+	//
+	////NV12 변환용		//나중에 다시 결정
+	//hr = eDevice->QueryInterface(__uuidof(ID3D11VideoDevice), (void **)&eVideoDevice);
+	//if (FAILED(hr))
+	//{
+	//	Check(hr, "eDevice->QueryInterface(__uuidof(ID3D11VideoDevice), (void **)&eVideoDevice)");
+	//}
+	//
+	//hr = eImmediateContext->QueryInterface(__uuidof(ID3D11VideoContext), (void **)&eVideoContext);
+	//if (FAILED(hr))
+	//{
+	//	Check(hr, "eImmediateContext->QueryInterface(__uuidof(ID3D11VideoContext), (void **)&eVideoContext)");
+	//}
+	//
+	//eSize = nwid * nhei * 4;
+	//
+	//D3D11_VIDEO_PROCESSOR_CONTENT_DESC contentDesc =
+	//{
+	//	D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE,
+	//	{ 1, 1 }, nwid, nhei,
+	//	{ 1, 1 }, nwid, nhei,
+	//	D3D11_VIDEO_USAGE_PLAYBACK_NORMAL
+	//};
+	//hr = eVideoDevice->CreateVideoProcessorEnumerator(&contentDesc, &eVideoProcessorEnumerator);
+	//if (FAILED(hr))
+	//{
+	//	Check(hr, "CreateVideoProcessorEnumerator");
+	//}
+	//
+	//hr = eVideoDevice->CreateVideoProcessor(eVideoProcessorEnumerator, 0, &eVideoProcessor);
+	//if (FAILED(hr))
+	//{
+	//	Check(hr, "CreateVideoProcessor");
+	//}
+	//
+	//D3D11_TEXTURE2D_DESC desc;
+	//ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
+	//desc.Width = nwid;
+	//desc.Height = nhei;
 	//desc.MipLevels = 1;
-	//desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	//desc.MiscFlags = D3D11_RESOURCE_MISC_GDI_COMPATIBLE;
+	//desc.ArraySize = 1;
+	//desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	//desc.SampleDesc.Count = 1;
+	//desc.SampleDesc.Quality = 0;
 	//desc.Usage = D3D11_USAGE_DEFAULT;
-	//hr = eDevice->CreateTexture2D(&desc, NULL, &m_pEncBuf);
+	//desc.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_RENDER_TARGET;
+	//desc.CPUAccessFlags = 0;
+	//
+	//hr = eDevice->CreateTexture2D(&desc, NULL, &eTexSysMem);
 	//if (FAILED(hr))
 	//{
-	//	Check(hr, " eDevice->CreateTexture2D(&desc, NULL, &m_pEncBuf);");
+	//	Check(hr, " eDevice->CreateTexture2D(&desc, NULL, &eTexSysMem);");
 	//}
-
-	//D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC inputViewDesc = { 0, D3D11_VPIV_DIMENSION_TEXTURE2D, { 0, 0 } };
-	//hr = eVideoDevice->CreateVideoProcessorInputView(eTexSysMem, eVideoProcessorEnumerator, &inputViewDesc, &eInputView);
-	//if (FAILED(hr))
-	//{
-	//	Check(hr, "CreateVideoProcessorInputView");
-	//}
-
-	if (!pColorConv)
-	{
-		pColorConv = new RGBToNV12(eDevice, eImmediateContext);
-		HRESULT hr = pColorConv->Init();
-		Check(hr, "pColorConv->Init()");
-	}
-
-
+	////desc.BindFlags =0;
+	////desc.MiscFlags = 0;
+	////desc.SampleDesc.Count = 1;
+	////desc.MipLevels = 1;
+	////desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	////desc.Usage = D3D11_USAGE_DEFAULT;
+	////hr = eDevice->CreateTexture2D(&desc, NULL, &m_pEncBuf);
+	////if (FAILED(hr))
+	////{
+	////	Check(hr, " eDevice->CreateTexture2D(&desc, NULL, &m_pEncBuf);");
+	////}
+	//
+	////D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC inputViewDesc = { 0, D3D11_VPIV_DIMENSION_TEXTURE2D, { 0, 0 } };
+	////hr = eVideoDevice->CreateVideoProcessorInputView(eTexSysMem, eVideoProcessorEnumerator, &inputViewDesc, &eInputView);
+	////if (FAILED(hr))
+	////{
+	////	Check(hr, "CreateVideoProcessorInputView");
+	////}
 
 	return enc;
+}
+
+void NVEClass::Capture() {
+
+	HRESULT hr = S_OK;
+	DXGI_OUTDUPL_FRAME_INFO FrameInfo;
+	//GetClientRect(hWnd, &rt);
+					//DrawText(hdc, szHello, wcslen(szHello), &naf->m_ScreenRECT, DT_LEFT);
+
+	int lTryCount = 4;
+	do
+	{
+		Sleep(100);
+		//Get new frame
+		hr = lDeskDupl->AcquireNextFrame(500, &FrameInfo, &DesktopResource);
+
+		if (SUCCEEDED(hr))
+			break;
+
+		if (hr == DXGI_ERROR_WAIT_TIMEOUT)
+		{
+			continue;
+		}
+
+		else if (FAILED(hr))
+			break;
+
+	} while (--lTryCount > 0);
+
+	// If still holding old frame, destroy it
+	if (lAcquiredDesktopImage)
+	{
+		lAcquiredDesktopImage->Release();
+		//lAcquiredDesktopImage = NULL;
+	}
+
+	// QI for IDXGIResource
+	hr = DesktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&lAcquiredDesktopImage));
+	if (FAILED(hr))
+	{
+		std::cerr << "DesktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&lAcquiredDesktopImage));" << std::endl;
+		//return hr;
+	}
+
+	//lDestImage = NULL;
+
+	if (lAcquiredDesktopImage == nullptr) {
+		std::cerr << "lAcquiredDesktopImage Capture Error" << std::endl;
+		//return E_FAIL;
+	}
+
+	eImmediateContext->CopyResource(lGDIImage.Get(), lAcquiredDesktopImage);
+
+	IDXGISurface1* lIDXGISurface1;
+
+	hr = lGDIImage->QueryInterface(IID_PPV_ARGS(&lIDXGISurface1));
+	if (FAILED(hr))
+	{
+		std::cerr << "QueryInterface(IID_PPV_ARGS(&lIDXGISurface1));" << std::endl;
+		//return hr;
+	}
+
+	CURSORINFO lCursorInfo = { 0 };
+	lCursorInfo.cbSize = sizeof(lCursorInfo);
+
+	auto lBoolres = GetCursorInfo(&lCursorInfo);
+	if (lBoolres == TRUE)
+	{
+		if (lCursorInfo.flags == CURSOR_SHOWING)
+		{
+			auto lCursorPosition = lCursorInfo.ptScreenPos;
+
+			auto lCursorSize = lCursorInfo.cbSize;
+
+			HDC  lHDC;
+
+			lIDXGISurface1->GetDC(FALSE, &lHDC);
+
+			DrawIconEx(
+				lHDC,
+				lCursorPosition.x,
+				lCursorPosition.y,
+				lCursorInfo.hCursor,
+				0,
+				0,
+				0,
+				0,
+				DI_NORMAL | DI_DEFAULTSIZE);
+
+			lIDXGISurface1->ReleaseDC(nullptr);
+		}
+
+	}
+
 }
 
 HRESULT NVEClass::Convert(ID3D11Texture2D* pRGB, ID3D11Texture2D* pYUV) {
@@ -354,19 +526,37 @@ HRESULT NVEClass::Convert(ID3D11Texture2D* pRGB, ID3D11Texture2D* pYUV) {
 }
 
 bool NVEClass::Encode() {
-
-	int nFrame = 0;
-	eImmediateContext->CopyResource(eTexSysMem, Temp);
-
-	const NvEncInputFrame *pEncInput = enc.GetNextInputFrame();
-	m_pEncBuf = (ID3D11Texture2D *)pEncInput->inputPtr;
 	
-	HRESULT hr = pColorConv->Convert(eTexSysMem, m_pEncBuf);
-    //hr = Convert(eTexSysMem, m_pEncBuf);
-   Check(hr, "Convert");
+	HRESULT hr = S_OK;
+
+	ID3D11Texture2D *m_pEncBuf = nullptr;
+	const NvEncInputFrame *pEncInput = enc->GetNextInputFrame();
+	m_pEncBuf = (ID3D11Texture2D *)pEncInput->inputPtr;
+
+	if (!pColorConv)
+	{
+		pColorConv = new RGBToNV12(eDevice, eImmediateContext);
+		hr = pColorConv->Init();
+		Check(hr, "pColorConv->Init()");
+	}
+
+	hr = pColorConv->Convert(lAcquiredDesktopImage, m_pEncBuf);
+
+	//int nFrame = 0;
+	//eImmediateContext->CopyResource(eTexSysMem, Temp);
+	//
+	//const NvEncInputFrame *pEncInput = enc.GetNextInputFrame();
+	//m_pEncBuf = (ID3D11Texture2D *)pEncInput->inputPtr;
+	//
+	//HRESULT hr = pColorConv->Convert(eTexSysMem, m_pEncBuf);
+    ////hr = Convert(eTexSysMem, m_pEncBuf);
+    //Check(hr, "Convert");
    //std::vector<std::vector<uint8_t>> vPacket;
    
   // enc.EncodeFrame(vPacket);
+	
+	enc->EncodeFrame(vPacket);
+	SAFE_RELEASE(m_pEncBuf);
 
 	return hr;
 }
@@ -388,12 +578,15 @@ void NVEClass::Release() {
 		eImmediateContext = NULL;
 	}
 
-	if (eTexSysMem) {
-		eTexSysMem->Release();
-		eTexSysMem = NULL;
-	}
+	enc->EndEncode(vPacket);
+	enc->DestroyEncoder();
 
-	enc.DestroyEncoder();
+	//if (eTexSysMem) {
+	//	eTexSysMem->Release();
+	//	eTexSysMem = NULL;
+	//}
+	//
+	//enc.DestroyEncoder();
 
 	return;
 }

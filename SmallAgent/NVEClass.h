@@ -30,10 +30,11 @@ public:
 private:
 
 	RGBToNV12 *pColorConv = nullptr;
-	NvEncoderD3D11 Init(int wid, int hei);
+	HRESULT Init(int wid, int hei);
 	void Release();
-	
-	NvEncoderD3D11 Create_Enc(int nwid, int nhei);
+	void Capture();
+
+	NvEncoderD3D11* Create_Enc(int nwid, int nhei);
 	HRESULT Convert(ID3D11Texture2D* pRGB, ID3D11Texture2D*pYUV);
 
 	ID3D11Device* eDevice;
@@ -41,19 +42,31 @@ private:
 	ID3D11VideoDevice *eVideoDevice = NULL;
 	ID3D11VideoContext *eVideoContext = NULL;
 
-	IDXGIFactory1* eFactory;
+	//IDXGIFactory1* eFactory;
 	IDXGIAdapter* eAdapter;
-	ID3D11Texture2D* eTexSysMem;
-	ID3D11Texture2D* Temp;
+	//ID3D11Texture2D* eTexSysMem;
+	//ID3D11Texture2D* Temp;
 	ID3D11VideoProcessor *eVideoProcessor = NULL;
 	ID3D11VideoProcessorEnumerator *eVideoProcessorEnumerator = nullptr;
 	//ID3D11VideoProcessorInputView *eInputView = NULL;
 	//ID3D11VideoProcessorOutputView *eOutputView = NULL;
-	ID3D11Texture2D *m_pEncBuf = nullptr;
+	//ID3D11Texture2D *m_pEncBuf = nullptr;
 	std::unordered_map<ID3D11Texture2D*, ID3D11VideoProcessorOutputView*> viewMap;
 
-	NvEncoderD3D11 enc;
 	std::unique_ptr<uint8_t[]> pHostFrame;
+
+
+	ComPtr<ID3D11Texture2D> lGDIImage;
+	ComPtr<ID3D11Texture2D> lDestImage;
+	ComPtr<IDXGIResource> DesktopResource;
+	ComPtr<IDXGIOutputDuplication> lDeskDupl;
+	ID3D11Texture2D* lAcquiredDesktopImage = nullptr;
+	DXGI_OUTPUT_DESC lOutputDesc;
+	DXGI_OUTDUPL_DESC lOutputDuplDesc;
+
+	NvEncoderD3D11* enc;
+
+	std::vector<std::vector<uint8_t>> vPacket;
 
 	const int nwid;
 	const int nhei;
