@@ -376,9 +376,9 @@ HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 
 }
 
-ComPtr<ID3D11Texture2D> DXCapClass::GetTex() {
+ID3D11Texture2D* DXCapClass::GetTex() {
 
-	return lDestImage;
+	return lGDIImage.Get();
 }
 
 ID3D11Device* DXCapClass::GetDevice() {

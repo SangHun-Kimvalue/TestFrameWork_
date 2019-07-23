@@ -109,12 +109,12 @@ HRESULT RGBToNV12::Convert(ID3D11Texture2D* pRGB, ID3D11Texture2D*pYUV)
 			{ 1, 1 }, outDesc.Width, outDesc.Height,
 			D3D11_VIDEO_USAGE_PLAYBACK_NORMAL
 		};
-		hr = m_pVid->CreateVideoProcessorEnumerator(&contentDesc, &m_pVPEnum);;
+		hr = m_pVid->CreateVideoProcessorEnumerator(&contentDesc, &m_pVPEnum);
 		if (FAILED(hr))
 		{
 			PRINTERR(hr, "CreateVideoProcessorEnumerator");
 		}
-		hr = m_pVid->CreateVideoProcessor(m_pVPEnum, 0, &m_pVP);;
+		hr = m_pVid->CreateVideoProcessor(m_pVPEnum, 0, &m_pVP);
 		if (FAILED(hr))
 		{
 			PRINTERR(hr, "CreateVideoProcessor");

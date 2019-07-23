@@ -24,8 +24,9 @@ public:
 	DXCapClass();
 	~DXCapClass();
 	HRESULT Capture(std::shared_ptr<BYTE> I_data);
-	ComPtr<ID3D11Texture2D> GetTex();
+	ID3D11Texture2D* GetTex();
 	ID3D11Device* GetDevice();
+	ID3D11Texture2D* lAcquiredDesktopImage;
 	ID3D11DeviceContext* GetDC();
 
 private:
@@ -42,7 +43,7 @@ private:
 	ID3D11Device* lDevice;
 	ID3D11DeviceContext* lImmediateContext;
 	ComPtr<IDXGIOutputDuplication> lDeskDupl;
-	ID3D11Texture2D* lAcquiredDesktopImage;
+	
 	ComPtr<ID3D11Texture2D> lGDIImage;
 	ComPtr<ID3D11Texture2D> lDestImage;
 	ComPtr<IDXGIResource> DesktopResource;
