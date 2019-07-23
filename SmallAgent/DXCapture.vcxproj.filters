@@ -80,8 +80,11 @@
     <Filter Include="Source Files\Decode\NVDEC">
       <UniqueIdentifier>{ad8dc4f6-bec2-429a-b487-6f51ec10651b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Decode\Directx_11">
-      <UniqueIdentifier>{da69de8d-8fa0-4908-9a5e-bb83fa49f44d}</UniqueIdentifier>
+    <Filter Include="Source Files\Render">
+      <UniqueIdentifier>{995a794f-38f3-4bcb-bd7e-9908fab1f728}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Decode\FFMPEG">
+      <UniqueIdentifier>{823aa5fa-0639-42b8-84f6-08ff7982ee12}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
