@@ -5,6 +5,7 @@
 #include <shlobj.h>
 #include <algorithm>
 #include <thread>
+#include <wrl.h>
 
 #include <d3d11.h>
 #include <dxgi1_2.h>
@@ -14,6 +15,8 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
 
+using Microsoft::WRL::ComPtr;
+
 class DXCapClass {
 
 public:
@@ -21,7 +24,9 @@ public:
 	DXCapClass();
 	~DXCapClass();
 	HRESULT Capture(std::shared_ptr<BYTE> I_data);
-
+	ComPtr<ID3D11Texture2D> GetTex();
+	ID3D11Device* GetDevice();
+	ID3D11DeviceContext* GetDC();
 
 private:
 
@@ -36,10 +41,11 @@ private:
 	// Driver types supported
 	ID3D11Device* lDevice;
 	ID3D11DeviceContext* lImmediateContext;
-	IDXGIOutputDuplication* lDeskDupl;
+	ComPtr<IDXGIOutputDuplication> lDeskDupl;
 	ID3D11Texture2D* lAcquiredDesktopImage;
-	ID3D11Texture2D* lGDIImage;
-	ID3D11Texture2D* lDestImage;
+	ComPtr<ID3D11Texture2D> lGDIImage;
+	ComPtr<ID3D11Texture2D> lDestImage;
+	ComPtr<IDXGIResource> DesktopResource;
 
 	DXGI_OUTPUT_DESC lOutputDesc;
 	DXGI_OUTDUPL_DESC lOutputDuplDesc;

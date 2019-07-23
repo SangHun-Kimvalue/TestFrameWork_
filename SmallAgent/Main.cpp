@@ -6,8 +6,13 @@
 int main()
 {
 	HRESULT hr;
+	
+
 	DXCapClass* Capture = new DXCapClass();
-	NVEClass* Encode = new NVEClass(1920, 1080);			//넓이 높이 받아와야함.
+	std::shared_ptr<ID3D11Device*> mDevice = std::make_shared<ID3D11Device*>(Capture->GetDevice());
+	std::shared_ptr<ID3D11DeviceContext*> mDeviceContext = std::make_shared<ID3D11DeviceContext*>(Capture->GetDC());
+
+	NVEClass* Encode = new NVEClass(1920, 1080, Capture->GetTex(), *mDevice, *mDeviceContext);			//넓이 높이 받아와야함.
 
 
 	//std::shared_ptr<BYTE> I_data(new BYTE[m_CaptureWidth * m_CaptureHeight * 4], std::default_delete<BYTE[]>());
@@ -22,6 +27,7 @@ int main()
 			//큐에 세이브
 			Sleep(1000);
 			Count = 0;
+			Encode->Encode();
 		}
 		else {
 			Count++;

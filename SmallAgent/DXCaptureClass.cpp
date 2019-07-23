@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "DXCaptureClass.h"
 
-DXCapClass::DXCapClass() {
+DXCapClass::DXCapClass(){
 
 	HRESULT hr;
 
@@ -225,32 +225,36 @@ void DXCapClass::Release() {
 
 	if (lDevice) {
 		lDevice->Release();
-		lDevice = NULL;
+		//lDevice = NULL;
 	}
 
 	if (lImmediateContext) {
 		lImmediateContext->Release();
-		lImmediateContext = NULL;
+		//lImmediateContext = NULL;
 	}
 
 	if (lDeskDupl) {
 		lDeskDupl->Release();
-		lDeskDupl = NULL;
+		//lDeskDupl = NULL;
 	}
 
 	if (lAcquiredDesktopImage) {
 		lAcquiredDesktopImage->Release();
-		lAcquiredDesktopImage = NULL;
+		//lAcquiredDesktopImage = NULL;
 	}
 
 	if (lGDIImage) {
 		lGDIImage->Release();
-		lGDIImage = NULL;
+		//lGDIImage = NULL;
 	}
 
 	if (lDestImage) {
 		lDestImage->Release();
-		lDestImage = NULL;
+		//lDestImage = NULL;
+	}
+
+	if (DesktopResource) {
+		DesktopResource->Release();
 	}
 
 	//if (AdapterList.empty() == false) {
@@ -265,8 +269,7 @@ void DXCapClass::Release() {
 HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 
 	HRESULT hr = S_OK;
-
-	IDXGIResource* DesktopResource = NULL;
+	
 	DXGI_OUTDUPL_FRAME_INFO FrameInfo;
 
 	int lTryCount = 4;
@@ -293,25 +296,25 @@ HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 	if (lAcquiredDesktopImage)
 	{
 		lAcquiredDesktopImage->Release();
-		lAcquiredDesktopImage = NULL;
+		//lAcquiredDesktopImage = NULL;
 	}
 
 	// QI for IDXGIResource
 	hr = DesktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&lAcquiredDesktopImage));
-	DesktopResource->Release();
-	DesktopResource = NULL;
 	if (FAILED(hr))
 	{
 		std::cerr << "DesktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&lAcquiredDesktopImage));" << std::endl;
 		return hr;
 	}
+	
+	//lDestImage = NULL;
 
 	if (lAcquiredDesktopImage == nullptr) {
 		std::cerr << "lAcquiredDesktopImage Capture Error" << std::endl;
 		return E_FAIL;
 	}
 
-	lImmediateContext->CopyResource(lGDIImage, lAcquiredDesktopImage);
+	lImmediateContext->CopyResource(lGDIImage.Get(), lAcquiredDesktopImage);
 	
 	IDXGISurface1* lIDXGISurface1;
 	
@@ -356,21 +359,33 @@ HRESULT DXCapClass::Capture(std::shared_ptr<BYTE> I_data) {
 	lIDXGISurface1->Release();
 
 	// Copy image into CPU access texture
-	lImmediateContext->CopyResource(lDestImage, lGDIImage);
+	lImmediateContext->CopyResource(lDestImage.Get(), lGDIImage.Get());
 
 	D3D11_MAPPED_SUBRESOURCE resource;
-	lImmediateContext->Map(lDestImage, 0, D3D11_MAP_READ_WRITE, 0, &resource);
+	lImmediateContext->Map(lDestImage.Get(), 0, D3D11_MAP_READ_WRITE, 0, &resource);
 
 	BYTE* sptr = reinterpret_cast<BYTE*>(resource.pData);
 	memcpy(I_data.get(), sptr, resource.RowPitch * lOutputDuplDesc.ModeDesc.Height);
 
-	lImmediateContext->Unmap(lDestImage, 0);
+	lImmediateContext->Unmap(lDestImage.Get(), 0);
 	lDeskDupl->ReleaseFrame();
 
 	Savetobmp(lOutputDuplDesc.ModeDesc.Width, lOutputDuplDesc.ModeDesc.Height, I_data.get());
 
 	return hr;
 
+}
+
+ComPtr<ID3D11Texture2D> DXCapClass::GetTex() {
+
+	return lDestImage;
+}
+
+ID3D11Device* DXCapClass::GetDevice() {
+	return lDevice;
+}
+ID3D11DeviceContext* DXCapClass::GetDC() {
+	return lImmediateContext;
 }
 
 bool DXCapClass::Savetobmp(int wid, int hei, unsigned char * sptr) {
