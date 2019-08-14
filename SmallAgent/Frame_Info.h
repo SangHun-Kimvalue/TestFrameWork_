@@ -12,6 +12,11 @@ typedef struct Frame_Info {
 
 }Frame_info;
 
+enum DecoderType
+{
+	CPU, DXVA2, CUVID
+};
+
 static void Check(HRESULT hr, const char* string) {
 
 	if (FAILED(hr))

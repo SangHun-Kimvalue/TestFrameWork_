@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "FramequeueClass.h"
 mutex m_mtx;
 

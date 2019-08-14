@@ -1,11 +1,17 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Filename: systemclass.cpp
 ////////////////////////////////////////////////////////////////////////////////
+#include "pch.h"
 #include "systemclass.h"
 
 TCHAR g_szClassName[] = TEXT("ConsoleWindow");
 TCHAR g_szWindowName[] = TEXT("ConsoleWindow Example");
 bool Show_Debug = true;
+
+SystemClass::SystemClass(FramequeueClass* src_queue, DecoderType Type) : selectdecode(Type), m_queue(src_queue), Pend(false), Render_FPS(0), timecheck(0), m_Show_Debug(true) {
+	m_keys[256] = 0;
+	m_D3D = new D3DClass();
+}
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 {

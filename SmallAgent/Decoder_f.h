@@ -3,7 +3,10 @@
 //////////////
 // INCLUDES //
 //////////////
-//#include "Debug_logClass.h"
+
+#include "pch.h"
+
+using namespace std;
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -13,13 +16,17 @@ extern "C" {
 #include <libavutil/opt.h>
 #include <libavutil/avassert.h>
 #include <libavutil/imgutils.h>
+#include <libavutil/dict.h>
+#include <libswscale/swscale.h>
+#include <libavcodec/dxva2.h>
+#include <libavutil/hwcontext_dxva2.h>
+#include <libavutil/hwcontext_mediacodec.h>
 }
-#include <stdio.h>
 
-enum DecoderType
-{
-	CPU, DXVA2, CUVID
-};
+#include <stdio.h>
+#include <string>
+
+
 
 class Decoder_f {
 public:

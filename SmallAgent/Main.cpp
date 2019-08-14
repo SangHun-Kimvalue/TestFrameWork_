@@ -1,8 +1,12 @@
 #include "pch.h"
 #include "DXCaptureClass.h"
 #include "NVEClass.h"
-#include "F_DecodeClass.h"
+#include "systemclass.h"
+#include "Local_fileClass.h"
+
 #include <thread>
+
+DecoderType Load_initfile(string &filename);
 
 int main()
 {
@@ -14,6 +18,14 @@ int main()
 
 	NVEClass* Encode = new NVEClass(Capture->nwid, Capture->nhei, *mDevice, *mDeviceContext);
 
+	FramequeueClass *m_Fqueue = new FramequeueClass;
+	SourceClass* m_LSRC = 0;
+
+	//m_LSRC = new Local_fileClass(m_Fqueue, selectdecode, log, root + filename);
+	string filename = "";
+
+	const DecoderType selectdecode = Load_initfile(filename);
+	SystemClass* System = new SystemClass(m_Fqueue, selectdecode);
 	std::shared_ptr<BYTE> I_data(new BYTE[Capture->nwid * Capture->nhei * 4], std::default_delete<BYTE[]>());
 	
 	//NVEClass* Encode = new NVEClass(1920, 1080, *mDevice, *mDeviceContext);			//넓이 높이 받아와야함.
@@ -53,4 +65,29 @@ int main()
 	
 
 	return 0;
+}
+
+
+DecoderType Load_initfile(string &filename) {
+
+	TCHAR FullPath[2048];
+	TCHAR IniPath[2048];
+	TCHAR temp[100];
+
+	::GetModuleFileNameW(::GetModuleHandle(nullptr), FullPath, _countof(FullPath));
+	wchar_t* pnt = nullptr;
+	pnt = wcsrchr(FullPath, L'\\');
+
+	if (pnt != nullptr) {
+		*pnt = L'\0';
+		swprintf_s(IniPath, L"%ls\\config.ini", FullPath);
+	}
+
+	GetPrivateProfileStringW(L"SET", L"FILENAME", 0, temp, 100, IniPath);
+	wstring temp_w = temp;
+	filename.assign(temp_w.begin(), temp_w.end());
+
+	const DecoderType Type_Temp = (DecoderType)GetPrivateProfileIntW(L"SET", L"DECODETYPE", 0, IniPath);
+
+	return Type_Temp;
 }

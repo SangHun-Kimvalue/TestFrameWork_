@@ -6,9 +6,8 @@ class Local_fileClass : public SourceClass
 {
 public:
 
-	Local_fileClass(FramequeueClass *Q_, const DecoderType HAChoice, int index, int Frame_size, Debug_logClass *m_log, int Sleep_t) : SourceClass() {
+	Local_fileClass(FramequeueClass *Q_, const DecoderType HAChoice, int index, int Frame_size, int Sleep_t) : SourceClass() {
 		m_Fqueue = Q_;
-		log = m_log;
 		PushCount = 0;
 		isOpen = false;
 		index_t = index;
@@ -17,7 +16,7 @@ public:
 		Sleeptime = Sleep_t;
 	}
 
-	Local_fileClass(FramequeueClass *Q_, const DecoderType HAChoice, Debug_logClass *m_log, const string filename) : SourceClass(Q_, HAChoice, m_log, filename){
+	Local_fileClass(FramequeueClass *Q_, const DecoderType HAChoice, const string filename) : SourceClass(Q_, HAChoice, filename){
 		openFile(filename);
 	}
 

@@ -2,12 +2,21 @@
 
 #include <queue>
 #include <mutex>
-//#include "Debug_logClass.h"
-using namespace std;
 
-struct Queuestr {
-	AVFrame* data;
-};
+extern "C" {
+#include <libavformat/avformat.h>
+#include <libavutil/dict.h>
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
+#include <libavcodec/dxva2.h>
+#include <libavutil/hwcontext_dxva2.h>
+#include <libavutil/hwcontext.h>
+#include <libavutil/hwcontext_mediacodec.h>
+}
+
+using namespace std;
 
 class FramequeueClass {
 
@@ -30,8 +39,13 @@ public:
 		VFrame = 0;
 	}
 	bool PushFrame(AVFrame* pFrame, bool d_end, double FPS, float PacketReadCycle, float ConvertCycle);
-	double CallFPS();
 	AVFrame* PoPFrame();
+
+	bool PushPacket(std::vector<std::vector<uint8_t>>* pPacket, bool d_end, double FPS, float PacketReadCycle, float ConvertCycle);
+	std::vector<std::vector<uint8_t>>* PoPPacket(AVFrame* pFrame, bool d_end, double FPS, float PacketReadCycle, float ConvertCycle);
+
+
+	double CallFPS();
 	void CallEnd(bool end);
 	int CallBitrate();
 	float q_sleeptime;

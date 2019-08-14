@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Decoder_f.h"
 
 static enum AVPixelFormat hw_pix_fmt;

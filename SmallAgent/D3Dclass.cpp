@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "D3Dclass.h"
-
 
 D3DClass::D3DClass() {
 	m_swapChain = 0;
@@ -17,7 +17,7 @@ D3DClass::D3DClass() {
 	wszText_ = NULL;
 	cTextLength_ = NULL;
 	queuesize = 0;
-	//log = m_log;
+
 }
 
 D3DClass::~D3DClass() {
@@ -307,7 +307,7 @@ bool D3DClass::InitializeBuffers3D(HWND hwnd, const int selectdecode)
 		&vertexShaderBuffer, &errorMessage, NULL);
 	if (FAILED(result)) {
 		OutputShaderErrorMessage(errorMessage, hwnd, vsFilename);
-		log->LogFile(log->ConvertString(vsFilename, "Missing Shader File"));
+		//log->LogFile(log->ConvertString(vsFilename, "Missing Shader File"));
 		return false;
 	}
 
@@ -316,7 +316,7 @@ bool D3DClass::InitializeBuffers3D(HWND hwnd, const int selectdecode)
 		&pixelShaderBuffer, &errorMessage, NULL);
 	if (FAILED(result)) {
 		OutputShaderErrorMessage(errorMessage, hwnd, psFilename);
-		log->LogFile(log->ConvertString(psFilename, "Missing Shader File"));
+		//log->LogFile(log->ConvertString(psFilename, "Missing Shader File"));
 		return false;
 	}
 
@@ -432,7 +432,7 @@ bool D3DClass::Debug_position(bool Show_Debug) {
 
 	vertices = new VertexType[m_vertexCount];
 	if (!vertices) {
-		log->LogFile("vertexset Error\n");
+		//log->LogFile("vertexset Error\n");
 		delete[] vertices;
 		return false;
 	}
@@ -469,7 +469,7 @@ bool D3DClass::Debug_position(bool Show_Debug) {
 	// Lock the vertex buffer so it can be written to.
 	result = m_deviceContext->Map(m_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result)) {
-		log->LogFile("Debug_Mapping Error\n");
+		//log->LogFile("Debug_Mapping Error\n");
 		m_deviceContext->Unmap(m_vertexBuffer, 0);
 		delete[] vertices;
 		return false;
@@ -504,21 +504,21 @@ bool D3DClass::Text_Set() {
 	
 	result = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, options, &pD2DFactory_);	//d2펙토리생성
 	if (FAILED(result))
-		return log->LogFile("2D Factory error");
+		return false;//log->LogFile("2D Factory error");
 
 	m_device->QueryInterface(__uuidof(IDXGIDevice), (void**)&pdxgiDevice);		//d3디바이스를 dxgi 디바이스와 연결
 	
 	result = pD2DFactory_->CreateDevice(pdxgiDevice, &m_D2DDevice);	//dxgi로 d3과 연결된 d2디바이스 생성
 	if (FAILED(result))
-		return log->LogFile("2DDevice error");
+		return false;//log->LogFile("2DDevice error");
 
 	result = m_D2DDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &m_D2DDevicctx);	//d2 디바이스 컨텍스트 생성
 	if (FAILED(result))
-		return log->LogFile("2DDevicectx error");
+		return false;//log->LogFile("2DDevicectx error");
 
 	result = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&pDWriteFactory_));//dwrite 펙토리 생성
 	if (FAILED(result))
-		return log->LogFile("2DDWrite Factory error");
+		return false;//log->LogFile("2DDWrite Factory error");
 
 	wszText_ = L"Hello World using  DirectWrite!";
 	cTextLength_ = (UINT32)wcslen(wszText_);
@@ -534,20 +534,20 @@ bool D3DClass::Text_Set() {
 		&pTextFormat_
 	);
 	if (FAILED(result))
-		return log->LogFile("Text Format error");
+		return false;
 	
 	result = pTextFormat_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 	if (FAILED(result))		//가운데 배치
-		return log->LogFile("SetTextAlignment error");
+		return false;
 	
 	result = pTextFormat_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);		
 	if (FAILED(result))		//가운데 배치
-		return log->LogFile("SetParagraphAlignment error");
+		return false;
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	result = m_swapChain->GetBuffer(0, IID_PPV_ARGS(&BackBuffer));			//d3의 스왑체인을 검색해 가져옴
 	if (FAILED(result))
-		return log->LogFile("Get Backbuffer error");
+		return false;
 
 	D2D1_RENDER_TARGET_PROPERTIES RTproperties;
 	RTproperties = D2D1::RenderTargetProperties(
@@ -562,7 +562,7 @@ bool D3DClass::Text_Set() {
 
 	result = D2_RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White),&pBlackBrush_);		//글씨 색
 	if (FAILED(result))
-		return log->LogFile("CreateSolidColorBrush error");
+		return false;
 
 	RECT desktop;								//pixel per inch		//해상도 == 픽셀 밀도 단위
 	SetProcessDPIAware();						//Dot per inch
@@ -591,7 +591,7 @@ void D3DClass::Draw_Text() {
 	string text_temp = "";	wstring temp = L"";	
 	string FPStemp = to_string(VideoFPS).substr(0,5);
 	string Sleeptemp = to_string(sleeptime).substr(0,5);
-	log->Frame(cpuusage);
+	//log->Frame(cpuusage);
 	string CPUtemp = to_string(cpuusage);
 
 	//text_temp = "Video FPS : " + FPStemp + "  RenderCycle :" + to_string((int)RenderCycle) +
@@ -615,7 +615,7 @@ void D3DClass::Draw_Text() {
 	
 	result = D2_RenderTarget->EndDraw();
 	if (FAILED(result))
-		log->LogFile("Text Draw Failed");
+		false;
 
 	return ;
 }
@@ -968,7 +968,7 @@ void D3DClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, WCH
 {
 	char* compileErrors;					//참 좋은 함수
 	unsigned long bufferSize, i;
-	ofstream fout;
+	std::ofstream fout;
 
 	// Get a pointer to the error message text buffer.
 	compileErrors = (char*)(errorMessage->GetBufferPointer());
@@ -988,7 +988,7 @@ void D3DClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, WCH
 	errorMessage = 0;
 
 	// Pop a message up on the screen to notify the user to check the text file for compile errors.
-	log->LogFile("Error compiling shader.  Check shader-error.txt for message.");
+	//log->LogFile("Error compiling shader.  Check shader-error.txt for message.");
 	//MessageBox(hwnd, L"Error compiling shader.  Check shader-error.txt for message.", shaderFilename, MB_OK);
 	return;
 }

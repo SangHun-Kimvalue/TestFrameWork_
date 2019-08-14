@@ -104,7 +104,12 @@ copy $(SolutionDir)Libs\tesseract\tesseract50.lib $(OutDir)</Command>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Libs\tesseract\leptonica\include;$(SolutionDir)Libs\tesseract\tesseract\include;$(SolutionDir)Libs\parentclass;$(SolutionDir)Libs\opencv-4.0.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\Users\bjpar\source\repos\TestFrameWork\Libs\parentclass;$(SolutionDir)Libs\tesseract\tesseract\lib;$(SolutionDir)Libs\tesseract\leptonica\lib;$(SolutionDir)Libs\opencv-4.0.1\lib\64bit;$(SolutionDir)Libs\tesseract\64bit\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tesseract50.lib;giflib.lib;libjpeg.lib;libpng.lib;libtiff.lib;libwebp.lib;openjpeg.lib;zlib.lib;leptonica-1.79.0.lib;opencv_world401d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

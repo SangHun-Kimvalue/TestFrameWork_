@@ -22,10 +22,17 @@ DllClass::DllClass()
 	//rect.right = rect.left + 500;
 	//rect.bottom = rect.top + 700;
 
-	rect.left = 300;
-	rect.top = 230;
-	rect.right = rect.left + 1200;
+	//rect.left = 300;
+	//rect.top = 230;
+	//rect.right = rect.left + 1200;
+	//rect.bottom = rect.top + 700;
+
+	rect.left = 500;
+	rect.top = 300;
+	rect.right = rect.left + 1320;
 	rect.bottom = rect.top + 700;
+
+
 	RECT* displayrect = &rect;
 
 	//rect(44, 0, 150, 40);

@@ -10,8 +10,8 @@ class SourceClass {
 
 public:
 	SourceClass() : HA_Choice(CPU) {}
-	SourceClass(FramequeueClass *Q_, DecoderType HAChoice, Debug_logClass *m_log, string filename)
-		: m_Fqueue(Q_), HA_Choice(HAChoice), log(m_log), PushCount(0), isOpen(false){
+	SourceClass(FramequeueClass *Q_, DecoderType HAChoice,  string filename)
+		: m_Fqueue(Q_), HA_Choice(HAChoice), PushCount(0), isOpen(false){
 	}
 	~SourceClass() {}
 
@@ -28,7 +28,6 @@ public:
 	FramequeueClass *m_Fqueue;
 	int PushCount;
 	bool isOpen;
-	Debug_logClass *log;
 	thread Thread_D_P;
 	int Sleeptime;
 	const DecoderType HA_Choice;

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "SourceClass.h"
 
 void SourceClass::Thread_Decode_Test() {

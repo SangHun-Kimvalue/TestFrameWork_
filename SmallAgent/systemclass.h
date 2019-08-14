@@ -4,12 +4,13 @@
 // Filename: systemclass.h
 ////////////////////////////////////////////////////////////////////////////////
 
-enum DecoderType;
 
-#include "d3dclass.h"
+
+#include "D3Dclass.h"
 #include "FrameQueueClass.h"
 #include "SourceClass.h"
 #include <mmsystem.h>
+#include "Frame_Info.h"
 #pragma comment(lib, "winmm.lib")
 
 
@@ -24,11 +25,7 @@ class SystemClass
 {
 public:
 
-	SystemClass(FramequeueClass* src_queue, DecoderType Type) : selectdecode(Type),m_queue(src_queue), Pend(false), Render_FPS(0), timecheck(0), m_Show_Debug(true){
-		m_keys[256] = 0;
-		m_D3D = new D3DClass();
-
-	}
+	SystemClass(FramequeueClass* src_queue, DecoderType Type);
 	~SystemClass() {}
 
 	HWND InitializeWindows();
@@ -55,7 +52,7 @@ private:
 	ID3D11Texture2D* m_2DTex;
 	ID3D11RenderTargetView* m_renderTargetView;
 	ID3D11ShaderResourceView* m_shaderResourceView;
-	D3DClass* m_D3D = 0;
+	D3DClass* m_D3D;
 
 	void DeleteFrame(AVFrame* temp);
 	void Render(AVFrame* VFtemp);

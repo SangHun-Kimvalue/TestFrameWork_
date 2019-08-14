@@ -8,7 +8,10 @@
 #pragma comment(lib, "dwrite.lib")
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dxguid.lib")
-
+extern "C" {
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+}
 //////////////
 // INCLUDES //
 //////////////
@@ -18,12 +21,15 @@
 #include <d3dx10math.h>
 #include <d3dx11async.h>
 #include <d3dx11tex.h>
-//#include "Debug_logClass.h"
 #include <d2d1.h>
 #include <d2d1_3.h>
 #include <dwrite_3.h>
 #include <D2d1_1helper.h>
 #include <Pdh.h>
+#include <fstream>
+#include <string>
+
+using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: D3DClass

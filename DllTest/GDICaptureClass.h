@@ -3,7 +3,7 @@
 #include <time.h>
 #include <iostream>
 #include <string>
-#include <parent.hpp>
+#include "parent.hpp"
 
 class GDICaptureClass
 {

@@ -43,14 +43,11 @@
     <ClCompile Include="Decoder_f.cpp">
       <Filter>Source Files\Decode\FFMPEG</Filter>
     </ClCompile>
+    <ClCompile Include="DXResourceClass.cpp">
+      <Filter>Source Files\System&amp;Queue</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Frame_Info.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NVEClass.h">
       <Filter>Source Files\Encode\NVENC</Filter>
     </ClInclude>
@@ -86,6 +83,15 @@
     </ClInclude>
     <ClInclude Include="Decoder_f.h">
       <Filter>Source Files\Decode\FFMPEG</Filter>
+    </ClInclude>
+    <ClInclude Include="DXResourceClass.h">
+      <Filter>Source Files\System&amp;Queue</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Frame_Info.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -125,5 +131,8 @@
     <Filter Include="Source Files\System&amp;Queue">
       <UniqueIdentifier>{1e7c3c3b-a377-43f8-9740-154783395b92}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config.ini" />
   </ItemGroup>
 </Project>
