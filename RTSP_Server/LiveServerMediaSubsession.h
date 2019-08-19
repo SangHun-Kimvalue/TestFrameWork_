@@ -17,26 +17,25 @@
 #include <UsageEnvironment.hh>
 #include <Groupsock.hh>
 
-namespace MESAI 
+
+
+class LiveServerMediaSubsession: public OnDemandServerMediaSubsession
 {
-
-  class LiveServerMediaSubsession: public OnDemandServerMediaSubsession
-  {
-    public:
-      static LiveServerMediaSubsession* createNew(UsageEnvironment& env, StreamReplicator* replicator);
-      static LiveServerMediaSubsession* createNew(UsageEnvironment& env);
+public:
+    static LiveServerMediaSubsession* createNew(UsageEnvironment& env, StreamReplicator* replicator);
+    static LiveServerMediaSubsession* createNew(UsageEnvironment& env);
     
-    protected:
-      LiveServerMediaSubsession(UsageEnvironment& env)
-     // LiveServerMediaSubsession(UsageEnvironment& env, StreamReplicator* replicator)
-         // : OnDemandServerMediaSubsession(env, False), m_replicator(replicator) {};
-          : OnDemandServerMediaSubsession(env, True), m_replicator(nullptr) {};
+protected:
+    LiveServerMediaSubsession(UsageEnvironment& env)
+    // LiveServerMediaSubsession(UsageEnvironment& env, StreamReplicator* replicator)
+        // : OnDemandServerMediaSubsession(env, False), m_replicator(replicator) {};
+        : OnDemandServerMediaSubsession(env, True), m_replicator(nullptr) {};
       
-      virtual FramedSource* createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate);
-      virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,  unsigned char rtpPayloadTypeIfDynamic, FramedSource* inputSource);    
+    virtual FramedSource* createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate);
+    virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,  unsigned char rtpPayloadTypeIfDynamic, FramedSource* inputSource);    
 
-      StreamReplicator * m_replicator;
-  };
+    StreamReplicator * m_replicator;
+};
 
-}
+
 #endif

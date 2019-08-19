@@ -71,6 +71,7 @@ public:
   // Used to turn off a previous "registerStream()" - using our custom "DEREGISTER" RTSP command.
   
   char* rtspURL(ServerMediaSession const* serverMediaSession, int clientSocket = -1) const;
+  char* rtspURL(int clientSocket = -1) const;
   char* rtspURL(const char* serverMediaSession, int clientSocket = -1) const;
       // returns a "rtsp://" URL that could be used to access the
       // specified session (which must already have been added to

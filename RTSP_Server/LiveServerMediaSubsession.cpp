@@ -8,8 +8,6 @@
 
 #include "LiveServerMediaSubsession.h"
 
-namespace MESAI
-{
 	LiveServerMediaSubsession * LiveServerMediaSubsession::createNew(UsageEnvironment& env)
 	//LiveServerMediaSubsession * LiveServerMediaSubsession::createNew(UsageEnvironment& env, StreamReplicator* replicator)
 	{ 
@@ -29,4 +27,4 @@ namespace MESAI
 		return H264VideoRTPSink::createNew(envir(), rtpGroupsock,rtpPayloadTypeIfDynamic);
 	}
 
-}
+

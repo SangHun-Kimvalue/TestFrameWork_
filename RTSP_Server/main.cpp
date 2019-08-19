@@ -6,17 +6,31 @@
 //  Copyright (c) 2015 Mina Saad. All rights reserved.
 //
 
-#include "LiveRTSPServer.h"
-MESAI::LiveRTSPServer * server;
+//#define _ITERATOR_DEBUG_LEVEL 2
+//#define MT_StaticRelease
 
-int UDPPort;
-int HTTPTunnelPort;
+//#include<stdio.h>
+//#include <iostream>
+//#include <string.h>
+#include "LiveRTSPServer.h"
+
 
 int main(int argc, const char * argv[])
 {
-	UDPPort = 5486;
+	int Port = 8554;
 
-	server = new MESAI::LiveRTSPServer(/*encoder,*/ UDPPort, HTTPTunnelPort);
-	server->run();
+	Server * server = new LiveRTSPServer();
+	server->Initialize(Port);
+	
+	const char* URL = server->GetURL();
+	//printf("\n%s\n", server->GetURL());
 
+	//std::string stdhello = "HELLO";
+	//std::cout << stdhello.c_str() << std::endl;
+
+	server->Run();
+
+	
+	//server->Release();
+	delete server;
 }

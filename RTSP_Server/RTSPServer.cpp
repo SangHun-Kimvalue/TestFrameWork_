@@ -77,6 +77,16 @@ char* RTSPServer
 	return resultURL;
 }
 
+char* RTSPServer
+::rtspURL(int clientSocket) const {
+	char* urlPrefix = rtspURLPrefix(clientSocket);
+	
+	char* resultURL = new char[strlen(urlPrefix) + 1];
+	sprintf(resultURL, "%s", urlPrefix);
+
+	delete[] urlPrefix;
+	return resultURL;
+}
 
 char* RTSPServer::rtspURLPrefix(int clientSocket) const {
   struct sockaddr_in ourAddress;
@@ -721,6 +731,8 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 						    cseq, sizeof cseq,
 						    sessionIdStr, sizeof sessionIdStr,
 						    contentLength);
+#ifdef _DEBUG
+#endif // _DEBUG
 
 	printf("\nClient Request : %s", (char*)fRequestBuffer);
 

@@ -11,18 +11,27 @@
 #include <GroupsockHelper.hh>
 #include <liveMedia.hh>
 #include "LiveServerMediaSubsession.h"
+#include "Server.h"
+
 //#include "FFmpegH264Source.h"
 //#include "FFmpegH264Encoder.h"
 
-namespace MESAI {
 
-	class LiveRTSPServer
+	class LiveRTSPServer : public Server
 	{
 	public:
 
-		LiveRTSPServer(/*FFmpegH264Encoder  * a_Encoder,*/ int port, int httpPort );
+		LiveRTSPServer(/*FFmpegH264Encoder  * a_Encoder, int port,*/ int httpPort = 0);
+		//LiveRTSPServer();
 		~LiveRTSPServer();
-		void run();
+		
+		virtual void Release();
+		virtual void Run();
+		const char* GetURL();
+		virtual bool Initialize(int port);
+		virtual void Restart();
+
+		char* URL;
 
 	private:
 		int portNumber;
@@ -30,5 +39,8 @@ namespace MESAI {
 		//FFmpegH264Encoder * m_Encoder;
 		char quit;
 
+		TaskScheduler    *scheduler;
+		UsageEnvironment *env;
+		UserAuthenticationDatabase* authDB;
+		RTSPServer* rtspServer;
 	};
-}
