@@ -6,8 +6,8 @@
 //  Copyright (c) 2015 Mina Saad. All rights reserved.
 //
 
-#ifndef MESAI_Live_SERVER_MEDIA_SUBSESSION_HH
-#define MESAI_Live_SERVER_MEDIA_SUBSESSION_HH
+//#ifndef MESAI_Live_SERVER_MEDIA_SUBSESSION_HH
+//#define MESAI_Live_SERVER_MEDIA_SUBSESSION_HH
 
 #include <OnDemandServerMediaSubsession.hh>
 #include <StreamReplicator.hh>
@@ -16,6 +16,7 @@
 #include <H264VideoStreamDiscreteFramer.hh>
 #include <UsageEnvironment.hh>
 #include <Groupsock.hh>
+#include <iostream>
 
 
 
@@ -38,4 +39,4 @@ protected:
 };
 
 
-#endif
+//#endif

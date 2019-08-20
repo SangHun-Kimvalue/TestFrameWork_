@@ -32,16 +32,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GenericMediaServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LiveRTSPServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LiveServerMediaSubsession.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OnDemandServerMediaSubsession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RTSPServer.cpp">
@@ -50,22 +41,10 @@
     <ClCompile Include="ServerMediaSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UsageEnvironment.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BasicUsageEnvironment0.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicTaskScheduler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicTaskScheduler0.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicUsageEnvironment.cpp">
+    <ClCompile Include="LiveRTSPServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

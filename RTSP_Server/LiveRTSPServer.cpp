@@ -17,6 +17,7 @@ LiveRTSPServer::LiveRTSPServer(/*int port,*/ int httpPort)
 
 bool LiveRTSPServer::Initialize(int port) {
 
+	portNumber = port;
 	quit = 0;
 	scheduler = BasicTaskScheduler::createNew();
 	if (scheduler == nullptr) {

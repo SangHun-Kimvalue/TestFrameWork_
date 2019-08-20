@@ -44,3 +44,8 @@
 /DXCapture/x64/Debug/Small_Agent.tlog
 /SmallAgent/x64/Debug/SmallAgent.tlog
 /Libs/NVENC/Lib/linux/stubs/x86_64
+/Release
+/RTSP_Server/Debug/RTSP_Server.tlog
+/RTSP_Server/Release/RTSP_Server.tlog
+/RTSP_Client/x64/Debug/RTSP_Client.tlog
+*.tlog
