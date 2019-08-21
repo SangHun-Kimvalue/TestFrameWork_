@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 3 of the License, or (at your
+Free Software Foundation; either version 2.1 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
 // Inclusion of header files representing the interface
 // for the entire library
 //
@@ -23,10 +23,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #ifndef _LIVEMEDIA_HH
 #define _LIVEMEDIA_HH
-#include "JPEG2000VideoRTPSource.hh"
-#include "JPEG2000VideoRTPSink.hh"
-//#include "JPEG2000VideoStreamFramer.hh"
-//#include "JPEG2000VideoFileServerMediaSubsession.hh"
+
 #include "MPEG1or2AudioRTPSink.hh"
 #include "MP3ADURTPSink.hh"
 #include "MPEG1or2VideoRTPSink.hh"
@@ -71,7 +68,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "TheoraVideoRTPSource.hh"
 #include "VP8VideoRTPSource.hh"
 #include "VP9VideoRTPSource.hh"
-#include "RawVideoRTPSource.hh"
 #include "MPEG2TransportStreamFromPESSource.hh"
 #include "MPEG2TransportStreamFromESSource.hh"
 #include "MPEG2TransportStreamFramer.hh"
@@ -95,7 +91,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "VP8VideoRTPSink.hh"
 #include "VP9VideoRTPSink.hh"
 #include "MPEG4GenericRTPSink.hh"
-#include "RawVideoRTPSink.hh"
 #include "MPEG1or2VideoStreamDiscreteFramer.hh"
 #include "MPEG4VideoStreamDiscreteFramer.hh"
 #include "DeviceSource.hh"

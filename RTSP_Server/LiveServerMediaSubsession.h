@@ -28,9 +28,11 @@ public:
     
 protected:
     LiveServerMediaSubsession(UsageEnvironment& env)
-    // LiveServerMediaSubsession(UsageEnvironment& env, StreamReplicator* replicator)
-        // : OnDemandServerMediaSubsession(env, False), m_replicator(replicator) {};
         : OnDemandServerMediaSubsession(env, True), m_replicator(nullptr) {};
+
+
+	 LiveServerMediaSubsession(UsageEnvironment& env, StreamReplicator* replicator)
+		 : OnDemandServerMediaSubsession(env, False), m_replicator(replicator) {};
       
     virtual FramedSource* createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate);
     virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,  unsigned char rtpPayloadTypeIfDynamic, FramedSource* inputSource);    

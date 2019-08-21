@@ -14,6 +14,11 @@
 		//return new LiveServerMediaSubsession(env,replicator);
 		return new LiveServerMediaSubsession(env);
 	}
+
+	LiveServerMediaSubsession * LiveServerMediaSubsession::createNew(UsageEnvironment& env, StreamReplicator* replicator)
+	{
+		return new LiveServerMediaSubsession(env,replicator);
+	}
 					
 	FramedSource* LiveServerMediaSubsession::createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate)
 	{

@@ -78,7 +78,8 @@ int main(int argc, char** argv) {
 	//	openURL(*env, argv[0], argv[i]);
 	//}
 
-	openURL(*env, "Client_Test", "rtsp://192.168.0.40:8554");
+	//openURL(*env, "Client_Test", "rtsp://192.168.0.40:8554");
+	openURL(*env, "Client_Test", "rtsp://192.168.0.70/video1");
 
 	// All subsequent activity takes place within the event loop:
 	env->taskScheduler().doEventLoop(&eventLoopWatchVariable);
@@ -184,6 +185,7 @@ void openURL(UsageEnvironment& env, char const* progName, char const* rtspURL) {
 	// Note that this command - like all RTSP commands - is sent asynchronously; we do not block, waiting for a response.
 	// Instead, the following function call returns immediately, and we handle the RTSP response later, from within the event loop:
 	rtspClient->sendDescribeCommand(continueAfterDESCRIBE);
+	rtspClient->sendOptionsCommand(0);
 }
 
 

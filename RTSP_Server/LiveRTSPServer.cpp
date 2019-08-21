@@ -29,6 +29,8 @@ bool LiveRTSPServer::Initialize(int port) {
 	}
 
 	authDB = NULL;
+	char const* SessionName = "Streaming Session";
+	char RTSP_Address[1024];	RTSP_Address[0] = 0x00;
 
 	rtspServer = RTSPServer::createNew(*env, portNumber, authDB);
 	if (rtspServer == NULL)
@@ -36,15 +38,23 @@ bool LiveRTSPServer::Initialize(int port) {
 		*env << "LIVE555: Failed to create RTSP server: %s\n", env->getResultMsg();
 		return false;
 	}
-	char const* SessionName = "Streaming Session";
-	char RTSP_Address[1024];	RTSP_Address[0]=0x00;
-
 	ServerMediaSession* sms = ServerMediaSession::createNew(*env, RTSP_Address, RTSP_Address, SessionName);
 	// sms->addSubsession(MESAI::LiveServerMediaSubsession::createNew(*env, inputDevice));
 	sms->addSubsession(LiveServerMediaSubsession::createNew(*env));
 	rtspServer->addServerMediaSession(sms);
-
 	URL = rtspServer->rtspURL();
+
+	//Commander = Connect_Handler::createNew(*env, portNumber, authDB);
+	//if (Commander == NULL)
+	//{
+	//	*env << "LIVE555: Cmmander to create Failed: %s\n", env->getResultMsg();
+	//	return false;
+	//}
+	//ServerMediaSession* sms = ServerMediaSession::createNew(*env, RTSP_Address, RTSP_Address, SessionName);
+	//sms->addSubsession(LiveServerMediaSubsession::createNew(*env));
+	//Commander->addServerMediaSession(sms);
+	//URL = Commander->rtspURL();
+	
 	*env << "Play this stream using the URL \"" << URL << "\"\n";
 	
 	//delete[] url;

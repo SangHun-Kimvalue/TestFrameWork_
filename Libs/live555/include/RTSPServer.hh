@@ -1,7 +1,7 @@
 /**********
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation; either version 3 of the License, or (at your
+Free Software Foundation; either version 2.1 of the License, or (at your
 option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
 
 This library is distributed in the hope that it will be useful, but WITHOUT
@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2016 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // C++ header
 
@@ -27,11 +27,10 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #ifndef _DIGEST_AUTHENTICATION_HH
 #include "DigestAuthentication.hh"
 #endif
-#include <stdio.h>
 
 class RTSPServer: public GenericMediaServer {
 public:
-  static RTSPServer* createNew(UsageEnvironment& env, Port ourPort,
+  static RTSPServer* createNew(UsageEnvironment& env, Port ourPort = 554,
 			       UserAuthenticationDatabase* authDatabase = NULL,
 			       unsigned reclamationSeconds = 65);
       // If ourPort.num() == 0, we'll choose the port number
@@ -70,9 +69,9 @@ public:
 			    char const* proxyURLSuffix = NULL);
   // Used to turn off a previous "registerStream()" - using our custom "DEREGISTER" RTSP command.
   
-  char* rtspURL(ServerMediaSession const* serverMediaSession, int clientSocket = -1) const;
   char* rtspURL(int clientSocket = -1) const;
   char* rtspURL(const char* serverMediaSession, int clientSocket = -1) const;
+  char* rtspURL(ServerMediaSession const* serverMediaSession, int clientSocket = -1) const;
       // returns a "rtsp://" URL that could be used to access the
       // specified session (which must already have been added to
       // us using "addServerMediaSession()".
@@ -95,9 +94,7 @@ public:
   Boolean setUpTunnelingOverHTTP(Port httpPort);
       // (Attempts to) enable RTSP-over-HTTP tunneling on the specified port.
       // Returns True iff the specified port can be used in this way (i.e., it's not already being used for a separate HTTP server).
-      // Note: RTSP-over-HTTP tunneling is described in
-      //  http://mirror.informatimago.com/next/developer.apple.com/quicktime/icefloe/dispatch028.html
-      //  and http://images.apple.com/br/quicktime/pdf/QTSS_Modules.pdf
+      // Note: RTSP-over-HTTP tunneling is described in http://developer.apple.com/quicktime/icefloe/dispatch028.html
   portNumBits httpServerPortNum() const; // in host byte order.  (Returns 0 if not present.)
 
 protected:
@@ -313,16 +310,13 @@ public:
 						   UserAuthenticationDatabase* authDatabaseForREGISTER = NULL,
 						   unsigned reclamationSeconds = 65,
 						   Boolean streamRTPOverTCP = False,
-						   int verbosityLevelForProxying = 0,
-						   char const* backEndUsername = NULL,
-						   char const* backEndPassword = NULL);
+						   int verbosityLevelForProxying = 0);
 
 protected:
   RTSPServerWithREGISTERProxying(UsageEnvironment& env, int ourSocket, Port ourPort,
 				 UserAuthenticationDatabase* authDatabase, UserAuthenticationDatabase* authDatabaseForREGISTER,
 				 unsigned reclamationSeconds,
-				 Boolean streamRTPOverTCP, int verbosityLevelForProxying,
-				 char const* backEndUsername, char const* backEndPassword);
+				 Boolean streamRTPOverTCP, int verbosityLevelForProxying);
   // called only by createNew();
   virtual ~RTSPServerWithREGISTERProxying();
 
@@ -341,8 +335,6 @@ private:
   unsigned fRegisteredProxyCounter;
   char* fAllowedCommandNames;
   UserAuthenticationDatabase* fAuthDBForREGISTER;
-  char* fBackEndUsername;
-  char* fBackEndPassword;
 }; 
 
 

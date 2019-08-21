@@ -12,6 +12,7 @@
 #include <liveMedia.hh>
 #include "LiveServerMediaSubsession.h"
 #include "Server.h"
+#include "Connect_Handler.h"
 
 //#include "FFmpegH264Source.h"
 //#include "FFmpegH264Encoder.h"
@@ -43,4 +44,6 @@
 		UsageEnvironment *env;
 		UserAuthenticationDatabase* authDB;
 		RTSPServer* rtspServer;
+		Connect_Handler* Commander;
+
 	};
