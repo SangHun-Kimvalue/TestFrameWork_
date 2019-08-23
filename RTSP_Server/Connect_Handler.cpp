@@ -513,46 +513,46 @@ void Connect_Handler::RTSPClientConnection::handleRequestBytes(int newBytesRead)
 			this, numBytesRemaining > 0 ? "processing" : "read", newBytesRead, ptr);
 #endif
 
-		if (fClientOutputSocket != fClientInputSocket && numBytesRemaining == 0) {
-			// We're doing RTSP-over-HTTP tunneling, and input commands are assumed to have been Base64-encoded.
-			// We therefore Base64-decode as much of this new data as we can (i.e., up to a multiple of 4 bytes).
-
-			// But first, we remove any whitespace that may be in the input data:
-			unsigned toIndex = 0;
-			for (int fromIndex = 0; fromIndex < newBytesRead; ++fromIndex) {
-				char c = ptr[fromIndex];
-				if (!(c == ' ' || c == '\t' || c == '\r' || c == '\n')) { // not 'whitespace': space,tab,CR,NL
-					ptr[toIndex++] = c;
-				}
-			}
-			newBytesRead = toIndex;
-
-			unsigned numBytesToDecode = fBase64RemainderCount + newBytesRead;
-			unsigned newBase64RemainderCount = numBytesToDecode % 4;
-			numBytesToDecode -= newBase64RemainderCount;
-			if (numBytesToDecode > 0) {
-				ptr[newBytesRead] = '\0';
-				unsigned decodedSize;
-				unsigned char* decodedBytes = base64Decode((char const*)(ptr - fBase64RemainderCount), numBytesToDecode, decodedSize);
-#ifdef DEBUG
-				fprintf(stderr, "Base64-decoded %d input bytes into %d new bytes:", numBytesToDecode, decodedSize);
-				for (unsigned k = 0; k < decodedSize; ++k) fprintf(stderr, "%c", decodedBytes[k]);
-				fprintf(stderr, "\n");
-#endif
-
-				// Copy the new decoded bytes in place of the old ones (we can do this because there are fewer decoded bytes than original):
-				unsigned char* to = ptr - fBase64RemainderCount;
-				for (unsigned i = 0; i < decodedSize; ++i) *to++ = decodedBytes[i];
-
-				// Then copy any remaining (undecoded) bytes to the end:
-				for (unsigned j = 0; j < newBase64RemainderCount; ++j) *to++ = (ptr - fBase64RemainderCount + numBytesToDecode)[j];
-
-				newBytesRead = decodedSize - fBase64RemainderCount + newBase64RemainderCount;
-				// adjust to allow for the size of the new decoded data (+ remainder)
-				delete[] decodedBytes;
-			}
-			fBase64RemainderCount = newBase64RemainderCount;
-		}
+//		if (fClientOutputSocket != fClientInputSocket && numBytesRemaining == 0) {
+//			// We're doing RTSP-over-HTTP tunneling, and input commands are assumed to have been Base64-encoded.
+//			// We therefore Base64-decode as much of this new data as we can (i.e., up to a multiple of 4 bytes).
+//
+//			// But first, we remove any whitespace that may be in the input data:
+//			unsigned toIndex = 0;
+//			for (int fromIndex = 0; fromIndex < newBytesRead; ++fromIndex) {
+//				char c = ptr[fromIndex];
+//				if (!(c == ' ' || c == '\t' || c == '\r' || c == '\n')) { // not 'whitespace': space,tab,CR,NL
+//					ptr[toIndex++] = c;
+//				}
+//			}
+//			newBytesRead = toIndex;
+//
+//			unsigned numBytesToDecode = fBase64RemainderCount + newBytesRead;
+//			unsigned newBase64RemainderCount = numBytesToDecode % 4;
+//			numBytesToDecode -= newBase64RemainderCount;
+//			if (numBytesToDecode > 0) {
+//				ptr[newBytesRead] = '\0';
+//				unsigned decodedSize;
+//				unsigned char* decodedBytes = base64Decode((char const*)(ptr - fBase64RemainderCount), numBytesToDecode, decodedSize);
+//#ifdef DEBUG
+//				fprintf(stderr, "Base64-decoded %d input bytes into %d new bytes:", numBytesToDecode, decodedSize);
+//				for (unsigned k = 0; k < decodedSize; ++k) fprintf(stderr, "%c", decodedBytes[k]);
+//				fprintf(stderr, "\n");
+//#endif
+//
+//				// Copy the new decoded bytes in place of the old ones (we can do this because there are fewer decoded bytes than original):
+//				unsigned char* to = ptr - fBase64RemainderCount;
+//				for (unsigned i = 0; i < decodedSize; ++i) *to++ = decodedBytes[i];
+//
+//				// Then copy any remaining (undecoded) bytes to the end:
+//				for (unsigned j = 0; j < newBase64RemainderCount; ++j) *to++ = (ptr - fBase64RemainderCount + numBytesToDecode)[j];
+//
+//				newBytesRead = decodedSize - fBase64RemainderCount + newBase64RemainderCount;
+//				// adjust to allow for the size of the new decoded data (+ remainder)
+//				delete[] decodedBytes;
+//			}
+//			fBase64RemainderCount = newBase64RemainderCount;
+//		}
 
 		unsigned char* tmpPtr = fLastCRLF + 2;
 		if (fBase64RemainderCount == 0) { // no more Base-64 bytes remain to be read/decoded
