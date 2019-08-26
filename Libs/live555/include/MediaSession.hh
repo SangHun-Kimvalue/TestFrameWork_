@@ -196,6 +196,7 @@ public:
   char*& _absStartTime() { return fAbsStartTime; }
   char*& _absEndTime() { return fAbsEndTime; }
 
+  //Boolean IsExist();
   Boolean initiate(int useSpecialRTPoffset = -1);
       // Creates a "RTPSource" for this subsession. (Has no effect if it's
       // already been created.)  Returns True iff this succeeds.

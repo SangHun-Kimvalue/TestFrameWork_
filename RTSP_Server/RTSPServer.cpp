@@ -824,7 +824,7 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	  handleCmd_sessionNotFound();
 	}
       } else if (strcmp(cmdName, "REGISTER") == 0 || strcmp(cmdName, "DEREGISTER") == 0) {
-	// Because - unlike other commands - an implementation of this command needs
+	// Because - unlike other commands - an implementation of this command needs454
 	// the entire URL, we re-parse the command to get it:
 	char* url = strDupSize((char*)fRequestBuffer);
 	if (sscanf((char*)fRequestBuffer, "%*s %s", url) == 1) {

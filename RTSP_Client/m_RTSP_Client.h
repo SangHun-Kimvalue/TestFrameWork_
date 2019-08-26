@@ -1,9 +1,7 @@
 #pragma once
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
-#include "RTSPClient.hh"
-
-//typedef std::function<void(RTSPClient* rtspClient, int resultCode, char* resultString)> responseHandler;
+#include <iostream>
 
 // Forward function definitions:
 struct StreamClientState {
@@ -26,29 +24,26 @@ UsageEnvironment& operator<<(UsageEnvironment& env, const MediaSubsession& subse
 
 #define REQUEST_STREAMING_OVER_TCP False
 
-class ourRTSPClient : public RTSPClient {
+class m_RTSP_Client : public RTSPClient{
 public:
-	static ourRTSPClient* createNew(UsageEnvironment& env, char const* rtspURL,
+	static m_RTSP_Client* createNew(UsageEnvironment& env,
+		char const* rtspURL,
 		int verbosityLevel = 0,
 		char const* applicationName = NULL,
 		portNumBits tunnelOverHTTPPortNum = 0);
 
 	StreamClientState scs;
 
-	void continueAfterDESCRIBE(RTSPClient* rtspClient, int resultCode, char* resultString);
-	void setupNextSubsession(RTSPClient* rtspClient);
-		 
-	void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultString);
-	void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultString);
-		 
-	void shutdownStream(RTSPClient* rtspClient, int exitCode = 1);
+	//char* SDP;
 
 protected:
-	ourRTSPClient(UsageEnvironment& env, char const* rtspURL,
+	m_RTSP_Client(UsageEnvironment& env, char const* rtspURL,
 		int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum);
 	// called only by createNew();
-	virtual ~ourRTSPClient();
+	virtual ~m_RTSP_Client();
 	
+private:
+
 };
 
 // Define a data sink (a subclass of "MediaSink") to receive the data for each subsession (i.e., each audio or video 'substream').
@@ -58,4 +53,3 @@ protected:
 
 #define RTSP_CLIENT_VERBOSITY_LEVEL 1 // by default, print verbose output from each "RTSPClient"
 
-static unsigned rtspClientCount = 0; // Counts how many streams (i.e., "RTSPClient"s) are currently in use.

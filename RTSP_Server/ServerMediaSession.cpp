@@ -24,6 +24,8 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "ServerMediaSession.hh"
 #include <GroupsockHelper.hh>
 #include <math.h>
+#include <string>
+
 #if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
 #define snprintf _snprintf
 #endif
@@ -284,18 +286,35 @@ char* ServerMediaSession::generateSDPDescription() {
     if (sdp == NULL) break;
 
     // Generate the SDP prefix (session-level lines):
-    snprintf(sdp, sdpLength, sdpPrefixFmt,
-	     fCreationTime.tv_sec, fCreationTime.tv_usec, // o= <session id>
-	     1, // o= <version> // (needs to change if params are modified)
-	     ipAddressStr.val(), // o= <address>
-	     fDescriptionSDPString, // s= <description>
-	     fInfoSDPString, // i= <info>
-	     libNameStr, libVersionStr, // a=tool:
-	     sourceFilterLine, // a=source-filter: incl (if a SSM session)
-	     rangeLine, // a=range: line
-	     fDescriptionSDPString, // a=x-qt-text-nam: line
-	     fInfoSDPString, // a=x-qt-text-inf: line
-	     fMiscSDPLines); // miscellaneous session SDP lines (if any)
+    //snprintf(sdp, sdpLength, sdpPrefixFmt,
+	   //  fCreationTime.tv_sec, fCreationTime.tv_usec, // o= <session id>
+	   //  1, // o= <version> // (needs to change if params are modified)
+	   //  ipAddressStr.val(), // o= <address>
+	   //  fDescriptionSDPString, // s= <description>
+	   //  fInfoSDPString, // i= <info>
+	   //  libNameStr, libVersionStr, // a=tool:
+	   //  sourceFilterLine, // a=source-filter: incl (if a SSM session)
+	   //  rangeLine, // a=range: line
+	   //  fDescriptionSDPString, // a=x-qt-text-nam: line
+	   //  fInfoSDPString, // a=x-qt-text-inf: line
+	   //  fMiscSDPLines); // miscellaneous session SDP lines (if any)
+
+	std::string temp = "h264";
+	fInfoSDPString = const_cast<char*>(temp.c_str());
+
+
+	snprintf(sdp, sdpLength, sdpPrefixFmt,
+		fCreationTime.tv_sec, fCreationTime.tv_usec, // o= <session id>
+		1, // o= <version> // (needs to change if params are modified)
+		ipAddressStr.val(), // o= <address>
+		fDescriptionSDPString, // s= <description>
+		fInfoSDPString, // i= <info>
+		libNameStr, libVersionStr, // a=tool:
+		sourceFilterLine, // a=source-filter: incl (if a SSM session)
+		rangeLine, // a=range: line
+		fDescriptionSDPString, // a=x-qt-text-nam: line
+		fInfoSDPString, // a=x-qt-text-inf: line
+		fMiscSDPLines); // miscellaneous session SDP lines (if any)
 
     // Then, add the (media-level) lines for each subsession:
     char* mediaSDP = sdp;
