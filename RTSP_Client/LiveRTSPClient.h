@@ -15,16 +15,6 @@ struct StreamClientState {
 	double duration;
 };
 
-//// A function that outputs a string that identifies each stream (for debugging output).  Modify this if you wish:
-//UsageEnvironment& operator<<(UsageEnvironment& env, const RTSPClient& rtspClient) {
-//	return env << "[URL:\"" << rtspClient.url() << "\"]: ";
-//}
-//
-//// A function that outputs a string that identifies each subsession (for debugging output).  Modify this if you wish:
-//UsageEnvironment& operator<<(UsageEnvironment& env, const MediaSubsession& subsession) {
-//	return env << subsession.mediumName() << "/" << subsession.codecName();
-//}
-
 class LiveRTSPClient : public Client
 {
 public:
@@ -37,23 +27,28 @@ public:
 	virtual const char* Get_Name();
 	virtual bool Initialize(const char* URI, const char* ProgName);
 	virtual void Restart();
+	virtual bool Get_Status();
+	virtual bool KeepAlive();
+	
 	bool SetLoopSatus(bool Status);
-
-
-	char* URL;
+	const char* Get_SDP();
+	void Play();
+	void Option();
+	void Description();
+	void Setup();
+	void TearDown();
 
 private:
-	int portNumber;
-	int httpTunnelingPort;
-	//FFmpegH264Encoder * m_Encoder;
-	char quit;
+
+	const unsigned Get_Timeout();
 
 	TaskScheduler    *scheduler;
 	UsageEnvironment *env;
 	RTSPClient	 *m_Client;
 
-
+	unsigned timeout;
 	char eventLoopWatchVariable;
+
 };
 
 
