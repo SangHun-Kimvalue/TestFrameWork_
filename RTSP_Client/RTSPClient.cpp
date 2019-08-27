@@ -203,27 +203,51 @@ unsigned RTSPClient::sendSetParameterCommand(MediaSession& session, responseHand
 	return result;
 }
 
-//unsigned RTSPClient::sendGetParameterCommand(MediaSession& session, responseHandler* responseHandler, char const* parameterName,
-//	Authenticator* authenticator) {
-//	if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
-//
-//	// We assume that:
-//	//    parameterName is NULL means: Send no body in the request.
-//	//    parameterName is "" means: Send only \r\n in the request body.  
-//	//    parameterName is non-empty means: Send "<parameterName>\r\n" as the request body.  
-//	unsigned parameterNameLen = parameterName == NULL ? 0 : strlen(parameterName);
-//	char* paramString = new char[parameterNameLen + 3]; // the 3 is for \r\n + the '\0' byte
-//	if (parameterName == NULL) {
-//		paramString[0] = '\0';
-//	}
-//	else {
-//		sprintf(paramString, "%s\r\n", parameterName);
-//	}
-//	unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER", responseHandler, &session, NULL, False, 0.0, 0.0, 0.0, paramString));
-//	delete[] paramString;
-//	return result;
-//}
+unsigned RTSPClient::sendGetParameterCommand(MediaSession& session, responseHandler* responseHandler, char const* parameterName,
+	Authenticator* authenticator) {
+	if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
 
+	// We assume that:
+	//    parameterName is NULL means: Send no body in the request.
+	//    parameterName is "" means: Send only \r\n in the request body.  
+	//    parameterName is non-empty means: Send "<parameterName>\r\n" as the request body.  
+	unsigned parameterNameLen = parameterName == NULL ? 0 : strlen(parameterName);
+	char* paramString = new char[parameterNameLen + 3]; // the 3 is for \r\n + the '\0' byte
+	if (parameterName == NULL) {
+		paramString[0] = '\0';
+	}
+	else {
+		sprintf(paramString, "%s\r\n", parameterName);
+	}
+	unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER", responseHandler, &session, NULL, False, 0.0, 0.0, 0.0, paramString));
+	delete[] paramString;
+	return result;
+}
+
+unsigned RTSPClient::sendGetParameterCommand() {
+	//if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
+	//MediaSession& session = nullptr;
+		responseHandler* responseHandler;
+		char const* parameterName = "";
+	// We assume that:
+	//    parameterName is NULL means: Send no body in the request.
+	//    parameterName is "" means: Send only \r\n in the request body.  
+	//    parameterName is non-empty means: Send "<parameterName>\r\n" as the request body.  
+	unsigned parameterNameLen = parameterName == NULL ? 0 : strlen(parameterName);
+	char* paramString = new char[parameterNameLen + 3]; // the 3 is for \r\n + the '\0' byte
+	if (parameterName == NULL) {
+		paramString[0] = '\0';
+	}
+	else {
+		sprintf(paramString, "%s\r\n", parameterName);
+	}
+
+	unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER"));
+	//unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER", responseHandler, &session, NULL, False, 0.0, 0.0, 0.0, paramString));
+	delete[] paramString;
+	//delete[] paramString;
+	return result;
+}
 void RTSPClient::sendDummyUDPPackets(MediaSession& session, unsigned numDummyPackets) {
 	MediaSubsessionIterator iter(session);
 	MediaSubsession* subsession;

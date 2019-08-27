@@ -4,7 +4,7 @@
 class Client
 {
 public:
-	Client(): m_URL(0),m_ProgName(0){};
+	Client(): m_URL(0),m_ProgName(0), m_SAlive(false){};
 	virtual ~Client() {};
 
 	virtual bool Initialize(const char* URI, const char* ProgName) = 0;
@@ -12,11 +12,12 @@ public:
 	virtual void Run() = 0;
 	virtual const char* Get_URL() = 0;
 	virtual const char* Get_Name() = 0;
-	virtual bool Get_Status() = 0;
+	virtual const char* Get_Status() = 0;
 
 
 	char* m_URL;
 	char* m_ProgName;
+	bool m_SAlive;
 
 };
 

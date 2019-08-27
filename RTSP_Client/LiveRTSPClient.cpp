@@ -7,22 +7,32 @@ void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultStrin
 
 StreamClientState scs; // alias
 LiveRTSPClient* m_Live;
-
+unsigned long m_startTime ;
 
 void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultString) {
 	Boolean success = False;
 
 	std::cout <<  "Started playing session" << std::endl;
+	m_startTime = timeGetTime();
+	m_Live->m_SAlive = true;
+	m_Live->GetParameter();
 
+	std::cout << "\nProgram Name : " <<m_Live->Get_Name() << std::endl;
+	std::cout << "\nURL : " <<m_Live->Get_URL() << std::endl;
+	std::cout << "\nStatus : " <<m_Live->Get_Status() << std::endl;
+
+	//m_Live->startAlive();
 	success = True;
-	shutdownStream((RTSPClient*)rtspClient, m_Live);
+	//shutdownStream((RTSPClient*)rtspClient, m_Live);
 	delete[] resultString;
 
 }
 
 void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultString) {
-
+	
+	m_Live->GetParameter();
 	rtspClient->sendPlayCommand(continueAfterPLAY);
+	
 }
 
 void shutdownStream(RTSPClient* rtspClient, LiveRTSPClient* m_Client) {
@@ -106,12 +116,12 @@ const char* LiveRTSPClient::Get_Name() {
 	return m_Client->getprogName();
 }
 
-bool LiveRTSPClient::Get_Status() {
+const char* LiveRTSPClient::Get_Status() {
 
-	if (eventLoopWatchVariable == true)
-		return true;
+	if (eventLoopWatchVariable == 0)
+		return "Alive";
 	else
-		return false;
+		return "Pause";
 }
 
 const char* LiveRTSPClient::Get_SDP() {
@@ -184,17 +194,59 @@ void LiveRTSPClient::Play() {
 		std::cerr << "\nLoop Status Paused" << std::endl;
 		m_Client->sendPlayCommand();
 	}
+
+	m_SAlive = true;
 }
 
 void LiveRTSPClient::TearDown() {
 
 	m_Client->sendTeardownCommand();
+	
+	m_SAlive = false;
+}
+
+void LiveRTSPClient::GetParameter() {
+	m_Client->sendGetParameterCommand();
+}
+
+//스레드 실행
+bool LiveRTSPClient::KeepAlive() {
+	
+	static int m_count;
+	timeout;
+
+
+	while (eventLoopWatchVariable == 0) {
+		if (m_SAlive == true) {
+
+			if (timeGetTime() >= (m_startTime + 5000)) {
+				m_startTime = timeGetTime();
+				//m_Client->sendGetParameterCommand();
+				Option();
+			}
+
+		}
+
+		Sleep(10);
+	}
+	
+	if (m_SAlive == true)
+		return true;
+	else
+		return false;
+}
+
+void LiveRTSPClient::startAlive() {
+
+	AliveThread = std::thread(&LiveRTSPClient::KeepAlive, this);
+
 
 }
 
 void LiveRTSPClient::Run() {
 
 	m_Client->sendOptionsCommand();
+
 	m_Client->sendDescribeCommand(continueAfterDESCRIBE);
 	
 	eventLoopWatchVariable = 0;
@@ -214,6 +266,7 @@ bool LiveRTSPClient::SetLoopSatus(bool Status) {
 	}
 	else {
 		eventLoopWatchVariable = 1;
+		m_SAlive = false;
 	}
 
 	return Status;
