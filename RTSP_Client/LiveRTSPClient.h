@@ -28,7 +28,6 @@ public:
 	virtual bool Initialize(const char* URI, const char* ProgName);
 	virtual void Restart();
 	virtual bool Get_Status();
-	virtual bool KeepAlive();
 	
 	bool SetLoopSatus(bool Status);
 	const char* Get_SDP();

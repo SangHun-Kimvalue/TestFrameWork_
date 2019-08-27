@@ -13,8 +13,7 @@ public:
 	virtual const char* Get_URL() = 0;
 	virtual const char* Get_Name() = 0;
 	virtual bool Get_Status() = 0;
-	
-	virtual bool KeepAlive() = 0;
+
 
 	char* m_URL;
 	char* m_ProgName;

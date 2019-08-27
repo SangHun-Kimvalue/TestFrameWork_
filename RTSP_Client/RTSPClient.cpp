@@ -748,13 +748,11 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
 		Boolean forceMulticastOnUnspecified = (request->booleanFlags() & 0x4) != 0;
 		
 		char const *prefix, *separator, *suffix;
-		//if(*request->subsession() == nullptr)
 
 		//constructSubsessionURL(subsession, prefix, separator, suffix);
 		//prefix = sessionURL(subsession.parentSession());
 		//if (prefix == NULL) prefix = "";
 
-		//prefix = "rtsp://192.168.0.40/video1";
 
 		std::string URL = cmdURL;
 		int Ssize = URL.length();
@@ -951,7 +949,8 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
 
 			prefix = URL.c_str();
 
-			suffix = "track1";
+			//suffix = "track1";
+			suffix = "";
 			if (suffix == NULL) suffix = "";
 
 			if (isAbsoluteURL(suffix)) {
@@ -2071,12 +2070,12 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 					if (strcmp(foundRequest->commandName(), "SETUP") == 0) {
 						// (*foundRequest->subsession() == nullptr) {}
 						//if (!handleSETUPResponse(*foundRequest->subsession(), sessionParamsStr, transportParamsStr, foundRequest->booleanFlags() & 0x1)) break;
-						//if (!handleSETUPResponse(sessionParamsStr, transportParamsStr, foundRequest->booleanFlags() & 0x1)) break;
+						if (!handleSETUPResponse(sessionParamsStr, transportParamsStr, foundRequest->booleanFlags() & 0x1)) break;
 						//sendPlayCommand();
 					}
 					else if (strcmp(foundRequest->commandName(), "PLAY") == 0) {
 						//if (!handlePLAYResponse(*foundRequest->session(), *foundRequest->subsession(), scaleParamsStr, speedParamsStr, rangeParamsStr, rtpInfoParamsStr)) break;
-						//if (!handlePLAYResponse(*foundRequest->session(), scaleParamsStr, speedParamsStr, rangeParamsStr, rtpInfoParamsStr)) break;
+						if (!handlePLAYResponse(*foundRequest->session(), scaleParamsStr, speedParamsStr, rangeParamsStr, rtpInfoParamsStr)) break;
 						//sendTeardownCommand();
 					}
 					else if (strcmp(foundRequest->commandName(), "TEARDOWN") == 0) {

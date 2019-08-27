@@ -4,8 +4,8 @@ static unsigned rtspClientCount = 0; // Counts how many streams (i.e., "RTSPClie
 int main(int argc, char** argv) {
 	// Begin by setting up our usage environment:
 
-	const char* URI = "rtsp://192.168.0.40:8554";
-	//const char* URI = "rtsp://admin:1234@192.168.0.70/video1";
+	//const char* URI = "rtsp://192.168.0.40:8554";
+	const char* URI = "rtsp://admin:1234@192.168.0.70/video1";
 	const char* ProgName = "Client_Test";
 
 	Client* rtspClient = new LiveRTSPClient();

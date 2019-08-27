@@ -76,9 +76,7 @@ void LiveRTSPClient::Restart() {
 	const char* URL_temp = Get_URL();
 	const char* Name_temp = Get_Name();
 
-	eventLoopWatchVariable = 1;
-	env->reclaim();
-	delete scheduler; scheduler = NULL;
+	Release();
 
 	bool res = Initialize(URL_temp, Name_temp);
 	if (res == true) {
@@ -194,13 +192,6 @@ void LiveRTSPClient::TearDown() {
 
 }
 
-bool LiveRTSPClient::KeepAlive() {
-
-	timeout;
-
-	return true;
-}
-
 void LiveRTSPClient::Run() {
 
 	m_Client->sendOptionsCommand();
@@ -212,8 +203,6 @@ void LiveRTSPClient::Run() {
 }
 
 const unsigned LiveRTSPClient::Get_Timeout() {
-
-	
 
 	return timeout;
 }
