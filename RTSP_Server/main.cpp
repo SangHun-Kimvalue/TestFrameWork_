@@ -16,7 +16,7 @@
 
 int main(int argc, const char * argv[])
 {
-	int Port = 8554;
+	int Port = 554;
 
 	Server * server = new LiveRTSPServer();
 	server->Initialize(Port);
@@ -28,7 +28,7 @@ int main(int argc, const char * argv[])
 	//std::cout << stdhello.c_str() << std::endl;
 
 	server->Run();
-
+	//server->ThreadRun();
 	
 	//server->Release();
 	delete server;

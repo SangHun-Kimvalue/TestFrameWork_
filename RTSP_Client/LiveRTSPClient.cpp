@@ -1,9 +1,11 @@
 #include "LiveRTSPClient.h"
 
+
 void shutdownStream(RTSPClient* rtspClient, LiveRTSPClient* Client);
 void continueAfterDESCRIBE(RTSPClient* rtspClient, int resultCode, char* resultString);
 void continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultString);
 void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultString);
+void continueAfterOPTION(RTSPClient* rtspClient, int resultCode, char* resultString);
 
 StreamClientState scs; // alias
 LiveRTSPClient* m_Live;
@@ -23,8 +25,14 @@ void continueAfterPLAY(RTSPClient* rtspClient, int resultCode, char* resultStrin
 
 	//m_Live->startAlive();
 	success = True;
-	//shutdownStream((RTSPClient*)rtspClient, m_Live);
+	shutdownStream((RTSPClient*)rtspClient, m_Live);
 	delete[] resultString;
+
+}
+
+void continueAfterOPTION(RTSPClient* rtspClient, int resultCode, char* resultString) {
+
+	rtspClient->sendDescribeCommand(continueAfterDESCRIBE);
 
 }
 
@@ -67,13 +75,19 @@ void continueAfterDESCRIBE(RTSPClient* rtspClient, int resultCode, char* resultS
 
 	rtspClient->sendSetupCommand(continueAfterSETUP);
 
+
 	return;
 
 }
 
-LiveRTSPClient::LiveRTSPClient() :scheduler(nullptr), env(nullptr), m_Client(nullptr), timeout(0), eventLoopWatchVariable(0)
-{
+LiveRTSPClient* LiveRTSPClient::createNew(UsageEnvironment& env, char const* rtspURL,
+	int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum) {
+	return new LiveRTSPClient(env, rtspURL, verbosityLevel, applicationName, tunnelOverHTTPPortNum);
+}
 
+LiveRTSPClient::LiveRTSPClient(UsageEnvironment& env, char const* rtspURL,
+	int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum)
+	: RTSPClient(env, rtspURL, verbosityLevel, applicationName, tunnelOverHTTPPortNum, -1), env(&env) {
 }
 
 LiveRTSPClient::~LiveRTSPClient()
@@ -99,21 +113,18 @@ void LiveRTSPClient::Restart() {
 
 void LiveRTSPClient::Release() {
 
-	eventLoopWatchVariable = 1;
-	env->reclaim();
-	delete scheduler; scheduler = NULL;
 }
 
 const char* LiveRTSPClient::Get_URL() {
 	
-	if (m_URL == m_Client->url())
-		return m_Client->url();
+	if (m_URL == url())
+		return url();
 	else
 		return m_URL;
 }
 
 const char* LiveRTSPClient::Get_Name() {
-	return m_Client->getprogName();
+	return getprogName();
 }
 
 const char* LiveRTSPClient::Get_Status() {
@@ -126,7 +137,7 @@ const char* LiveRTSPClient::Get_Status() {
 
 const char* LiveRTSPClient::Get_SDP() {
 	
-	const char* temp_sdp = m_Client->SDP;
+	const char* temp_sdp = SDP;
 	if (temp_sdp == "") {
 		return "Nothing";
 	}
@@ -135,17 +146,9 @@ const char* LiveRTSPClient::Get_SDP() {
 }
 
 bool LiveRTSPClient::Initialize(const char* URI, const char* ProgName) {
-	scheduler = BasicTaskScheduler::createNew();
-	env = BasicUsageEnvironment::createNew(*scheduler);
+	//scheduler = BasicTaskScheduler::createNew();
+	//env = BasicUsageEnvironment::createNew(*scheduler);
 
-	m_URL = const_cast<char*>(URI);
-	m_ProgName = const_cast<char*>(ProgName);
-
-	m_Client = RTSPClient::createNew(*env, URI, RTSP_CLIENT_VERBOSITY_LEVEL, ProgName);
-	if (m_Client == NULL) {
-		std::cerr << "\nRTSP_URL Error" << std::endl;
-		return false;
-	}
 	m_Live = this;
 	eventLoopWatchVariable = 0;
 
@@ -153,18 +156,18 @@ bool LiveRTSPClient::Initialize(const char* URI, const char* ProgName) {
 }
 
 void LiveRTSPClient::Option() {
-	m_Client->sendOptionsCommand();
+	sendOptionsCommand();
 }
 
 void LiveRTSPClient::Description() {
 	
 	if (eventLoopWatchVariable == 0) {
-		m_Client->sendDescribeCommand(continueAfterDESCRIBE);
+		sendDescribeCommand(continueAfterDESCRIBE);
 	}
 	else {
 		
 		std::cerr << "\nLoop Status Paused" << std::endl;
-		m_Client->sendDescribeCommand();
+		sendDescribeCommand();
 	}
 
 }
@@ -172,12 +175,12 @@ void LiveRTSPClient::Description() {
 void LiveRTSPClient::Setup() {
 	
 	if (eventLoopWatchVariable == 0) {
-		m_Client->sendSetupCommand(continueAfterSETUP);
+		sendSetupCommand(continueAfterSETUP);
 	}
 	else {
 
 		std::cerr << "\nLoop Status Paused" << std::endl;
-		m_Client->sendSetupCommand();
+		sendSetupCommand();
 	}
 
 }
@@ -185,14 +188,14 @@ void LiveRTSPClient::Setup() {
 void LiveRTSPClient::Play() {
 
 	if (eventLoopWatchVariable == 0) {
-		timeout = m_Client->sessionTimeoutParameter();
-		m_Client->sendPlayCommand(continueAfterPLAY);
+		timeout = sessionTimeoutParameter();
+		sendPlayCommand(continueAfterPLAY);
 
 	}
 	else {
 
 		std::cerr << "\nLoop Status Paused" << std::endl;
-		m_Client->sendPlayCommand();
+		sendPlayCommand();
 	}
 
 	m_SAlive = true;
@@ -200,13 +203,13 @@ void LiveRTSPClient::Play() {
 
 void LiveRTSPClient::TearDown() {
 
-	m_Client->sendTeardownCommand();
+	sendTeardownCommand();
 	
 	m_SAlive = false;
 }
 
 void LiveRTSPClient::GetParameter() {
-	m_Client->sendGetParameterCommand();
+	sendGetParameterCommand();
 }
 
 //스레드 실행
@@ -222,7 +225,7 @@ bool LiveRTSPClient::KeepAlive() {
 			if (timeGetTime() >= (m_startTime + 5000)) {
 				m_startTime = timeGetTime();
 				//m_Client->sendGetParameterCommand();
-				Option();
+				//Option();
 			}
 
 		}
@@ -239,15 +242,13 @@ bool LiveRTSPClient::KeepAlive() {
 void LiveRTSPClient::startAlive() {
 
 	AliveThread = std::thread(&LiveRTSPClient::KeepAlive, this);
-
-
 }
 
 void LiveRTSPClient::Run() {
 
-	m_Client->sendOptionsCommand();
+	sendOptionsCommand(continueAfterOPTION);
 
-	m_Client->sendDescribeCommand(continueAfterDESCRIBE);
+	//m_Client->sendDescribeCommand(continueAfterDESCRIBE);
 	
 	eventLoopWatchVariable = 0;
 	

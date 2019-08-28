@@ -1,11 +1,13 @@
 #pragma once
 
-#include "Client.h"
+#include "RTSP_Client.h"
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
+#include  "RTSPClient.hh"
 #pragma comment(lib, "winmm.lib")
 #include <Windows.h>
 #include <thread>
+#include <iostream>
 
 #define REQUEST_STREAMING_OVER_TCP False
 #define RTSP_CLIENT_VERBOSITY_LEVEL 1 // by default, print verbose output from each "RTSPClient"
@@ -18,11 +20,16 @@ struct StreamClientState {
 	double duration;
 };
 
-class LiveRTSPClient : public Client
+class LiveRTSPClient : public RTSP_Client, public RTSPClient
 {
 public:
-	LiveRTSPClient();
+	
+	//LiveRTSPClient(UsageEnvironment & env, char const * rtspURL, int verbosityLevel, char const * applicationName, portNumBits tunnelOverHTTPPortNum);
+
 	~LiveRTSPClient();
+
+	static LiveRTSPClient* createNew(UsageEnvironment& env, char const* rtspURL,
+		int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum);
 
 	virtual void Release();
 	virtual void Run();
@@ -31,11 +38,10 @@ public:
 	virtual bool Initialize(const char* URI, const char* ProgName);
 	virtual void Restart();
 	virtual const char* Get_Status();
-	
-	
+	virtual const char* Get_SDP();
 
 	bool SetLoopSatus(bool Status);
-	const char* Get_SDP();
+	
 	void Play();
 	void Option();
 	void Description();
@@ -44,21 +50,27 @@ public:
 	void GetParameter();
 
 	void startAlive();
-
+	bool m_SAlive;
 
 private:
 
 	const unsigned Get_Timeout();
 	bool KeepAlive();
 
-	TaskScheduler    *scheduler;
 	UsageEnvironment *env;
-	RTSPClient	 *m_Client;
+	//RTSPClient	 *m_Client;
 
 	std::thread AliveThread;
 
 	unsigned timeout;
 	char eventLoopWatchVariable;
+	char* m_URL;
+	char* m_ProgName;
+
+
+protected:
+	LiveRTSPClient(UsageEnvironment& env, char const* rtspURL,
+		int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum);
 
 };
 

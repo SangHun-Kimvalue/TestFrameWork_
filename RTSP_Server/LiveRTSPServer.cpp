@@ -130,7 +130,7 @@ void LiveRTSPServer::Release() {
 
 	bool res = false;
 
-	Medium::close(rtspServer);
+	Medium::close(Commander);
 	env->reclaim();
 
 	delete scheduler;

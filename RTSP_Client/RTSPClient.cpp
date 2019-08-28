@@ -521,8 +521,6 @@ void RTSPClient::setBaseURL(char const* url) {
 	delete[] fBaseURL; fBaseURL = strDup(url);
 }
 
-
-
 int RTSPClient::grabSocket() {
 	int inputSocket = fInputSocketNum;
 	fInputSocketNum = -1;

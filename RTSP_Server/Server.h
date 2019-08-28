@@ -14,6 +14,8 @@ public:
 	virtual const char* GetURL() = 0;
 	virtual void Restart() = 0;
 
+
+
 	int m_port;
 	char* URL;
 

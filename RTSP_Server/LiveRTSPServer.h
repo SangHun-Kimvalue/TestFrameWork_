@@ -13,6 +13,7 @@
 #include "LiveServerMediaSubsession.h"
 #include "Server.h"
 #include "Connect_Handler.h"
+#include <thread>
 
 //#include "FFmpegH264Source.h"
 //#include "FFmpegH264Encoder.h"
@@ -32,6 +33,8 @@
 		virtual bool Initialize(int port);
 		virtual void Restart();
 
+		
+
 		char* URL;
 
 	private:
@@ -43,7 +46,7 @@
 		TaskScheduler    *scheduler;
 		UsageEnvironment *env;
 		UserAuthenticationDatabase* authDB;
-		RTSPServer* rtspServer;
+		//RTSPServer* rtspServer;
 		Connect_Handler* Commander;
 
 	};

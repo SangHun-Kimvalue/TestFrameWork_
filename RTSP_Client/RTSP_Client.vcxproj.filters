@@ -13,18 +13,51 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{534a85c1-fcee-4ee0-bf47-df8639a4614d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test\test1">
+      <UniqueIdentifier>{00d8e86d-8f94-4ed9-bd20-a9a8c703f8bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test\test2">
+      <UniqueIdentifier>{6214a831-457f-4e32-b6f2-36a103a5d281}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Our_RTSP_Client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LiveRTSPClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="H265RTSPClient.hpp">
+      <Filter>test\test1</Filter>
+    </ClInclude>
+    <ClInclude Include="SDLVideoSink.hpp">
+      <Filter>test\test1</Filter>
+    </ClInclude>
+    <ClInclude Include="StreamClientState.hpp">
+      <Filter>test\test1</Filter>
+    </ClInclude>
+    <ClInclude Include="new_sample\inputstream.hpp">
+      <Filter>test\test2</Filter>
+    </ClInclude>
+    <ClInclude Include="new_sample\outputstream.hpp">
+      <Filter>test\test2</Filter>
+    </ClInclude>
+    <ClInclude Include="new_sample\rtsp.hpp">
+      <Filter>test\test2</Filter>
+    </ClInclude>
+    <ClInclude Include="new_sample\socket.hpp">
+      <Filter>test\test2</Filter>
+    </ClInclude>
+    <ClInclude Include="new_sample\tcp.hpp">
+      <Filter>test\test2</Filter>
+    </ClInclude>
+    <ClInclude Include="Our_RTSP_Client.h">
+      <Filter>test\test1</Filter>
+    </ClInclude>
+    <ClInclude Include="RTSP_Client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,14 +68,44 @@
     <ClCompile Include="RTSPClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Our_RTSP_Client.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LiveRTSPClient.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="H265RTSPClient.cpp">
+      <Filter>test\test1</Filter>
+    </ClCompile>
+    <ClCompile Include="s_main.cpp">
+      <Filter>test\test1</Filter>
+    </ClCompile>
+    <ClCompile Include="SDLVideoSink.cpp">
+      <Filter>test\test1</Filter>
+    </ClCompile>
+    <ClCompile Include="StreamClientState.cpp">
+      <Filter>test\test1</Filter>
+    </ClCompile>
+    <ClCompile Include="new_sample\app.cpp">
+      <Filter>test\test2</Filter>
+    </ClCompile>
+    <ClCompile Include="new_sample\inputstream.cpp">
+      <Filter>test\test2</Filter>
+    </ClCompile>
+    <ClCompile Include="new_sample\outputstream.cpp">
+      <Filter>test\test2</Filter>
+    </ClCompile>
+    <ClCompile Include="new_sample\rtsp.cpp">
+      <Filter>test\test2</Filter>
+    </ClCompile>
+    <ClCompile Include="new_sample\socket.cpp">
+      <Filter>test\test2</Filter>
+    </ClCompile>
+    <ClCompile Include="new_sample\tcp.cpp">
+      <Filter>test\test2</Filter>
+    </ClCompile>
+    <ClCompile Include="Our_RTSP_Client.cpp">
+      <Filter>test\test1</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
