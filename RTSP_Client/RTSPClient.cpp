@@ -54,18 +54,18 @@ unsigned RTSPClient::sendAnnounceCommand(char const* sdpDescription, responseHan
 	return sendRequest(new RequestRecord(++fCSeq, "ANNOUNCE", responseHandler, NULL, NULL, False, 0.0, 0.0, 0.0, sdpDescription));
 }
 
-//unsigned RTSPClient::sendSetupCommand(MediaSubsession& subsession, responseHandler* responseHandler,
-//	Boolean streamOutgoing, Boolean streamUsingTCP, Boolean forceMulticastOnUnspecified,
-//	Authenticator* authenticator) {
-//	if (fTunnelOverHTTPPortNum != 0) streamUsingTCP = True; // RTSP-over-HTTP tunneling uses TCP (by definition)
-//	if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
-//
-//	u_int32_t booleanFlags = 0;
-//	if (streamUsingTCP) booleanFlags |= 0x1;
-//	if (streamOutgoing) booleanFlags |= 0x2;
-//	if (forceMulticastOnUnspecified) booleanFlags |= 0x4;
-//	return sendRequest(new RequestRecord(++fCSeq, "SETUP", responseHandler, NULL, &subsession, booleanFlags));
-//}
+unsigned RTSPClient::sendSetupCommand(MediaSubsession& subsession, responseHandler* responseHandler,
+	Boolean streamOutgoing, Boolean streamUsingTCP, Boolean forceMulticastOnUnspecified,
+	Authenticator* authenticator) {
+	if (fTunnelOverHTTPPortNum != 0) streamUsingTCP = True; // RTSP-over-HTTP tunneling uses TCP (by definition)
+	if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
+
+	u_int32_t booleanFlags = 0;
+	if (streamUsingTCP) booleanFlags |= 0x1;
+	if (streamOutgoing) booleanFlags |= 0x2;
+	if (forceMulticastOnUnspecified) booleanFlags |= 0x4;
+	return sendRequest(new RequestRecord(++fCSeq, "SETUP", responseHandler, NULL, &subsession, booleanFlags));
+}
 
 unsigned RTSPClient::sendSetupCommand(responseHandler* responseHandler,
 	Boolean streamOutgoing, Boolean streamUsingTCP, Boolean forceMulticastOnUnspecified,
@@ -87,42 +87,6 @@ unsigned RTSPClient::sendSetupCommand(responseHandler* responseHandler,
 //	sendDummyUDPPackets(session); // hack to improve NAT traversal
 //	return sendRequest(new RequestRecord(++fCSeq, "PLAY", responseHandler, &session, NULL, 0, start, end, scale));
 //}
-
-unsigned RTSPClient::sendPlayCommand(responseHandler* responseHandler) {
-	return sendRequest(new RequestRecord(++fCSeq, "PLAY", responseHandler, 0));
-}
-
-unsigned RTSPClient::sendPlayCommand() {
-	sendRequest(new RequestRecord(++fCSeq, "PLAY"));
-
-	return 0;
-}
-
-unsigned RTSPClient::sendSetupCommand() {
-	sendRequest(new RequestRecord(++fCSeq, "SETUP"));
-
-	return 0;
-}
-
-unsigned RTSPClient::sendTeardownCommand() {
-	//envir() << "Send TearDown\n";
-	sendRequest(new RequestRecord(++fCSeq, "TEARDOWN"));
-
-	return 0;
-}
-
-unsigned RTSPClient::sendOptionsCommand() {
-	sendRequest(new RequestRecord(++fCSeq, "OPTIONS"));
-	//sendDescribeCommand();
-	return 0;
-}
-
-unsigned RTSPClient::sendDescribeCommand() {
-	sendRequest(new RequestRecord(++fCSeq, "DESCRIBE"));
-
-	return 0;
-}
-
 
 //unsigned RTSPClient::sendPlayCommand(MediaSubsession& subsession, responseHandler* responseHandler,
 //	double start, double end, float scale,
@@ -224,30 +188,31 @@ unsigned RTSPClient::sendGetParameterCommand(MediaSession& session, responseHand
 	return result;
 }
 
-unsigned RTSPClient::sendGetParameterCommand() {
-	//if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
-	//MediaSession& session = nullptr;
-		responseHandler* responseHandler;
-		char const* parameterName = "";
-	// We assume that:
-	//    parameterName is NULL means: Send no body in the request.
-	//    parameterName is "" means: Send only \r\n in the request body.  
-	//    parameterName is non-empty means: Send "<parameterName>\r\n" as the request body.  
-	unsigned parameterNameLen = parameterName == NULL ? 0 : strlen(parameterName);
-	char* paramString = new char[parameterNameLen + 3]; // the 3 is for \r\n + the '\0' byte
-	if (parameterName == NULL) {
-		paramString[0] = '\0';
-	}
-	else {
-		sprintf(paramString, "%s\r\n", parameterName);
-	}
+//unsigned RTSPClient::sendGetParameterCommand() {
+//	//if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
+//	//MediaSession& session = nullptr;
+//		responseHandler* responseHandler;
+//		char const* parameterName = "";
+//	// We assume that:
+//	//    parameterName is NULL means: Send no body in the request.
+//	//    parameterName is "" means: Send only \r\n in the request body.  
+//	//    parameterName is non-empty means: Send "<parameterName>\r\n" as the request body.  
+//	unsigned parameterNameLen = parameterName == NULL ? 0 : strlen(parameterName);
+//	char* paramString = new char[parameterNameLen + 3]; // the 3 is for \r\n + the '\0' byte
+//	if (parameterName == NULL) {
+//		paramString[0] = '\0';
+//	}
+//	else {
+//		sprintf(paramString, "%s\r\n", parameterName);
+//	}
+//
+//	unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER"));
+//	//unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER", responseHandler, &session, NULL, False, 0.0, 0.0, 0.0, paramString));
+//	delete[] paramString;
+//	//delete[] paramString;
+//	return result;
+//}
 
-	unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER"));
-	//unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER", responseHandler, &session, NULL, False, 0.0, 0.0, 0.0, paramString));
-	delete[] paramString;
-	//delete[] paramString;
-	return result;
-}
 void RTSPClient::sendDummyUDPPackets(MediaSession& session, unsigned numDummyPackets) {
 	MediaSubsessionIterator iter(session);
 	MediaSubsession* subsession;
@@ -444,6 +409,11 @@ void RTSPClient::setUserAgentString(char const* userAgentName) {
 	fUserAgentHeaderStr = new char[headerSize];
 	sprintf(fUserAgentHeaderStr, formatStr, userAgentName);
 	fUserAgentHeaderStrLen = strlen(fUserAgentHeaderStr);
+}
+
+char* RTSPClient::GetHeaderstr() {
+
+	return fUserAgentHeaderStr;
 }
 
 unsigned RTSPClient::responseBufferSize = 20000; // default value; you can reassign this in your application if you need to
@@ -804,10 +774,10 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
 		char const* transportFmt;
 		//if (strcmp(subsession.protocolName(), "UDP") == 0) {
 		//	suffix = "";
-		//	transportFmt = "Transport: RAW/RAW/UDP%s%s%s=%d-%d\r\n";
+			transportFmt = "Transport: RAW/RAW/UDP%s%s%s=%d-%d\r\n";
 		//}
 		//else {
-			transportFmt = "Transport: RTP/AVP%s%s%s=%d-%d\r\n";
+		//	transportFmt = "Transport: RTP/AVP%s%s%s=%d-%d\r\n";
 		//
 	
 		//cmdURL = new char[strlen(prefix) + strlen(separator) + strlen(suffix) + 1];
@@ -833,10 +803,12 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
 		}
 		else { // normal RTP streaming
 			//unsigned connectionAddress = subsession.connectionEndpointAddress();
-			//Boolean requestMulticastStreaming
-			//	= IsMulticastAddress(connectionAddress) || (connectionAddress == 0 && forceMulticastOnUnspecified);
-			//transportTypeStr = requestMulticastStreaming ? ";multicast" : ";unicast";
-			//portTypeStr = requestMulticastStreaming ? ";port" : ";client_port";
+			Boolean requestMulticastStreaming = False;
+				//= IsMulticastAddress(connectionAddress) || (connectionAddress == 0 && forceMulticastOnUnspecified);
+			transportTypeStr = requestMulticastStreaming ? ";multicast" : ";unicast";
+			portTypeStr = requestMulticastStreaming ? ";port" : ";client_port";
+			rtpNumber = fTCPStreamIdCount++;
+			rtcpNumber = fTCPStreamIdCount++;
 			//rtpNumber = subsession.clientPortNum();
 			//if (rtpNumber == 0) {
 			//	envir().setResultMsg("Client port number unknown\n");
@@ -844,11 +816,7 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
 			//	return False;
 			//}
 			//rtcpNumber = subsession.rtcpIsMuxed() ? rtpNumber : rtpNumber + 1;
-		}
-		transportTypeStr = "/TCP;unicast";
-		portTypeStr = ";interleaved";
-		rtpNumber = fTCPStreamIdCount++;
-		rtcpNumber = fTCPStreamIdCount++;
+		}		
 
 		unsigned transportSize = strlen(transportFmt)
 			+ strlen(transportTypeStr) + strlen(modeStr) + strlen(portTypeStr) + 2 * 5 /* max port len */;
@@ -1436,13 +1404,13 @@ Boolean RTSPClient::handleSETUPResponse(char const* sessionParamsStr, char const
 		}
 
 		// Parse the "Transport:" header parameters:
-		char* serverAddressStr;
-		portNumBits serverPortNum;
-		unsigned char rtpChannelId, rtcpChannelId;
-		if (!parseTransportParams(transportParamsStr, serverAddressStr, serverPortNum, rtpChannelId, rtcpChannelId)) {
-			envir().setResultMsg("Missing or bad \"Transport:\" header");
-			break;
-		}
+		//char* serverAddressStr;
+		//portNumBits serverPortNum;
+		//unsigned char rtpChannelId, rtcpChannelId;
+		//if (!parseTransportParams(transportParamsStr, serverAddressStr, serverPortNum, rtpChannelId, rtcpChannelId)) {
+		//	envir().setResultMsg("Missing or bad \"Transport:\" header");
+		//	break;
+		//}
 		//delete[] subsession.connectionEndpointName();
 		//subsession.connectionEndpointName() = serverAddressStr;
 		//subsession.serverPortNum = serverPortNum;
@@ -1706,71 +1674,71 @@ void RTSPClient::constructSubsessionURL(MediaSubsession const& subsession,
 	}
 }
 
-//Boolean RTSPClient::setupHTTPTunneling1() {
-//	// Set up RTSP-over-HTTP tunneling, as described in
-//	//     http://developer.apple.com/quicktime/icefloe/dispatch028.html and http://images.apple.com/br/quicktime/pdf/QTSS_Modules.pdf
-//	if (fVerbosityLevel >= 1) {
-//		envir() << "Requesting RTSP-over-HTTP tunneling (on port " << fTunnelOverHTTPPortNum << ")\n\n";
-//	}
-//
-//	// Begin by sending a HTTP "GET", to set up the server->client link.  Continue when we handle the response:
-//	return sendRequest(new RequestRecord(1, "GET", responseHandlerForHTTP_GET)) != 0;
-//}
+Boolean RTSPClient::setupHTTPTunneling1() {
+	// Set up RTSP-over-HTTP tunneling, as described in
+	//     http://developer.apple.com/quicktime/icefloe/dispatch028.html and http://images.apple.com/br/quicktime/pdf/QTSS_Modules.pdf
+	if (fVerbosityLevel >= 1) {
+		envir() << "Requesting RTSP-over-HTTP tunneling (on port " << fTunnelOverHTTPPortNum << ")\n\n";
+	}
 
-//void RTSPClient::responseHandlerForHTTP_GET(RTSPClient* rtspClient, int responseCode, char* responseString) {
-//	if (rtspClient != NULL) rtspClient->responseHandlerForHTTP_GET1(responseCode, responseString);
-//}
-//
-//void RTSPClient::responseHandlerForHTTP_GET1(int responseCode, char* responseString) {
-//	RequestRecord* request;
-//	do {
-//		delete[] responseString; // we don't need it (but are responsible for deleting it)
-//		if (responseCode != 0) break; // The HTTP "GET" failed.
-//
-//		// Having successfully set up (using the HTTP "GET" command) the server->client link, set up a second TCP connection
-//		// (to the same server & port as before) for the client->server link.  All future output will be to this new socket.
-//		fOutputSocketNum = setupStreamSocket(envir(), 0);
-//		if (fOutputSocketNum < 0) break;
-//		ignoreSigPipeOnSocket(fOutputSocketNum); // so that servers on the same host that killed don't also kill us
-//
-//		fHTTPTunnelingConnectionIsPending = True;
-//		int connectResult = connectToServer(fOutputSocketNum, fTunnelOverHTTPPortNum);
-//		if (connectResult < 0) break; // an error occurred
-//		else if (connectResult == 0) {
-//			// A connection is pending.  Continue setting up RTSP-over-HTTP when the connection completes.
-//			// First, move the pending requests to the 'awaiting connection' queue:
-//			while ((request = fRequestsAwaitingHTTPTunneling.dequeue()) != NULL) {
-//				fRequestsAwaitingConnection.enqueue(request);
-//			}
-//			return;
-//		}
-//
-//		// The connection succeeded.  Continue setting up RTSP-over-HTTP:
-//		if (!setupHTTPTunneling2()) break;
-//
-//		// RTSP-over-HTTP tunneling succeeded.  Resume the pending request(s):
-//		while ((request = fRequestsAwaitingHTTPTunneling.dequeue()) != NULL) {
-//			sendRequest(request);
-//		}
-//		return;
-//	} while (0);
-//
-//	// An error occurred.  Dequeue the pending request(s), and tell them about the error:
-//	fHTTPTunnelingConnectionIsPending = False;
-//	resetTCPSockets(); // do this now, in case an error handler deletes "this"
-//	RequestQueue requestQueue(fRequestsAwaitingHTTPTunneling);
-//	while ((request = requestQueue.dequeue()) != NULL) {
-//		handleRequestError(request);
-//		delete request;
-//	}
-//}
-//
-//Boolean RTSPClient::setupHTTPTunneling2() {
-//	fHTTPTunnelingConnectionIsPending = False;
-//
-//	// Send a HTTP "POST", to set up the client->server link.  (Note that we won't see a reply to the "POST".)
-//	return sendRequest(new RequestRecord(1, "POST", NULL)) != 0;
-//}
+	// Begin by sending a HTTP "GET", to set up the server->client link.  Continue when we handle the response:
+	return sendRequest(new RequestRecord(1, "GET", responseHandlerForHTTP_GET)) != 0;
+}
+
+void RTSPClient::responseHandlerForHTTP_GET(RTSPClient* rtspClient, int responseCode, char* responseString) {
+	if (rtspClient != NULL) rtspClient->responseHandlerForHTTP_GET1(responseCode, responseString);
+}
+
+void RTSPClient::responseHandlerForHTTP_GET1(int responseCode, char* responseString) {
+	RequestRecord* request;
+	do {
+		delete[] responseString; // we don't need it (but are responsible for deleting it)
+		if (responseCode != 0) break; // The HTTP "GET" failed.
+
+		// Having successfully set up (using the HTTP "GET" command) the server->client link, set up a second TCP connection
+		// (to the same server & port as before) for the client->server link.  All future output will be to this new socket.
+		fOutputSocketNum = setupStreamSocket(envir(), 0);
+		if (fOutputSocketNum < 0) break;
+		ignoreSigPipeOnSocket(fOutputSocketNum); // so that servers on the same host that killed don't also kill us
+
+		fHTTPTunnelingConnectionIsPending = True;
+		int connectResult = connectToServer(fOutputSocketNum, fTunnelOverHTTPPortNum);
+		if (connectResult < 0) break; // an error occurred
+		else if (connectResult == 0) {
+			// A connection is pending.  Continue setting up RTSP-over-HTTP when the connection completes.
+			// First, move the pending requests to the 'awaiting connection' queue:
+			while ((request = fRequestsAwaitingHTTPTunneling.dequeue()) != NULL) {
+				fRequestsAwaitingConnection.enqueue(request);
+			}
+			return;
+		}
+
+		// The connection succeeded.  Continue setting up RTSP-over-HTTP:
+		if (!setupHTTPTunneling2()) break;
+
+		// RTSP-over-HTTP tunneling succeeded.  Resume the pending request(s):
+		while ((request = fRequestsAwaitingHTTPTunneling.dequeue()) != NULL) {
+			sendRequest(request);
+		}
+		return;
+	} while (0);
+
+	// An error occurred.  Dequeue the pending request(s), and tell them about the error:
+	fHTTPTunnelingConnectionIsPending = False;
+	resetTCPSockets(); // do this now, in case an error handler deletes "this"
+	RequestQueue requestQueue(fRequestsAwaitingHTTPTunneling);
+	while ((request = requestQueue.dequeue()) != NULL) {
+		handleRequestError(request);
+		delete request;
+	}
+}
+
+Boolean RTSPClient::setupHTTPTunneling2() {
+	fHTTPTunnelingConnectionIsPending = False;
+
+	// Send a HTTP "POST", to set up the client->server link.  (Note that we won't see a reply to the "POST".)
+	return sendRequest(new RequestRecord(1, "POST", NULL)) != 0;
+}
 
 void RTSPClient::connectionHandler(void* instance, int /*mask*/) {
 	RTSPClient* client = (RTSPClient*)instance;
@@ -2094,6 +2062,16 @@ void RTSPClient::handleResponseBytes(int newBytesRead) {
 						//if (!handleSETUPResponse(*foundRequest->subsession(), sessionParamsStr, transportParamsStr, foundRequest->booleanFlags() & 0x1)) break;
 						if (!handleSETUPResponse(sessionParamsStr, transportParamsStr, foundRequest->booleanFlags() & 0x1)) break;
 						//sendPlayCommand();
+					}
+					else if (strcmp(foundRequest->commandName(), "OPTIONS") == 0) {
+						//if (!handlePLAYResponse(*foundRequest->session(), *foundRequest->subsession(), scaleParamsStr, speedParamsStr, rangeParamsStr, rtpInfoParamsStr)) break;
+						if (!handleOPTIONSResponse(publicParamsStr)) break;
+						//sendTeardownCommand();
+					}
+					else if (strcmp(foundRequest->commandName(), "DESCRIBE") == 0) {
+						//if (!handlePLAYResponse(*foundRequest->session(), *foundRequest->subsession(), scaleParamsStr, speedParamsStr, rangeParamsStr, rtpInfoParamsStr)) break;
+						if (!handleDESCRIBEResponse(bodyStart)) break;
+						//sendTeardownCommand();
 					}
 					else if (strcmp(foundRequest->commandName(), "PLAY") == 0) {
 						//if (!handlePLAYResponse(*foundRequest->session(), *foundRequest->subsession(), scaleParamsStr, speedParamsStr, rangeParamsStr, rtpInfoParamsStr)) break;

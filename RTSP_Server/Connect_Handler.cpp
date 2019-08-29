@@ -951,7 +951,7 @@ void Connect_Handler::RTSPClientConnection
 		snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
 			"RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
 			"%s"
-			"Content-Base: %s/\r\n"
+			"Content-Base: %s\r\n"
 			"Content-Type: application/sdp\r\n"
 			"Content-Length: %d\r\n\r\n"
 			"%s",
@@ -1246,19 +1246,19 @@ void Connect_Handler::RTSPClientSession
 			//	ourClientConnection->handleCmd_unsupportedTransport();
 			//	break;
 			//}
-			//case RAW_UDP: {
-			//	snprintf((char*)ourClientConnection->fResponseBuffer, sizeof ourClientConnection->fResponseBuffer,
-			//		"RTSP/1.0 200 OK\r\n"
-			//		"CSeq: %s\r\n"
-			//		"%s"
-			//		"Transport: %s;multicast;destination=%s;source=%s;port=%d;ttl=%d\r\n"
-			//		"Session: %08X%s\r\n\r\n",
-			//		ourClientConnection->fCurrentCSeq,
-			//		dateHeader(),
-			//		streamingModeString, destAddrStr.val(), sourceAddrStr.val(), ntohs(serverRTPPort.num()), destinationTTL,
-			//		fOurSessionId, timeoutParameterString);
-			//	break;
-			//}
+			case RAW_UDP: {
+				snprintf((char*)ourClientConnection->fResponseBuffer, sizeof ourClientConnection->fResponseBuffer,
+					"RTSP/1.0 200 OK\r\n"
+					"CSeq: %s\r\n"
+					"%s"
+					"Transport: %s;multicast;destination=%s;source=%s;port=%d;ttl=%d\r\n"
+					"Session: %08X%s\r\n\r\n",
+					ourClientConnection->fCurrentCSeq,
+					dateHeader(),
+					streamingModeString, destAddrStr.val(), sourceAddrStr.val(), ntohs(serverRTPPort.num()), destinationTTL,
+					fOurSessionId, timeoutParameterString);
+				break;
+			}
 			}
 		}
 		else {
@@ -1294,19 +1294,19 @@ void Connect_Handler::RTSPClientSession
 			//	}
 			//	break;
 			//}
-			//case RAW_UDP: {
-			//	snprintf((char*)ourClientConnection->fResponseBuffer, sizeof ourClientConnection->fResponseBuffer,
-			//		"RTSP/1.0 200 OK\r\n"
-			//		"CSeq: %s\r\n"
-			//		"%s"
-			//		"Transport: %s;unicast;destination=%s;source=%s;client_port=%d;server_port=%d\r\n"
-			//		"Session: %08X%s\r\n\r\n",
-			//		ourClientConnection->fCurrentCSeq,
-			//		dateHeader(),
-			//		streamingModeString, destAddrStr.val(), sourceAddrStr.val(), ntohs(clientRTPPort.num()), ntohs(serverRTPPort.num()),
-			//		fOurSessionId, timeoutParameterString);
-			//	break;
-			//}
+			case RAW_UDP: {
+				snprintf((char*)ourClientConnection->fResponseBuffer, sizeof ourClientConnection->fResponseBuffer,
+					"RTSP/1.0 200 OK\r\n"
+					"CSeq: %s\r\n"
+					"%s"
+					"Transport: %s;unicast;destination=%s;source=%s;client_port=%d;server_port=%d\r\n"
+					"Session: %08X%s\r\n\r\n",
+					ourClientConnection->fCurrentCSeq,
+					dateHeader(),
+					streamingModeString, destAddrStr.val(), sourceAddrStr.val(), ntohs(clientRTPPort.num()), ntohs(serverRTPPort.num()),
+					fOurSessionId, timeoutParameterString);
+				break;
+			}
 			}
 		}
 		delete[] streamingModeString;

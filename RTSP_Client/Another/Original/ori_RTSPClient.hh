@@ -38,15 +38,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 class RTSPClient: public Medium {
 public:
-	class RequestRecord;
   static RTSPClient* createNew(UsageEnvironment& env, char const* rtspURL,
 			       int verbosityLevel = 0,
 			       char const* applicationName = NULL,
 			       portNumBits tunnelOverHTTPPortNum = 0,
 			       int socketNumToServer = -1);
-  char* SDP;
-  char* sessionId;
-
   // If "tunnelOverHTTPPortNum" is non-zero, we tunnel RTSP (and RTP)
   //     over a HTTP connection with the given port number, using the technique
   //     described in Apple's document <http://developer.apple.com/documentation/QuickTime/QTSS/Concepts/chapter_2_section_14.html>
@@ -70,14 +66,6 @@ public:
       //             including an appropriate result header).
       //         Note also that this string is dynamically allocated, and must be freed by the handler (or the caller)
       //             - using "delete[]".
-
-  //virtual unsigned sendDescribeCommand();
-  //virtual unsigned sendOptionsCommand();
-  //virtual unsigned sendSetupCommand();
-  //virtual unsigned sendPlayCommand(responseHandler* responseHandler);
-  //virtual unsigned sendPlayCommand();
-  //virtual unsigned sendTeardownCommand();
-  //virtual unsigned sendGetParameterCommand();
 
   unsigned sendDescribeCommand(responseHandler* responseHandler, Authenticator* authenticator = NULL);
       // Issues a RTSP "DESCRIBE" command, then returns the "CSeq" sequence number that was used in the command.
@@ -104,21 +92,12 @@ public:
       // Issues a RTSP "SETUP" command, then returns the "CSeq" sequence number that was used in the command.
       // (The "responseHandler" and "authenticator" parameters are as described for "sendDescribeCommand".)
 
-  unsigned sendSetupCommand(responseHandler* responseHandler,
-	  Boolean streamOutgoing = False,
-	  Boolean streamUsingTCP = False,
-	  Boolean forceMulticastOnUnspecified = False,
-	  Authenticator* authenticator = NULL);
-  // Issues a RTSP "SETUP" command, then returns the "CSeq" sequence number that was used in the command.
-  // (The "responseHandler" and "authenticator" parameters are as described for "sendDescribeCommand".)
-
   unsigned sendPlayCommand(MediaSession& session, responseHandler* responseHandler,
 			   double start = 0.0f, double end = -1.0f, float scale = 1.0f,
 			   Authenticator* authenticator = NULL);
       // Issues an aggregate RTSP "PLAY" command on "session", then returns the "CSeq" sequence number that was used in the command.
       // (Note: start=-1 means 'resume'; end=-1 means 'play to end')
       // (The "responseHandler" and "authenticator" parameters are as described for "sendDescribeCommand".)
-
   unsigned sendPlayCommand(MediaSubsession& subsession, responseHandler* responseHandler,
 			   double start = 0.0f, double end = -1.0f, float scale = 1.0f,
 			   Authenticator* authenticator = NULL);
@@ -135,10 +114,6 @@ public:
   unsigned sendPlayCommand(MediaSubsession& subsession, responseHandler* responseHandler,
 			   char const* absStartTime, char const* absEndTime = NULL, float scale = 1.0f,
 			   Authenticator* authenticator = NULL);
-  unsigned sendPlayCommand(responseHandler* responseHandler,
-	  char const* absStartTime, char const* absEndTime = NULL, float scale = 1.0f,
-	  Authenticator* authenticator = NULL);
-
 
   unsigned sendPauseCommand(MediaSession& session, responseHandler* responseHandler, Authenticator* authenticator = NULL);
       // Issues an aggregate RTSP "PAUSE" command on "session", then returns the "CSeq" sequence number that was used in the command.
@@ -154,8 +129,6 @@ public:
       // Issues a RTSP "RECORD" command on "subsession", then returns the "CSeq" sequence number that was used in the command.
       // (The "responseHandler" and "authenticator" parameters are as described for "sendDescribeCommand".)
 
-  unsigned sendTeardownCommand(responseHandler* responseHandler, Authenticator* authenticator = NULL);
-  
   unsigned sendTeardownCommand(MediaSession& session, responseHandler* responseHandler, Authenticator* authenticator = NULL);
       // Issues an aggregate RTSP "TEARDOWN" command on "session", then returns the "CSeq" sequence number that was used in the command.
       // (The "responseHandler" and "authenticator" parameters are as described for "sendDescribeCommand".)
@@ -213,7 +186,7 @@ public:
   unsigned sessionTimeoutParameter() const { return fSessionTimeoutParameter; }
 
   char const* url() const { return fBaseURL; }
-  char const* getprogName() const { return ProgName; }
+
   static unsigned responseBufferSize;
 
 public: // Some compilers complain if this is "private:"
@@ -226,9 +199,6 @@ public: // Some compilers complain if this is "private:"
     RequestRecord(unsigned cseq, responseHandler* handler,
 		  char const* absStartTime, char const* absEndTime = NULL, float scale = 1.0f,
 		  MediaSession* session = NULL, MediaSubsession* subsession = NULL);
-	RequestRecord(unsigned cseq, char const* commandName, responseHandler* handler, int Temp);
-	RequestRecord(unsigned cseq, char const* commandName);
-
         // alternative constructor for creating "PLAY" requests that include 'absolute' time values
     virtual ~RequestRecord();
 
@@ -268,10 +238,6 @@ protected:
 
   void reset();
   void setBaseURL(char const* url);
-  char* GetHeaderstr();
-  int GetfOutputSocketNum() { return fOutputSocketNum; }
-
-
   int grabSocket(); // allows a subclass to reuse our input socket, so that it won't get closed when we're deleted
   virtual unsigned sendRequest(RequestRecord* request);
   virtual Boolean setRequestFields(RequestRecord* request,
@@ -302,7 +268,38 @@ private:
     RequestRecord* fTail;
   };
 
- 
+  void resetTCPSockets();
+  void resetResponseBuffer();
+  int openConnection(); // -1: failure; 0: pending; 1: success
+  int connectToServer(int socketNum, portNumBits remotePortNum); // used to implement "openConnection()"; result values are the same
+  char* createAuthenticatorString(char const* cmd, char const* url);
+  char* createBlocksizeString(Boolean streamUsingTCP);
+  void handleRequestError(RequestRecord* request);
+  Boolean parseResponseCode(char const* line, unsigned& responseCode, char const*& responseString);
+  void handleIncomingRequest();
+  static Boolean checkForHeader(char const* line, char const* headerName, unsigned headerNameLength, char const*& headerParams);
+  Boolean parseTransportParams(char const* paramsStr,
+			       char*& serverAddressStr, portNumBits& serverPortNum,
+			       unsigned char& rtpChannelId, unsigned char& rtcpChannelId);
+  Boolean parseScaleParam(char const* paramStr, float& scale);
+  Boolean parseSpeedParam(char const* paramStr, float& speed);
+  Boolean parseRTPInfoParams(char const*& paramStr, u_int16_t& seqNum, u_int32_t& timestamp);
+  Boolean handleSETUPResponse(MediaSubsession& subsession, char const* sessionParamsStr, char const* transportParamsStr,
+			      Boolean streamUsingTCP);
+  Boolean handlePLAYResponse(MediaSession& session, MediaSubsession& subsession,
+                             char const* scaleParamsStr, const char* speedParamsStr,
+			     char const* rangeParamsStr, char const* rtpInfoParamsStr);
+  Boolean handleTEARDOWNResponse(MediaSession& session, MediaSubsession& subsession);
+  Boolean handleGET_PARAMETERResponse(char const* parameterName, char*& resultValueString, char* resultValueStringEnd);
+  Boolean handleAuthenticationFailure(char const* wwwAuthenticateParamsStr);
+  Boolean resendCommand(RequestRecord* request);
+  char const* sessionURL(MediaSession const& session) const;
+  static void handleAlternativeRequestByte(void*, u_int8_t requestByte);
+  void handleAlternativeRequestByte1(u_int8_t requestByte);
+  void constructSubsessionURL(MediaSubsession const& subsession,
+			      char const*& prefix,
+			      char const*& separator,
+			      char const*& suffix);
 
   // Support for tunneling RTSP-over-HTTP:
   Boolean setupHTTPTunneling1(); // send the HTTP "GET"
@@ -337,111 +334,61 @@ private:
   unsigned fUserAgentHeaderStrLen;
   int fInputSocketNum, fOutputSocketNum;
   char* fBaseURL;
-  const char* ProgName;
   unsigned char fTCPStreamIdCount; // used for (optional) RTP/TCP
   char* fLastSessionId;
   unsigned fSessionTimeoutParameter; // optionally set in response "Session:" headers
   char* fResponseBuffer;
   unsigned fResponseBytesAlreadySeen, fResponseBufferBytesLeft;
-  RequestQueue fRequestsAwaitingConnection, fRequestsAwaitingHTTPTunneling;
+  RequestQueue fRequestsAwaitingConnection, fRequestsAwaitingHTTPTunneling, fRequestsAwaitingResponse;
 
   // Support for tunneling RTSP-over-HTTP:
   char fSessionCookie[33];
   unsigned fSessionCookieCounter;
   Boolean fHTTPTunnelingConnectionIsPending;
-
-  void resetTCPSockets();
-  void resetResponseBuffer();
-  int openConnection(); // -1: failure; 0: pending; 1: success
-  int connectToServer(int socketNum, portNumBits remotePortNum); // used to implement "openConnection()"; result values are the same
-  char* createAuthenticatorString(char const* cmd, char const* url);
-  char* createBlocksizeString(Boolean streamUsingTCP);
-  void handleRequestError(RequestRecord* request);
-  Boolean parseResponseCode(char const* line, unsigned& responseCode, char const*& responseString);
-  void handleIncomingRequest();
-
-  Boolean parseScaleParam(char const* paramStr, float& scale);
-  Boolean parseSpeedParam(char const* paramStr, float& speed);
-  Boolean parseRTPInfoParams(char const*& paramStr, u_int16_t& seqNum, u_int32_t& timestamp);
- 
-  char const* sessionURL(MediaSession const& session) const;
-  static void handleAlternativeRequestByte(void*, u_int8_t requestByte);
-  void handleAlternativeRequestByte1(u_int8_t requestByte);
-  void constructSubsessionURL(MediaSubsession const& subsession,
-  	char const*& prefix,
-  	char const*& separator,
-  	char const*& suffix);
-  
-
-  protected:
-	static Boolean checkForHeader(char const* line, char const* headerName, unsigned headerNameLength, char const*& headerParams);
-	Boolean parseTransportParams(char const* paramsStr,
-	  char*& serverAddressStr, portNumBits& serverPortNum,
-	  unsigned char& rtpChannelId, unsigned char& rtcpChannelId);
-  virtual Boolean handleSETUPResponse(MediaSubsession& subsession, char const* sessionParamsStr, char const* transportParamsStr,
-	  Boolean streamUsingTCP);
-  virtual Boolean handleSETUPResponse(char const* sessionParamsStr, char const* transportParamsStr,
-	  Boolean streamUsingTCP);
-  virtual Boolean handlePLAYResponse(MediaSession& session, char const* scaleParamsStr, const char* speedParamsStr,
-	  char const* rangeParamsStr, char const* rtpInfoParamsStr);
-  virtual Boolean handlePLAYResponse(MediaSession& session, MediaSubsession& subsession,
-	  char const* scaleParamsStr, const char* speedParamsStr, char const* rangeParamsStr, char const* rtpInfoParamsStr);
-  virtual Boolean handleTEARDOWNResponse(MediaSession& session, MediaSubsession& subsession);
-  virtual Boolean handleGET_PARAMETERResponse(char const* parameterName, char*& resultValueString, char* resultValueStringEnd);
-  virtual Boolean handleAuthenticationFailure(char const* wwwAuthenticateParamsStr);
-  virtual Boolean resendCommand(RequestRecord* request);
-
-  RequestQueue fRequestsAwaitingResponse;
-  void GetParent(RTSPClient* input) { input = this; }
-  void SetfLastSessionId(const char* input) {  fLastSessionId = strDup(input); }
-  void SetSessionTimeoutParameter(unsigned input) { fSessionTimeoutParameter = input; }
-  virtual Boolean handleOPTIONSResponse(char const* publicParamsStr) { return True; };
-  virtual Boolean handleDESCRIBEResponse(char const* bodyStart) { return True; };
-  	 // void PushetWatingQueue(RequestRecord* request) { fRequestsAwaitingResponse.enqueue(request); }
 };
 
 
-//#ifndef OMIT_REGISTER_HANDLING
+#ifndef OMIT_REGISTER_HANDLING
 ////////// HandlerServerForREGISTERCommand /////////
-//
-//// A simple server that creates a new "RTSPClient" object whenever a "REGISTER" request arrives (specifying the "rtsp://" URL
-//// of a stream).  The new "RTSPClient" object will be created with the specified URL, and passed to the provided handler function.
-//
-//typedef void onRTSPClientCreationFunc(RTSPClient* newRTSPClient, Boolean requestStreamingOverTCP);
-//
-//class HandlerServerForREGISTERCommand: public RTSPServer {
-//public:
-//  static HandlerServerForREGISTERCommand* createNew(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc,
-//						    Port ourPort = 0, UserAuthenticationDatabase* authDatabase = NULL,
-//						    int verbosityLevel = 0, char const* applicationName = NULL);
-//      // If ourPort.num() == 0, we'll choose the port number ourself.  (Use the following function to get it.)
-//  portNumBits serverPortNum() const { return ntohs(fServerPort.num()); }
-//
-//protected:
-//  HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocket, Port ourPort,
-//				  UserAuthenticationDatabase* authDatabase, int verbosityLevel, char const* applicationName);
-//      // called only by createNew();
-//  virtual ~HandlerServerForREGISTERCommand();
-//
-//  virtual RTSPClient* createNewRTSPClient(char const* rtspURL, int verbosityLevel, char const* applicationName,
-//					  int socketNumToServer);
-//      // This function - by default - creates a (base) "RTSPClient" object.  If you want to create a subclass
-//      // of "RTSPClient" instead, then subclass this class, and redefine this virtual function.
-//
-//protected: // redefined virtual functions
-//  virtual char const* allowedCommandNames(); // "OPTIONS", "REGISTER", and (perhaps) "DEREGISTER" only
-//  virtual Boolean weImplementREGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
-//				      char const* proxyURLSuffix, char*& responseStr);
-//      // redefined to return True (for cmd=="REGISTER")
-//  virtual void implementCmd_REGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
-//				     char const* url, char const* urlSuffix, int socketToRemoteServer,
-//				     Boolean deliverViaTCP, char const* proxyURLSuffix);
-//
-//private:
-//  onRTSPClientCreationFunc* fCreationFunc;
-//  int fVerbosityLevel;
-//  char* fApplicationName;
-//};
-//#endif
+
+// A simple server that creates a new "RTSPClient" object whenever a "REGISTER" request arrives (specifying the "rtsp://" URL
+// of a stream).  The new "RTSPClient" object will be created with the specified URL, and passed to the provided handler function.
+
+typedef void onRTSPClientCreationFunc(RTSPClient* newRTSPClient, Boolean requestStreamingOverTCP);
+
+class HandlerServerForREGISTERCommand: public RTSPServer {
+public:
+  static HandlerServerForREGISTERCommand* createNew(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc,
+						    Port ourPort = 0, UserAuthenticationDatabase* authDatabase = NULL,
+						    int verbosityLevel = 0, char const* applicationName = NULL);
+      // If ourPort.num() == 0, we'll choose the port number ourself.  (Use the following function to get it.)
+  portNumBits serverPortNum() const { return ntohs(fServerPort.num()); }
+
+protected:
+  HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocket, Port ourPort,
+				  UserAuthenticationDatabase* authDatabase, int verbosityLevel, char const* applicationName);
+      // called only by createNew();
+  virtual ~HandlerServerForREGISTERCommand();
+
+  virtual RTSPClient* createNewRTSPClient(char const* rtspURL, int verbosityLevel, char const* applicationName,
+					  int socketNumToServer);
+      // This function - by default - creates a (base) "RTSPClient" object.  If you want to create a subclass
+      // of "RTSPClient" instead, then subclass this class, and redefine this virtual function.
+
+protected: // redefined virtual functions
+  virtual char const* allowedCommandNames(); // "OPTIONS", "REGISTER", and (perhaps) "DEREGISTER" only
+  virtual Boolean weImplementREGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+				      char const* proxyURLSuffix, char*& responseStr);
+      // redefined to return True (for cmd=="REGISTER")
+  virtual void implementCmd_REGISTER(char const* cmd/*"REGISTER" or "DEREGISTER"*/,
+				     char const* url, char const* urlSuffix, int socketToRemoteServer,
+				     Boolean deliverViaTCP, char const* proxyURLSuffix);
+
+private:
+  onRTSPClientCreationFunc* fCreationFunc;
+  int fVerbosityLevel;
+  char* fApplicationName;
+};
+#endif
 
 #endif

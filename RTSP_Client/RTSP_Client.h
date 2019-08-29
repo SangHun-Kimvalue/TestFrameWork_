@@ -12,18 +12,21 @@ public:
 	virtual void Run() = 0;
 	virtual const char* Get_URL() = 0;
 	virtual const char* Get_Name() = 0;
-	virtual bool Initialize(const char* URI, const char* ProgName) = 0;
+	virtual bool Initialize() = 0;
 	virtual void Restart() = 0;
 	virtual const char* Get_Status() = 0;
 	virtual const char* Get_SDP() = 0;
+	virtual void start() = 0;
 
 	//virtual bool SetLoopSatus(bool Status);
-	virtual void Play() = 0;
+	virtual bool MakeRequest(const char* command) = 0;
+
+	/*virtual void Play() = 0;
 	virtual void Option() = 0;
 	virtual void Description() = 0;
 	virtual void Setup() = 0;
 	virtual void TearDown() = 0;
-	virtual void GetParameter() = 0;
+	virtual void GetParameter() = 0;*/
 
 	//void startAlive();
 	bool m_SAlive;

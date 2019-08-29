@@ -22,11 +22,11 @@
     <Filter Include="test\test2">
       <UniqueIdentifier>{6214a831-457f-4e32-b6f2-36a103a5d281}</UniqueIdentifier>
     </Filter>
+    <Filter Include="test\Original">
+      <UniqueIdentifier>{8b37209c-47c2-4e14-accf-ae27db12aceb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LiveRTSPClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,11 +60,14 @@
     <ClInclude Include="RTSP_Client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Original_Sample.h">
+      <Filter>test\Original</Filter>
+    </ClInclude>
+    <ClInclude Include="Another\Original\ori_RTSPClient.hh">
+      <Filter>test\Original</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RTSPClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -106,6 +109,12 @@
     </ClCompile>
     <ClCompile Include="Our_RTSP_Client.cpp">
       <Filter>test\test1</Filter>
+    </ClCompile>
+    <ClCompile Include="Original_Sample.cpp">
+      <Filter>test\Original</Filter>
+    </ClCompile>
+    <ClCompile Include="Another\Original\ori_RTSPClient.cpp">
+      <Filter>test\Original</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
