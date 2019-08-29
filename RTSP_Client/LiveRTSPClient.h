@@ -3,16 +3,12 @@
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
 #include "RTSPClient.hh"
-#pragma comment(lib, "winmm.lib")
 #include "Base64.hh"
 
 #include "RTSP_Client.h"
-#include <Windows.h>
 #include <thread>
 #include <iostream>
 #include <string>
-
-
 
 #define REQUEST_STREAMING_OVER_TCP False
 #define RTSP_CLIENT_VERBOSITY_LEVEL 1 // by default, print verbose output from each "RTSPClient"
@@ -55,7 +51,6 @@ public:
 
 	const unsigned Get_Timeout();
 	
-
 	StreamClientState scs; // alias
 
 private:
@@ -68,11 +63,8 @@ private:
 	virtual unsigned sendPlayCommand(responseHandler* responseHandler);
 	virtual unsigned sendPlayCommand(Authenticator* authenticator = NULL);
 	virtual unsigned sendTeardownCommand(Authenticator* authenticator = NULL);
-	//virtual unsigned sendGetParameterCommand();
 	void CompareCommand(std::string Command);
 
-	
-	//bool KeepAlive();
 	
 	virtual Boolean handleDESCRIBEResponse(char const* bodyStart);
 	virtual Boolean handleOPTIONSResponse(char const* transportParamsStr);

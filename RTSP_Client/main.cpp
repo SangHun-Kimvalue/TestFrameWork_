@@ -12,9 +12,6 @@ int main(int argc, char** argv) {
 	const char* ProgName = "Client_Test";
 	RTSP_Client* rtspClient = LiveRTSPClient::createNew(*env, URI, RTSP_CLIENT_VERBOSITY_LEVEL, ProgName, 0);
 
-	bool res = false;
-	//rtspClient = Initialize(*env, URI, ProgName);
-
 	// Next, send a RTSP "DESCRIBE" command, to get a SDP description for the stream.
 	// Note that this command - like all RTSP commands - is sent asynchronously; we do not block, waiting for a response.
 	// Instead, the following function call returns immediately, and we handle the RTSP response later, from within the event loop:
@@ -31,7 +28,6 @@ int main(int argc, char** argv) {
 
 	//system("pause");
 	// This function call does not return, unless, at some point in time, "eventLoopWatchVariable" gets set to something non-zero.
-	//rtspClient->Release();
 	
 	delete rtspClient;
 	env->reclaim();
