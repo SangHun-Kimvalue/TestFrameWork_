@@ -26,8 +26,6 @@ public:
 
 	~LiveRTSPServer();
 
-	char* rtspURLPrefix(int clientSocket = -1) const;
-
 	virtual char const* allowedCommandNames();
 
 	virtual ClientConnection* createNewClientConnection(int clientSocket, struct sockaddr_in clientAddr);
@@ -40,10 +38,9 @@ public:
 	virtual void Restart();
 	virtual std::string  GetStreamName();
 
-	void SaveStreamName(const char* input);
-
 protected:
 
+	char* rtspURLPrefix(int clientSocket = -1) const;
 	LiveRTSPServer(UsageEnvironment& env,
 		int ourSocket, Port ourPort,
 		UserAuthenticationDatabase* authDatabase,
@@ -178,5 +175,6 @@ public: // should be protected, but some old compilers complain otherwise
 		std::string StreamName;
 		int StreamCount;
 		int RSTP_Port;
+		std::string FileName;
 };
 

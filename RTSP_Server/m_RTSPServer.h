@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include "InitLoader.h"
 
 class m_RTSPServer
 {
@@ -20,6 +21,8 @@ public:
 	std::string URL;
 	int m_port;
 	char quit;
+
+	InitLoader* IniLoader;
 
 private:
 	//int portNumber;

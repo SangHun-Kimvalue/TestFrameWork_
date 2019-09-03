@@ -36,6 +36,9 @@
     <ClInclude Include="Old\LiveServerMediaSubsession.h">
       <Filter>Old</Filter>
     </ClInclude>
+    <ClInclude Include="InitLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -69,6 +72,9 @@
       <Filter>Old</Filter>
     </ClCompile>
     <ClCompile Include="H264VideoFileServerMediaSubsession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InitLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

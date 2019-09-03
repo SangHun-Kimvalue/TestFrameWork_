@@ -215,6 +215,10 @@ bool LiveRTSPServer::Initialize(int port) {
 	StreamName = "";
 	StreamCount = 0;
 
+	IniLoader = InitLoader::createNew(L"config.ini");
+	FileName = IniLoader->Load("SET","FILENAME");
+
+	//const char* FileName = temp.c_str();
 	//RTPSink* videoSink;
 	//H264VideoStreamFramer* videoSource;
 
@@ -252,8 +256,6 @@ bool LiveRTSPServer::Initialize(int port) {
 	//videoSink = H264VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
 	//H264VideoRTPSource* videosource = H264VideoRTPSource::createNew(*env, &rtpGroupsock, 96);
 
-
-
 	//// Create (and start) a 'RTCP instance' for this RTP sink:
 	//const unsigned estimatedSessionBandwidth = 500; // in kbps; for RTCP b/w share
 	//const unsigned maxCNAMElen = 100;
@@ -267,19 +269,15 @@ bool LiveRTSPServer::Initialize(int port) {
 	//		True /* we're a SSM source */);
 	//// Note: This starts RTCP running automatically
 
-
 	//FramedSource* source = m_replicator->createStreamReplica();
 	//StreamReplicator * inputDevice = StreamReplicator::createNew(*env, source, false);
-	
-	//SessionName = 0x00;
 	//H264VideoRTPSource* src = H264VideoRTPSource::createNew(env, );
 	ServerMediaSession* sms = ServerMediaSession::createNew(*env, SessionName, SessionName);
 	//sms->addSubsession(LiveServerMediaSubsession::createNew(*env, inputDevice));
 
-	sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(*env, "test.264", False));
+	sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(*env, FileName.c_str(), False));
 	//sms->subsession->addFilter(H264VideoStreamDiscreteFramer::createNew(*env, subsession->readSource()));
 	addServerMediaSession(sms);
-	//SaveStreamName(SessionName);
 
 	//sms = ServerMediaSession::createNew(*env, SessionName2);
 	//sms->addSubsession(LiveServerMediaSubsession::createNew(*env, "C:/Videos/IDC_AIRPORT_01.mp4", False));
@@ -302,18 +300,6 @@ void LiveRTSPServer::Restart() {
 	Run();
 
 	return;
-}
-
-void LiveRTSPServer::SaveStreamName(const char* input) {
-
-	if (StreamCount < 1) {
-		StreamName = input;
-		StreamCount++;
-		return;
-	}
-
-	StreamName = StreamName+ ", " + input;
-	StreamCount++;
 }
 
 std::string LiveRTSPServer::GetStreamName() {
@@ -423,7 +409,8 @@ LiveRTSPServer::~LiveRTSPServer()
 }
 
 char const* LiveRTSPServer::allowedCommandNames() {
-	return "OPTIONS, DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE, GET_PARAMETER";
+	//return "OPTIONS, DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE, GET_PARAMETER";
+	return "OPTIONS, DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE";
 }
 
 void LiveRTSPServer::RTSPClientConnection::resetRequestBuffer() {

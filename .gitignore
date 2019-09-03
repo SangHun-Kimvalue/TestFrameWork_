@@ -69,3 +69,17 @@ x64
 /Libs/live555/live/lib/Release
 /Libs/live555/live_x64/lib/Release
 /RTSP_Server/Old
+/Libs/live555/live_x64/lib
+/Libs/live555
+/RTSP_Server/Old/FFmpegDecoder.cpp
+/RTSP_Server/Old/FFmpegDecoder.h
+/RTSP_Server/Old/FFmpegH264Encoder.cpp
+/RTSP_Server/Old/FFmpegH264Encoder.h
+/RTSP_Server/Old/FFmpegH264Source.cpp
+/RTSP_Server/Old/FFmpegH264Source.h
+/RTSP_Server/Old/LiveRTSPServer.cpp
+/RTSP_Server/Old/LiveRTSPServer.h
+/RTSP_Server/Old/LiveServerMediaSubsession.cpp
+/RTSP_Server/Old/LiveServerMediaSubsession.h
+/RTSP_Server/Old/main.cpp
+/RTSP_Server/Old/old.cpp
