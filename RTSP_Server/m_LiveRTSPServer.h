@@ -72,7 +72,7 @@ public: // should be protected, but some old compilers complain otherwise
 		// Make the handler functions for each command virtual, to allow subclasses to reimplement them, if necessary:
 		virtual void handleCmd_OPTIONS();
 		// You probably won't need to subclass/reimplement this function; reimplement "RTSPServer::allowedCommandNames()" instead.
-		virtual void handleCmd_GET_PARAMETER(char const* fullRequestStr); // when operating on the entire server
+		//virtual void handleCmd_GET_PARAMETER(char const* fullRequestStr); // when operating on the entire server
 		virtual void handleCmd_DESCRIBE(char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr);
 		// You probably won't need to subclass/reimplement this function;
 		//     reimplement "RTSPServer::weImplementREGISTER()" and "RTSPServer::implementCmd_REGISTER()" instead.
@@ -135,10 +135,10 @@ public: // should be protected, but some old compilers complain otherwise
 			ServerMediaSubsession* subsession);
 		virtual void handleCmd_PLAY(RTSPClientConnection* ourClientConnection,
 			ServerMediaSubsession* subsession, char const* fullRequestStr);
-		virtual void handleCmd_PAUSE(RTSPClientConnection* ourClientConnection,
-			ServerMediaSubsession* subsession);
-		virtual void handleCmd_GET_PARAMETER(RTSPClientConnection* ourClientConnection,
-			ServerMediaSubsession* subsession, char const* fullRequestStr);
+		//virtual void handleCmd_PAUSE(RTSPClientConnection* ourClientConnection,
+		//	ServerMediaSubsession* subsession);
+		//virtual void handleCmd_GET_PARAMETER(RTSPClientConnection* ourClientConnection,
+		//	ServerMediaSubsession* subsession, char const* fullRequestStr);
 		//virtual void handleCmd_SET_PARAMETER(RTSPClientConnection* ourClientConnection,
 		//	ServerMediaSubsession* subsession, char const* fullRequestStr);
 	protected:
@@ -173,7 +173,7 @@ public: // should be protected, but some old compilers complain otherwise
 		UserAuthenticationDatabase* fAuthDB;
 		UsageEnvironment *env;
 		std::string StreamName;
-		int StreamCount;
+		//int StreamCount;
 		int RSTP_Port;
 		std::string FileName;
 };

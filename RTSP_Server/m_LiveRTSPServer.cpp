@@ -172,20 +172,6 @@ static Boolean parsePlayNowHeader(char const* buf) {
 	return True;
 }
 
-class streamingOverTCPRecord {
-public:
-	streamingOverTCPRecord(u_int32_t sessionId, unsigned trackNum, streamingOverTCPRecord* next)
-		: fNext(next), fSessionId(sessionId), fTrackNum(trackNum) {
-	}
-	virtual ~streamingOverTCPRecord() {
-		delete fNext;
-	}
-
-	streamingOverTCPRecord* fNext;
-	u_int32_t fSessionId;
-	unsigned fTrackNum;
-};
-
 LiveRTSPServer::LiveRTSPServer(UsageEnvironment& env,
 	int ourSocket, Port ourPort,
 	UserAuthenticationDatabase* authDatabase,
@@ -193,8 +179,6 @@ LiveRTSPServer::LiveRTSPServer(UsageEnvironment& env,
 	: RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationSeconds),
 	fAuthDB(authDatabase), env(&env)
 {
-	URL = rtspURL();
-
 }
 
 LiveRTSPServer* LiveRTSPServer::createNew(UsageEnvironment& env, Port ourPort) {
@@ -209,74 +193,15 @@ LiveRTSPServer* LiveRTSPServer::createNew(UsageEnvironment& env, Port ourPort) {
 bool LiveRTSPServer::Initialize(int port) {
 
 	quit = 0;
-	char const* SessionName = "video1";
-	char const* SessionName2 = "hun_Test";
-
-	StreamName = "";
-	StreamCount = 0;
+	StreamName = "video1";
 
 	IniLoader = InitLoader::createNew(L"config.ini");
 	FileName = IniLoader->Load("SET","FILENAME");
 
-	//const char* FileName = temp.c_str();
-	//RTPSink* videoSink;
-	//H264VideoStreamFramer* videoSource;
-
-	//const char*  outputAddressStr = "192.168.0.40";
-
-	//struct in_addr destinationAddress;
-	//destinationAddress.s_addr = our_inet_addr("192.168.0.40");
-	//destinationAddress.s_addr = chooseRandomIPv4SSMAddress(*env);
-	// Note: This is a multicast address.  If you wish instead to stream
-	// using unicast, then you should use the "testOnDemandRTSPServer"
-	// test program - not this test program - as a model.
-
-	//const unsigned short rtpPortNum = 18888;
-	//const unsigned short rtcpPortNum = rtpPortNum + 1;
-	//const unsigned char ttl = 255;
-	//
-	//const Port rtpPort(rtpPortNum);
-	//const Port rtcpPort(rtcpPortNum);
-	//
-	//const Port outputPort = m_port = port;
-	//std::string porttemp = std::to_string(port);
-	//unsigned char const outputTTL = 255;
-
-	//Groupsock* outputGroupsock = new Groupsock(*env, destinationAddress, outputPort, outputTTL);
-
-	//소켓 세팅
-	//Groupsock rtpGroupsock(*env, destinationAddress, rtpPort, ttl);
-	//rtpGroupsock.multicastSendOnly(); // we're a SSM source
-	//Groupsock rtcpGroupsock(*env, destinationAddress, rtcpPort, ttl);
-	//rtcpGroupsock.multicastSendOnly(); // we're a SSM source
-	
-	//비디오 파라미터 세팅
-	// Create a 'H264 Video RTP' sink from the RTP 'groupsock':
 	OutPacketBuffer::maxSize = 200000;
-	//videoSink = H264VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
-	//H264VideoRTPSource* videosource = H264VideoRTPSource::createNew(*env, &rtpGroupsock, 96);
-
-	//// Create (and start) a 'RTCP instance' for this RTP sink:
-	//const unsigned estimatedSessionBandwidth = 500; // in kbps; for RTCP b/w share
-	//const unsigned maxCNAMElen = 100;
-	//unsigned char CNAME[maxCNAMElen + 1];
-	//gethostname((char*)CNAME, maxCNAMElen);
-	//CNAME[maxCNAMElen] = '\0'; // just in case
-	//RTCPInstance* rtcp
-	//	= RTCPInstance::createNew(*env, &rtcpGroupsock,
-	//		estimatedSessionBandwidth, CNAME,
-	//		videoSink, NULL /* we're a server */,
-	//		True /* we're a SSM source */);
-	//// Note: This starts RTCP running automatically
-
-	//FramedSource* source = m_replicator->createStreamReplica();
-	//StreamReplicator * inputDevice = StreamReplicator::createNew(*env, source, false);
-	//H264VideoRTPSource* src = H264VideoRTPSource::createNew(env, );
-	ServerMediaSession* sms = ServerMediaSession::createNew(*env, SessionName, SessionName);
-	//sms->addSubsession(LiveServerMediaSubsession::createNew(*env, inputDevice));
-
+	   
+	ServerMediaSession* sms = ServerMediaSession::createNew(*env, StreamName.c_str(), StreamName.c_str());
 	sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(*env, FileName.c_str(), False));
-	//sms->subsession->addFilter(H264VideoStreamDiscreteFramer::createNew(*env, subsession->readSource()));
 	addServerMediaSession(sms);
 
 	//sms = ServerMediaSession::createNew(*env, SessionName2);
@@ -284,7 +209,6 @@ bool LiveRTSPServer::Initialize(int port) {
 	//addServerMediaSession(sms);
 	//SaveStreamName(SessionName2);
 
-	//URL + porttemp;
 	URL = rtspURL(sms);
 	
 	std::cout << "\nPlay this stream using the URL \"" << URL/* << GetStreamName() */<< std::endl;
@@ -748,12 +672,12 @@ void LiveRTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) 
 			}
 			else if (urlPreSuffix[0] == '\0' && urlSuffix[0] == '*' && urlSuffix[1] == '\0') {
 				// The special "*" URL means: an operation on the entire server.  This works only for GET_PARAMETER and SET_PARAMETER:
-				if (strcmp(cmdName, "GET_PARAMETER") == 0) {
-					handleCmd_GET_PARAMETER((char const*)fRequestBuffer);
-				}
-				else {
+				//if (strcmp(cmdName, "GET_PARAMETER") == 0) {
+				//	handleCmd_GET_PARAMETER((char const*)fRequestBuffer);
+				//}
+				//else {
 					handleCmd_notSupported();
-				}
+				//}
 			}
 			else if (strcmp(cmdName, "DESCRIBE") == 0) {
 				handleCmd_DESCRIBE(urlPreSuffix, urlSuffix, (char const*)fRequestBuffer);
@@ -793,7 +717,7 @@ void LiveRTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) 
 			else if (strcmp(cmdName, "TEARDOWN") == 0
 				|| strcmp(cmdName, "PLAY") == 0
 				|| strcmp(cmdName, "PAUSE") == 0
-				|| strcmp(cmdName, "GET_PARAMETER") == 0
+				/*|| strcmp(cmdName, "GET_PARAMETER") == 0*/
 				/*|| strcmp(cmdName, "SET_PARAMETER") == 0*/) {
 				if (clientSession != NULL) {
 					clientSession->handleCmd_withinSession(this, cmdName, urlPreSuffix, urlSuffix, (char const*)fRequestBuffer);
@@ -842,41 +766,6 @@ void LiveRTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) 
 #ifdef DEBUG
 				fprintf(stderr, "parseHTTPRequestString() succeeded, returning cmdName \"%s\", urlSuffix \"%s\", sessionCookie \"%s\", acceptStr \"%s\"\n", cmdName, urlSuffix, sessionCookie, acceptStr);
 #endif
-				//// Check that the HTTP command is valid for RTSP-over-HTTP tunneling: There must be a 'session cookie'.
-				//Boolean isValidHTTPCmd = True;
-				//if (strcmp(cmdName, "OPTIONS") == 0) {
-				//	handleHTTPCmd_OPTIONS();
-				//}
-				//else if (sessionCookie[0] == '\0') {
-				//	// There was no "x-sessioncookie:" header.  If there was an "Accept: application/x-rtsp-tunnelled" header,
-				//	// then this is a bad tunneling request.  Otherwise, assume that it's an attempt to access the stream via HTTP.
-				//	if (strcmp(acceptStr, "application/x-rtsp-tunnelled") == 0) {
-				//		isValidHTTPCmd = False;
-				//	}
-				//	else {
-				//		handleHTTPCmd_StreamingGET(urlSuffix, (char const*)fRequestBuffer);
-				//	}
-				//}
-				//else if (strcmp(cmdName, "GET") == 0) {
-				//	handleHTTPCmd_TunnelingGET(sessionCookie);
-				//}
-				//else if (strcmp(cmdName, "POST") == 0) {
-				//	// We might have received additional data following the HTTP "POST" command - i.e., the first Base64-encoded RTSP command.
-				//	// Check for this, and handle it if it exists:
-				//	unsigned char const* extraData = fLastCRLF + 4;
-				//	unsigned extraDataSize = &fRequestBuffer[fRequestBytesAlreadySeen] - extraData;
-				//	if (handleHTTPCmd_TunnelingPOST(sessionCookie, extraData, extraDataSize)) {
-				//		// We don't respond to the "POST" command, and we go away:
-				//		fIsActive = False;
-				//		break;
-				//	}
-				//}
-				//else {
-				//	isValidHTTPCmd = False;
-				//}
-				//if (!isValidHTTPCmd) {
-				//	handleHTTPCmd_notSupported();
-				//}
 			}
 			else {
 #ifdef DEBUG
@@ -1005,13 +894,13 @@ void LiveRTSPServer::RTSPClientConnection::handleCmd_OPTIONS() {
 		fCurrentCSeq, dateHeader(), fOurRTSPServer.allowedCommandNames());
 }
 
-void LiveRTSPServer::RTSPClientConnection
-::handleCmd_GET_PARAMETER(char const* /*fullRequestStr*/) {
-	// By default, we implement "GET_PARAMETER" (on the entire server) just as a 'no op', and send back a dummy response.
-	// (If you want to handle this type of "GET_PARAMETER" differently, you can do so by defining a subclass of "RTSPServer"
-	// and "RTSPServer::RTSPClientConnection", and then reimplement this virtual function in your subclass.)
-	setRTSPResponse("200 OK", LIVEMEDIA_LIBRARY_VERSION_STRING);
-}
+//void LiveRTSPServer::RTSPClientConnection
+//::handleCmd_GET_PARAMETER(char const* /*fullRequestStr*/) {
+//	// By default, we implement "GET_PARAMETER" (on the entire server) just as a 'no op', and send back a dummy response.
+//	// (If you want to handle this type of "GET_PARAMETER" differently, you can do so by defining a subclass of "RTSPServer"
+//	// and "RTSPServer::RTSPClientConnection", and then reimplement this virtual function in your subclass.)
+//	setRTSPResponse("200 OK", LIVEMEDIA_LIBRARY_VERSION_STRING);
+//}
 
 void LiveRTSPServer::RTSPClientConnection
 ::handleCmd_DESCRIBE(char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr) {
@@ -1256,16 +1145,6 @@ void LiveRTSPServer::RTSPClientSession
 			clientsDestinationAddressStr, clientsDestinationTTL,
 			clientRTPPortNum, clientRTCPPortNum,
 			rtpChannelId, rtcpChannelId);
-		//if ((streamingMode == RTP_TCP && rtpChannelId == 0xFF) ||
-		//	(streamingMode != RTP_TCP && ourClientConnection->fClientOutputSocket != ourClientConnection->fClientInputSocket)) {
-		//	// An anomolous situation, caused by a buggy client.  Either:
-		//	//     1/ TCP streaming was requested, but with no "interleaving=" fields.  (QuickTime Player sometimes does this.), or
-		//	//     2/ TCP streaming was not requested, but we're doing RTSP-over-HTTP tunneling (which implies TCP streaming).
-		//	// In either case, we assume TCP streaming, and set the RTP and RTCP channel ids to proper values:
-		//	streamingMode = RTP_TCP;
-		//	rtpChannelId = fTCPStreamIdCount; rtcpChannelId = fTCPStreamIdCount + 1;
-		//}
-		//if (streamingMode == RTP_TCP) fTCPStreamIdCount += 2;
 
 		Port clientRTPPort(clientRTPPortNum);
 		Port clientRTCPPort(clientRTCPPortNum);
@@ -1286,12 +1165,6 @@ void LiveRTSPServer::RTSPClientSession
 			fStreamAfterSETUP = False;
 		}
 
-		// Then, get server parameters from the 'subsession':
-		//if (streamingMode == RTP_TCP) {
-		//	// Note that we'll be streaming over the RTSP TCP connection:
-		//	fStreamStates[trackNum].tcpSocketNum = ourClientConnection->fClientOutputSocket;
-		//	fOurRTSPServer.noteTCPStreamingOnSocket(fStreamStates[trackNum].tcpSocketNum, this, trackNum);
-		//}
 		netAddressBits destinationAddress = 0;
 		u_int8_t destinationTTL = 255;
 #ifdef RTSP_ALLOW_CLIENT_DESTINATION_SETTING
@@ -1352,11 +1225,6 @@ void LiveRTSPServer::RTSPClientSession
 					fOurSessionId, timeoutParameterString);
 				break;
 			}
-			//case RTP_TCP: {
-			//	// multicast streams can't be sent via TCP
-			//	ourClientConnection->handleCmd_unsupportedTransport();
-			//	break;
-			//}
 			case RAW_UDP: {
 				snprintf((char*)ourClientConnection->fResponseBuffer, sizeof ourClientConnection->fResponseBuffer,
 					"RTSP/1.0 200 OK\r\n"
@@ -1387,24 +1255,6 @@ void LiveRTSPServer::RTSPClientSession
 					fOurSessionId, timeoutParameterString);
 				break;
 			}
-			//case RTP_TCP: {
-			//	if (!fOurRTSPServer.fAllowStreamingRTPOverTCP) {
-			//		ourClientConnection->handleCmd_unsupportedTransport();
-			//	}
-			//	else {
-			//		snprintf((char*)ourClientConnection->fResponseBuffer, sizeof ourClientConnection->fResponseBuffer,
-			//			"RTSP/1.0 200 OK\r\n"
-			//			"CSeq: %s\r\n"
-			//			"%s"
-			//			"Transport: RTP/AVP/TCP;unicast;destination=%s;source=%s;interleaved=%d-%d\r\n"
-			//			"Session: %08X%s\r\n\r\n",
-			//			ourClientConnection->fCurrentCSeq,
-			//			dateHeader(),
-			//			destAddrStr.val(), sourceAddrStr.val(), rtpChannelId, rtcpChannelId,
-			//			fOurSessionId, timeoutParameterString);
-			//	}
-			//	break;
-			//}
 			case RAW_UDP: {
 				snprintf((char*)ourClientConnection->fResponseBuffer, sizeof ourClientConnection->fResponseBuffer,
 					"RTSP/1.0 200 OK\r\n"
@@ -1485,12 +1335,12 @@ void LiveRTSPServer::RTSPClientSession
 	else if (strcmp(cmdName, "PLAY") == 0) {
 		handleCmd_PLAY(ourClientConnection, subsession, fullRequestStr);
 	}
-	else if (strcmp(cmdName, "PAUSE") == 0) {
-		handleCmd_PAUSE(ourClientConnection, subsession);
-	}
-	else if (strcmp(cmdName, "GET_PARAMETER") == 0) {
-		handleCmd_GET_PARAMETER(ourClientConnection, subsession, fullRequestStr);
-	}
+	//else if (strcmp(cmdName, "PAUSE") == 0) {
+	//	handleCmd_PAUSE(ourClientConnection, subsession);
+	//}
+	//else if (strcmp(cmdName, "GET_PARAMETER") == 0) {
+	//	handleCmd_GET_PARAMETER(ourClientConnection, subsession, fullRequestStr);
+	//}
 }
 
 void LiveRTSPServer::RTSPClientSession
@@ -1741,29 +1591,29 @@ void LiveRTSPServer::RTSPClientSession
 	delete[] scaleHeader; delete[] rtspURL;
 }
 
-void LiveRTSPServer::RTSPClientSession
-::handleCmd_PAUSE(LiveRTSPServer::RTSPClientConnection* ourClientConnection,
-	ServerMediaSubsession* subsession) {
-	for (unsigned i = 0; i < fNumStreamStates; ++i) {
-		if (subsession == NULL /* means: aggregated operation */
-			|| subsession == fStreamStates[i].subsession) {
-			if (fStreamStates[i].subsession != NULL) {
-				fStreamStates[i].subsession->pauseStream(fOurSessionId, fStreamStates[i].streamToken);
-			}
-		}
-	}
-
-	setRTSPResponse(ourClientConnection, "200 OK", fOurSessionId);
-}
-
-void LiveRTSPServer::RTSPClientSession
-::handleCmd_GET_PARAMETER(LiveRTSPServer::RTSPClientConnection* ourClientConnection,
-	ServerMediaSubsession* /*subsession*/, char const* /*fullRequestStr*/) {
-	// By default, we implement "GET_PARAMETER" just as a 'keep alive', and send back a dummy response.
-	// (If you want to handle "GET_PARAMETER" properly, you can do so by defining a subclass of "RTSPServer"
-	// and "RTSPServer::RTSPClientSession", and then reimplement this virtual function in your subclass.)
-	setRTSPResponse(ourClientConnection, "200 OK", fOurSessionId, LIVEMEDIA_LIBRARY_VERSION_STRING);
-}
+//void LiveRTSPServer::RTSPClientSession
+//::handleCmd_PAUSE(LiveRTSPServer::RTSPClientConnection* ourClientConnection,
+//	ServerMediaSubsession* subsession) {
+//	for (unsigned i = 0; i < fNumStreamStates; ++i) {
+//		if (subsession == NULL /* means: aggregated operation */
+//			|| subsession == fStreamStates[i].subsession) {
+//			if (fStreamStates[i].subsession != NULL) {
+//				fStreamStates[i].subsession->pauseStream(fOurSessionId, fStreamStates[i].streamToken);
+//			}
+//		}
+//	}
+//
+//	setRTSPResponse(ourClientConnection, "200 OK", fOurSessionId);
+//}
+//
+//void LiveRTSPServer::RTSPClientSession
+//::handleCmd_GET_PARAMETER(LiveRTSPServer::RTSPClientConnection* ourClientConnection,
+//	ServerMediaSubsession* /*subsession*/, char const* /*fullRequestStr*/) {
+//	// By default, we implement "GET_PARAMETER" just as a 'keep alive', and send back a dummy response.
+//	// (If you want to handle "GET_PARAMETER" properly, you can do so by defining a subclass of "RTSPServer"
+//	// and "RTSPServer::RTSPClientSession", and then reimplement this virtual function in your subclass.)
+//	setRTSPResponse(ourClientConnection, "200 OK", fOurSessionId, LIVEMEDIA_LIBRARY_VERSION_STRING);
+//}
 
 
 LiveRTSPServer::RTSPClientConnection

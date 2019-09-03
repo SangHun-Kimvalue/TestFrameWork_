@@ -180,7 +180,6 @@
   <ItemGroup>
     <ClInclude Include="..\Libs\live555\include\RTSPServer.hh" />
     <ClInclude Include="InitLoader.h" />
-    <ClInclude Include="LiveServerMediaSubsession.h" />
     <ClInclude Include="m_LiveRTSPServer.h" />
     <ClInclude Include="m_RTSPServer.h" />
     <ClInclude Include="Old\LiveRTSPServer.h">
@@ -199,7 +198,6 @@
   <ItemGroup>
     <ClCompile Include="H264VideoFileServerMediaSubsession.cpp" />
     <ClCompile Include="InitLoader.cpp" />
-    <ClCompile Include="LiveServerMediaSubsession.cpp" />
     <ClCompile Include="m_LiveRTSPServer.cpp" />
     <ClCompile Include="GenericMediaServer.cpp" />
     <ClCompile Include="main.cpp">

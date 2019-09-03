@@ -27,9 +27,6 @@
     <ClInclude Include="m_LiveRTSPServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LiveServerMediaSubsession.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Old\LiveRTSPServer.h">
       <Filter>Old</Filter>
     </ClInclude>
@@ -54,9 +51,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="m_LiveRTSPServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LiveServerMediaSubsession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Old\LiveRTSPServer.cpp">
