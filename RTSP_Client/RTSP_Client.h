@@ -17,6 +17,7 @@ public:
 	virtual const char* Get_Status() = 0;
 	virtual const char* Get_SDP() = 0;
 	virtual void start() = 0;
+	virtual void stop() = 0;
 
 	//virtual bool SetLoopSatus(bool Status);
 	virtual bool MakeRequest(const char* command) = 0;

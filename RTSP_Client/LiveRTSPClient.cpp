@@ -99,7 +99,7 @@ LiveRTSPClient::LiveRTSPClient(UsageEnvironment& env, char const* rtspURL,
 	int verbosityLevel, char const* applicationName, portNumBits tunnelOverHTTPPortNum)
 	: RTSPClient(env, rtspURL, verbosityLevel, applicationName, tunnelOverHTTPPortNum, -1), env(&env)
 	, Use_Getparam(false), Pharse_SDP(false), ClientPort(0), ServerPort(0), eventLoopWatchVariable(0), havesession(false)
-	, state(SERROR), handlestate(SERROR)
+	, state(SERROR), handlestate(SERROR), Looping(true)
 {
 
 	m_URL = strDup(rtspURL);
@@ -145,6 +145,7 @@ Boolean LiveRTSPClient::handleDESCRIBEResponse(char const* sdp) {
 		scs.iter = new MediaSubsessionIterator(*scs.session);
 		havesession = true;
 		const char* track = scs.session->controlPath();
+		//const char* track = scs.session->
 		
 		sessiontrack = track;
 	
@@ -352,14 +353,14 @@ Boolean LiveRTSPClient::setRequestFields(RequestRecord* request,
 			sessiontrack = "track1";
 		suffix = sessiontrack;
 
-		for (int i = Ssize; i > 7; --i) {
-			if (URL[i] == ':') {
-
-				URL.erase(i);
-				URL = URL + suffix;
-				break;
-			}
-		}
+		//for (int i = Ssize; i > 7; --i) {
+		//	if (URL[i] == ':') {
+		//
+		//		URL.erase(i);
+		//		URL = URL + suffix;
+		//		break;
+		//	}
+		//}
 
 		prefix = URL.c_str();
 
@@ -382,10 +383,16 @@ Boolean LiveRTSPClient::setRequestFields(RequestRecord* request,
 		cmdURLWasAllocated = True;
 		
 		sprintf(cmdURL, "%s%s%s", urltemp, separatortemp, suffixtemp);
-		if (scs.session->hasSubsessions())
-			originalScale = request->subsession()->scale();
-		else
+
+		if (scs.session != NULL) {
+			if (scs.session->hasSubsessions())
+				originalScale = request->subsession()->scale();
+			else
+				originalScale = 0;
+		}
+		else {
 			originalScale = 0;
+		}
 
 		// Construct a "Transport:" header.
 		char const* transportTypeStr;
@@ -470,10 +477,16 @@ Boolean LiveRTSPClient::setRequestFields(RequestRecord* request,
 		cmdURLWasAllocated = True;
 
 		sprintf(cmdURL, "%s%s%s", urltemp, separatortemp, suffixtemp);
-		if (scs.session->hasSubsessions())
-			originalScale = request->subsession()->scale();
-		else
+
+		if (scs.session != NULL) {
+			if (scs.session->hasSubsessions())
+				originalScale = request->subsession()->scale();
+			else
+				originalScale = 0;
+		}
+		else {
 			originalScale = 0;
+		}
 
 		if (strcmp(request->commandName(), "PLAY") == 0) {
 			// Create possible "Session:", "Scale:", "Speed:", and "Range:" headers;
@@ -644,6 +657,11 @@ bool LiveRTSPClient::Initialize() {
 void LiveRTSPClient::start() {
 
 	AliveThread = std::thread(&LiveRTSPClient::Run, this);
+}
+
+void LiveRTSPClient::stop() {
+
+	Looping = false;
 }
 
 void LiveRTSPClient::Run() {

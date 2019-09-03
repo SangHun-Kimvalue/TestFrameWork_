@@ -16,8 +16,7 @@ public:
 
 
 
-	int m_port;
-	char* URL;
+
 
 private:
 

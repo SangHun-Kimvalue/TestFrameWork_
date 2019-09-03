@@ -9,31 +9,34 @@
 //#ifndef MESAI_Live_SERVER_MEDIA_SUBSESSION_HH
 //#define MESAI_Live_SERVER_MEDIA_SUBSESSION_HH
 
-#include <OnDemandServerMediaSubsession.hh>
+#include <H264VideoFileServerMediaSubsession.hh>
 #include <StreamReplicator.hh>
 #include <H264VideoRTPSink.hh>
 #include <H264VideoStreamFramer.hh>
 #include <H264VideoStreamDiscreteFramer.hh>
 #include <UsageEnvironment.hh>
 #include <Groupsock.hh>
-#include <iostream>
 
-
-
-class LiveServerMediaSubsession: public OnDemandServerMediaSubsession
+class LiveServerMediaSubsession: public H264VideoFileServerMediaSubsession
 {
 public:
     static LiveServerMediaSubsession* createNew(UsageEnvironment& env, StreamReplicator* replicator);
     static LiveServerMediaSubsession* createNew(UsageEnvironment& env);
+    static LiveServerMediaSubsession* createNew(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource);
     
 protected:
-    LiveServerMediaSubsession(UsageEnvironment& env)
-        : OnDemandServerMediaSubsession(env, True), m_replicator(nullptr) {};
 
+    LiveServerMediaSubsession(UsageEnvironment& env)
+        : H264VideoFileServerMediaSubsession(env, "", True), m_replicator(nullptr) {};
 
 	 LiveServerMediaSubsession(UsageEnvironment& env, StreamReplicator* replicator)
-		 : OnDemandServerMediaSubsession(env, False), m_replicator(replicator) {};
+		 : H264VideoFileServerMediaSubsession(env, "", False), m_replicator(replicator) {};
       
+	 LiveServerMediaSubsession(UsageEnvironment& env, char const* fileName, Boolean reuseFirstSource)
+		 : H264VideoFileServerMediaSubsession(env, fileName, reuseFirstSource), m_replicator(nullptr)
+	 {};//,fAuxSDPLine(NULL), fDoneFlag(0), fDummyRTPSink(NULL) {};
+
+
     virtual FramedSource* createNewStreamSource(unsigned clientSessionId, unsigned& estBitrate);
     virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,  unsigned char rtpPayloadTypeIfDynamic, FramedSource* inputSource);    
 

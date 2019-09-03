@@ -58,3 +58,14 @@
 /RTSP_Server/x64/Debug/*.tlog
 /RTSP_Server/x64/Release/*.tlog
 /RTSP_Server/x64/Debug/RTSP_Server.tlog
+x64
+/RTSP_Server/Debug
+/RTSP_Server/x64
+/RTSP_Server/Debug
+/RTSP_Client/x64
+/RTSP_Client/Debug
+/x64
+x64
+/Libs/live555/live/lib/Release
+/Libs/live555/live_x64/lib/Release
+/RTSP_Server/Old
