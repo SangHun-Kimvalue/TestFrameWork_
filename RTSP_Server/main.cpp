@@ -9,27 +9,30 @@
 //#define _ITERATOR_DEBUG_LEVEL 2
 //#define MT_StaticRelease
 
-#include "pch.h"
 #include <iostream>
-#include "LiveRTSPServer.h"
+#include "m_LiveRTSPServer.h"
 
 
 int main(int argc, const char * argv[])
 {
 	int Port = 554;
+	TaskScheduler    *scheduler;
+	UsageEnvironment *env;
 
-	Server * server = new LiveRTSPServer();
-	server->Initialize(Port);
+	scheduler = BasicTaskScheduler::createNew();
+	if (scheduler == nullptr) {
+		return false;
+	}
+	env = BasicUsageEnvironment::createNew(*scheduler);
+	if (env == nullptr) {
+		return false;
+	}
+
+	m_RTSPServer *server = LiveRTSPServer::createNew(*env, Port);
 	
-	const char* URL = server->GetURL();
-	//printf("\n%s\n", server->GetURL());
-
-	//std::string stdhello = "HELLO";
-	//std::cout << stdhello.c_str() << std::endl;
+	server->Initialize(Port);
 
 	server->Run();
-	//server->ThreadRun();
-	
-	//server->Release();
+
 	delete server;
 }

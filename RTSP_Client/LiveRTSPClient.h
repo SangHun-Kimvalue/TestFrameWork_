@@ -36,6 +36,7 @@ public:
 	virtual bool Initialize();
 	virtual void Restart();
 	virtual void start();
+	virtual void stop();
 
 	virtual const char* Get_Status();
 	virtual const char* Get_SDP();
@@ -109,6 +110,7 @@ private:
 	//RTSPClient* parent;
 
 	bool m_SAlive;
+	bool Looping;
 
 protected:
 	LiveRTSPClient(UsageEnvironment& env, char const* rtspURL,

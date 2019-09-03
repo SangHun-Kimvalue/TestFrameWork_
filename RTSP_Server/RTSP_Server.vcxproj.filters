@@ -18,33 +18,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
+    <ClInclude Include="m_RTSPServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LiveRTSPServer.h">
+    <ClInclude Include="..\Libs\live555\include\RTSPServer.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="m_LiveRTSPServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LiveServerMediaSubsession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Server.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Old\LiveRTSPServer.h">
+      <Filter>Old</Filter>
     </ClInclude>
-    <ClInclude Include="Connect_Handler.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Old\LiveServerMediaSubsession.h">
+      <Filter>Old</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LiveServerMediaSubsession.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LiveRTSPServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RTSPServer.cpp">
@@ -53,19 +47,28 @@
     <ClCompile Include="GenericMediaServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UsageEnvironment.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicUsageEnvironment.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicTaskScheduler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Connect_Handler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ServerMediaSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="m_LiveRTSPServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LiveServerMediaSubsession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Old\LiveRTSPServer.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="Old\LiveServerMediaSubsession.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="Old\main.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="Old\old.cpp">
+      <Filter>Old</Filter>
+    </ClCompile>
+    <ClCompile Include="H264VideoFileServerMediaSubsession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

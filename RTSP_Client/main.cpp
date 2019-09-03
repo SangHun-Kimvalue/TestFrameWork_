@@ -7,7 +7,7 @@ int main(int argc, char** argv) {
 	UsageEnvironment* env = BasicUsageEnvironment::createNew(*scheduler);
 
 	//const char* URI = "";
-	const char* URI = "rtsp://192.168.0.40:554";
+	const char* URI = "rtsp://192.168.0.40";
 	//const char* URI = "rtsp://admin:1234@192.168.0.70/video1";
 	const char* ProgName = "Client_Test";
 	RTSP_Client* rtspClient = LiveRTSPClient::createNew(*env, URI, RTSP_CLIENT_VERBOSITY_LEVEL, ProgName, 0);
