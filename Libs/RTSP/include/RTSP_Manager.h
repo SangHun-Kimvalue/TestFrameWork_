@@ -11,12 +11,12 @@ public:
 	RTSP_Manager() : Source_Type(NOTSUPPORT), Server_Type(NOTVALID) {
 		//Initialize();
 	};
-	~RTSP_Manager() {};
+	~RTSP_Manager() { FreeLibrary(hDLL); };
 
 	bool Initialize();
 	void Release();
 	void Run();
-	void Restart();
+	//void Restart();
 	std::string Get_URL();
 	std::string Get_Stream_Name();
 	bool Get_Status();

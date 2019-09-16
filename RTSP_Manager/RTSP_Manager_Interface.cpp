@@ -28,12 +28,6 @@ extern "C"
 		return;
 	}
 
-	/*RTSPMANAGER_API void __stdcall Restart(RTSP_Manager* manager)
-	{
-		manager->Restart();
-		return;
-	}*/
-
 	RTSPMANAGER_API std::string __stdcall Get_URL(RTSP_Manager* manager)
 	{
 		return manager->Get_URL();
@@ -49,10 +43,4 @@ extern "C"
 		manager->Get_Status();
 		return;
 	}
-
-	/*RTSPMANAGER_API void __stdcall Stop(RTSP_Manager* manager)
-	{
-		manager->Stop();
-		return ;
-	}*/
 }

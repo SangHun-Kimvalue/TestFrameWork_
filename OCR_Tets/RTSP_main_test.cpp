@@ -11,7 +11,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 
 	AllocConsole();
 	HWND m_Console = GetConsoleWindow();
-	SetWindowPos(m_Console, 0, 800, 400, 0, 0, SWP_NOSIZE);
+	//SetWindowPos(m_Console, 0, 800, 400, 0, 0, SWP_NOSIZE);
 
 	FILE* cp;
 	freopen_s(&cp, "CONOUT$", "wt", stdout);
@@ -39,18 +39,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	
 	Initialize(dllclass);
 	Run(dllclass);
-	std::cout << Get_URL(dllclass) << std::endl;
-	std::cout << Get_Stream_Name(dllclass) << std::endl;
-	Release(dllclass);
-
+	//std::cout << Get_URL(dllclass) << std::endl;
+	//std::cout << Get_Stream_Name(dllclass) << std::endl;
+	
 	system("pause");
 
+	Release(dllclass);
 	delete dllclass;
 
 	fclose(cp);
 	//FreeLibrary(hDLL);
 	FreeConsole();
-	DestroyWindow(m_Console);
+	//DestroyWindow(m_Console);
 
 	return 0;
 }

@@ -205,7 +205,8 @@ bool LiveRTSPServer::Initialize(int port, std::string Filename) {
 	OutPacketBuffer::maxSize = 200000;
 	   
 	ServerMediaSession* sms = ServerMediaSession::createNew(*env, StreamName.c_str(), StreamName.c_str());
-	sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(*env, FileName.c_str(), False));
+	//sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(*env, FileName.c_str(), False));
+	sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(*env, FileName.c_str(), True));
 	addServerMediaSession(sms);
 
 	//sms = ServerMediaSession::createNew(*env, SessionName2);
@@ -284,8 +285,6 @@ void LiveRTSPServer::Release() {
 
 	bool res = false;
 	quit = 1;
-	cleanup();
-	env->reclaim();
 
 	//delete scheduler;
 
@@ -323,6 +322,8 @@ LiveRTSPServer::~LiveRTSPServer()
 {
 	//envir().taskScheduler().turnOffBackgroundReadHandling(0);
 	//::closeSocket(0);
+	cleanup();
+	env->reclaim();
 
 	Release();
 	
