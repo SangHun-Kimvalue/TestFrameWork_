@@ -190,13 +190,17 @@ LiveRTSPServer* LiveRTSPServer::createNew(UsageEnvironment& env, Port ourPort) {
 	return new LiveRTSPServer(env, ourSocket, ourPort, authDatabase, reclamationSeconds);
 }
 
-bool LiveRTSPServer::Initialize(int port) {
+bool LiveRTSPServer::Initialize(int port, std::string Filename) {
 
 	quit = 0;
 	StreamName = "video1";
 
-	IniLoader = InitLoader::createNew(L"config.ini");
-	FileName = IniLoader->Load("SET","FILENAME");
+	//IniLoader = InitLoader::createNew();
+	//IniLoader = InitLoader::createNew(L"config.ini");
+	//FileName = IniLoader->Load("SET","FILENAME");
+	
+	
+	FileName = Filename;
 
 	OutPacketBuffer::maxSize = 200000;
 	   
@@ -217,14 +221,14 @@ bool LiveRTSPServer::Initialize(int port) {
 	return true;
 }
 
-void LiveRTSPServer::Restart() {
-
-	Release();
-	Initialize(m_port);
-	Run();
-
-	return;
-}
+//void LiveRTSPServer::Restart() {
+//
+//	Release();
+//	Initialize(m_port, FileName);
+//	Run();
+//
+//	return;
+//}
 
 std::string LiveRTSPServer::GetStreamName() {
 
@@ -279,6 +283,7 @@ void LiveRTSPServer::Run()
 void LiveRTSPServer::Release() {
 
 	bool res = false;
+	quit = 1;
 	cleanup();
 	env->reclaim();
 

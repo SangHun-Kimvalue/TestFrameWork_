@@ -83,3 +83,5 @@ x64
 /RTSP_Server/Old/LiveServerMediaSubsession.h
 /RTSP_Server/Old/main.cpp
 /RTSP_Server/Old/old.cpp
+/DllTest/x64
+/OCR_Tets/x64

@@ -27,26 +27,26 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -72,15 +72,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>Live$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>Live$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>Live$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>Live$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -90,19 +94,32 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\Libs\live555\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\Libs\live555\live\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>BasicUsageEnvironment.lib;groupsock.lib;liveMedia.lib;UsageEnvironment.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/NODEFAULTLIB:libcmt.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\config.ini $(OutDir)</Command>
+      <Command>IF NOT EXIST "$(SolutionDir)Libs\RTSP" MKDIR "$(SolutionDir)Libs\RTSP"
+IF NOT EXIST "$(SolutionDir)Libs\RTSP\include" MKDIR "$(SolutionDir)Libs\RTSP\include"
+
+IF "$(PlatformTarget)"=="x86" (
+    IF NOT EXIST "$(SolutionDir)Libs\RTSP\win32" MKDIR "$(SolutionDir)Libs\RTSP\win32"
+    SET TargetDir=$(SolutionDir)Libs\RTSP\win32
+) ELSE (
+    IF NOT EXIST "$(SolutionDir)Libs\RTSP\win64" MKDIR "$(SolutionDir)Libs\RTSP\win64"
+    SET TargetDir=$(SolutionDir)Libs\RTSP\win64
+)
+
+copy m_RTSPServer.h $(SolutionDir)Libs\RTSP\include\
+copy $(OutDir)*.dll "%TargetDir%" /D /Y
+copy $(OutDir)*.lib "%TargetDir%" /D /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -113,17 +130,30 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\Libs\live555\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\Libs\live555\live_x64\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>BasicUsageEnvironment.lib;groupsock.lib;liveMedia.lib;UsageEnvironment.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\config.ini $(OutDir)</Command>
+      <Command>IF NOT EXIST "$(SolutionDir)Libs\RTSP" MKDIR "$(SolutionDir)Libs\RTSP"
+IF NOT EXIST "$(SolutionDir)Libs\RTSP\include" MKDIR "$(SolutionDir)Libs\RTSP\include"
+
+IF "$(PlatformTarget)"=="x86" (
+    IF NOT EXIST "$(SolutionDir)Libs\RTSP\win32" MKDIR "$(SolutionDir)Libs\RTSP\win32"
+    SET TargetDir=$(SolutionDir)Libs\RTSP\win32
+) ELSE (
+    IF NOT EXIST "$(SolutionDir)Libs\RTSP\win64" MKDIR "$(SolutionDir)Libs\RTSP\win64"
+    SET TargetDir=$(SolutionDir)Libs\RTSP\win64
+)
+
+copy m_RTSPServer.h $(SolutionDir)Libs\RTSP\include\
+copy $(OutDir)*.dll "%TargetDir%" /D /Y
+copy $(OutDir)*.lib "%TargetDir%" /D /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -136,12 +166,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\Libs\live555\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -149,12 +179,25 @@
       <AdditionalLibraryDirectories>..\Libs\live555\live\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\config.ini $(OutDir)</Command>
+      <Command>IF NOT EXIST "$(SolutionDir)Libs\RTSP" MKDIR "$(SolutionDir)Libs\RTSP"
+IF NOT EXIST "$(SolutionDir)Libs\RTSP\include" MKDIR "$(SolutionDir)Libs\RTSP\include"
+
+IF "$(PlatformTarget)"=="x86" (
+    IF NOT EXIST "$(SolutionDir)Libs\RTSP\win32" MKDIR "$(SolutionDir)Libs\RTSP\win32"
+    SET TargetDir=$(SolutionDir)Libs\RTSP\win32
+) ELSE (
+    IF NOT EXIST "$(SolutionDir)Libs\RTSP\win64" MKDIR "$(SolutionDir)Libs\RTSP\win64"
+    SET TargetDir=$(SolutionDir)Libs\RTSP\win64
+)
+
+copy m_RTSPServer.h $(SolutionDir)Libs\RTSP\include\
+copy $(OutDir)LiveRTSP_Server.dll $(SolutionDir)Libs\RTSP\
+copy $(OutDir)LiveRTSP_Server.lib $(SolutionDir)Libs\RTSP\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -162,11 +205,11 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\Libs\live555\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -174,12 +217,24 @@
       <AdditionalLibraryDirectories>..\Libs\live555\live_x64\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\config.ini $(OutDir)</Command>
+      <Command>IF NOT EXIST "$(SolutionDir)Libs\RTSP" MKDIR "$(SolutionDir)Libs\RTSP"
+IF NOT EXIST "$(SolutionDir)Libs\RTSP\include" MKDIR "$(SolutionDir)Libs\RTSP\include"
+
+IF "$(PlatformTarget)"=="x86" (
+    IF NOT EXIST "$(SolutionDir)Libs\RTSP\win32" MKDIR "$(SolutionDir)Libs\RTSP\win32"
+    SET TargetDir=$(SolutionDir)Libs\RTSP\win32
+) ELSE (
+    IF NOT EXIST "$(SolutionDir)Libs\RTSP\win64" MKDIR "$(SolutionDir)Libs\RTSP\win64"
+    SET TargetDir=$(SolutionDir)Libs\RTSP\win64
+)
+
+copy m_RTSPServer.h $(SolutionDir)Libs\RTSP\include\
+copy $(OutDir)LiveRTSP_Server.dll $(SolutionDir)Libs\RTSP\
+copy $(OutDir)LiveRTSP_Server.lib $(SolutionDir)Libs\RTSP\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Libs\live555\include\RTSPServer.hh" />
-    <ClInclude Include="InitLoader.h" />
     <ClInclude Include="m_LiveRTSPServer.h" />
     <ClInclude Include="m_RTSPServer.h" />
     <ClInclude Include="Old\LiveRTSPServer.h">
@@ -194,15 +249,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="H264VideoFileServerMediaSubsession.cpp" />
-    <ClCompile Include="InitLoader.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Livedll.cpp" />
     <ClCompile Include="m_LiveRTSPServer.cpp" />
-    <ClCompile Include="GenericMediaServer.cpp" />
-    <ClCompile Include="main.cpp">
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="Old\LiveRTSPServer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -233,7 +286,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="ServerMediaSession.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -35,7 +35,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 			0,
 			0,
 			1920,
-			1080};
+			1080 };
 
 	RECT m_ScreenRECT = rect;
 

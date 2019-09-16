@@ -13,26 +13,26 @@
 #include "m_LiveRTSPServer.h"
 
 
-int main(int argc, const char * argv[])
-{
-	int Port = 554;
-	TaskScheduler    *scheduler;
-	UsageEnvironment *env;
-
-	scheduler = BasicTaskScheduler::createNew();
-	if (scheduler == nullptr) {
-		return false;
-	}
-	env = BasicUsageEnvironment::createNew(*scheduler);
-	if (env == nullptr) {
-		return false;
-	}
-
-	m_RTSPServer *server = LiveRTSPServer::createNew(*env, Port);
-	
-	server->Initialize(Port);
-
-	server->Run();
-
-	delete server;
-}
+//int main(int argc, const char * argv[])
+//{
+//	int Port = 554;
+//	TaskScheduler    *scheduler;
+//	UsageEnvironment *env;
+//
+//	scheduler = BasicTaskScheduler::createNew();
+//	if (scheduler == nullptr) {
+//		return false;
+//	}
+//	env = BasicUsageEnvironment::createNew(*scheduler);
+//	if (env == nullptr) {
+//		return false;
+//	}
+//
+//	m_RTSPServer *server = LiveRTSPServer::createNew(*env, Port);
+//	
+//	server->Initialize(Port);
+//
+//	server->Run();
+//
+//	delete server;
+//}

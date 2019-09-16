@@ -32,10 +32,10 @@ public:
 	virtual ClientSession* createNewClientSession(u_int32_t sessionId);
 
 	virtual void Release();
-	virtual bool Initialize(int port);
+	virtual bool Initialize(int port, std::string Filename);
 	virtual void Run();
 	virtual std::string GetURL();
-	virtual void Restart();
+	//virtual void Restart();
 	virtual std::string  GetStreamName();
 
 protected:
