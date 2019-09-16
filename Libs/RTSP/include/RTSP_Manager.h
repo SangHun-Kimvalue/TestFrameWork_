@@ -20,7 +20,6 @@ public:
 	std::string Get_URL();
 	std::string Get_Stream_Name();
 	bool Get_Status();
-	void Stop();
 
 private:
 

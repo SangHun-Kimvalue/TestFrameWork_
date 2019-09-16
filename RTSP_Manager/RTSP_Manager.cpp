@@ -155,10 +155,3 @@ bool RTSP_Manager::Get_Status() {
 		return false;
 	}
 }
-
-void RTSP_Manager::Stop() {
-	
-	RTSP_Server->quit = 1;
-
-	return;
-}

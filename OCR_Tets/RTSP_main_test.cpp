@@ -44,7 +44,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdlin
 	
 	system("pause");
 
-	Release(dllclass);
+	DeleteManager(dllclass);
 	delete dllclass;
 
 	fclose(cp);

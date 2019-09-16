@@ -16,7 +16,7 @@ extern "C"
 		return manager->Initialize();
 	}
 
-	RTSPMANAGER_API void __stdcall Release(RTSP_Manager* manager)
+	RTSPMANAGER_API void __stdcall DeleteManager(RTSP_Manager* manager)
 	{
 		manager->Release();
 		return;
