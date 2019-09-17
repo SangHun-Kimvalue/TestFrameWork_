@@ -199,7 +199,6 @@ bool LiveRTSPServer::Initialize(int port, std::string Filename) {
 	//IniLoader = InitLoader::createNew(L"config.ini");
 	//FileName = IniLoader->Load("SET","FILENAME");
 	
-	
 	FileName = Filename;
 
 	OutPacketBuffer::maxSize = 200000;
@@ -231,16 +230,17 @@ bool LiveRTSPServer::Initialize(int port, std::string Filename) {
 //	return;
 //}
 
-std::string LiveRTSPServer::GetStreamName() {
+char*  LiveRTSPServer::GetStreamName() {
 
-	return StreamName;
+	char* temp = const_cast<char*>(StreamName.c_str());
+	return temp;
 }
 
-std::string LiveRTSPServer::GetURL() {
+char* LiveRTSPServer::GetURL() {
 
-	std::string temp = URL;// +std::to_string(m_port);
+	//URL;// +std::to_string(m_port);
 
-	return temp;
+	return URL;
 }
 
 char* LiveRTSPServer::rtspURL(ServerMediaSession const* serverMediaSession, int clientSocket) const {
@@ -322,11 +322,9 @@ LiveRTSPServer::~LiveRTSPServer()
 {
 	//envir().taskScheduler().turnOffBackgroundReadHandling(0);
 	//::closeSocket(0);
-	cleanup();
-	env->reclaim();
 
 	Release();
-	
+
 	// Removes all "ClientSession" and "ClientConnection" objects, and their tables.
 	//delete fClientConnectionsForHTTPTunneling;
 

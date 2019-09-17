@@ -15,7 +15,7 @@ extern "C"
 	RTSPMANAGER_API bool __stdcall Initialize(RTSP_Manager* manager);
 	RTSPMANAGER_API void __stdcall DeleteManager(RTSP_Manager* manager);
 	RTSPMANAGER_API void __stdcall Run(RTSP_Manager* manager);
-	RTSPMANAGER_API std::string __stdcall Get_URL(RTSP_Manager* manager);
-	RTSPMANAGER_API std::string __stdcall Get_Stream_Name(RTSP_Manager* manager);
+	RTSPMANAGER_API const char* __stdcall Get_URL(RTSP_Manager* manager);
+	RTSPMANAGER_API const char* __stdcall Get_Stream_Name(RTSP_Manager* manager);
 	RTSPMANAGER_API void __stdcall Get_Status(RTSP_Manager* manager);
 }

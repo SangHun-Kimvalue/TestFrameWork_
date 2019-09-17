@@ -238,7 +238,6 @@ copy $(OutDir)RTSP_Manager.lib "%TargetDir%" /D /Y</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="Managerdll.cpp" />
     <ClCompile Include="RTSP_Manager.cpp" />
     <ClCompile Include="RTSP_Manager_Interface.cpp" />
     <ClCompile Include="stdafx.cpp">

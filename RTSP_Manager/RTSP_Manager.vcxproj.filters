@@ -38,9 +38,6 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Managerdll.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RTSP_Manager_Interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

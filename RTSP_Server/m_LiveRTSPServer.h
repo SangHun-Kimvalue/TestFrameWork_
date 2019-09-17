@@ -7,15 +7,10 @@
 
 #include "RTSPServer.hh"
 #include "RTSPCommon.hh"
-#include "RTSPRegisterSender.hh"
 #include "Base64.hh"
 #include "m_RTSPServer.h"
-//#include "LiveServerMediaSubsession.h"
 #include "H264VideoFileServerMediaSubsession.hh"
-#include "VideoRTPSink.hh"
 #include "H264VideoRTPSource.hh"
-
-
 #include <string>
 
 class LiveRTSPServer : public m_RTSPServer, public RTSPServer
@@ -34,13 +29,14 @@ public:
 	virtual void Release();
 	virtual bool Initialize(int port, std::string Filename);
 	virtual void Run();
-	virtual std::string GetURL();
+	virtual char*  GetURL();
 	//virtual void Restart();
-	virtual std::string  GetStreamName();
+	virtual char*   GetStreamName();
 
 protected:
 
 	char* rtspURLPrefix(int clientSocket = -1) const;
+
 	LiveRTSPServer(UsageEnvironment& env,
 		int ourSocket, Port ourPort,
 		UserAuthenticationDatabase* authDatabase,

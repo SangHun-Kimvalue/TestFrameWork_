@@ -4,6 +4,8 @@
 #include <thread>
 #include "m_RTSPServer.h"
 
+typedef m_RTSPServer* (*RTSP_Server_fptr)();
+
 class RTSP_Manager {
 
 public:
@@ -17,8 +19,8 @@ public:
 	void Release();
 	void Run();
 	//void Restart();
-	std::string Get_URL();
-	std::string Get_Stream_Name();
+	char* Get_URL();
+	char* Get_Stream_Name();
 	bool Get_Status();
 
 private:
@@ -34,7 +36,7 @@ private:
 
 	std::string FileName;
 	std::thread RunThread;
-
+	RTSP_Server_fptr fptr;
 
 	class InitLoader;
 	InitLoader* Loader;

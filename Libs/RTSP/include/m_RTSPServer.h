@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <string>
 
 typedef enum RTSP_Server_Type { LIVE555, NOTVALID } RST;
 typedef enum Source_Type { LOCALFILE, NOTSUPPORT } ST;
@@ -15,10 +16,10 @@ public:
 	virtual void Release() = 0;
 	virtual bool Initialize(int port, std::string Filename) = 0;
 	virtual void Run() = 0;
-	virtual std::string GetURL() = 0;
-	virtual std::string  GetStreamName() = 0;
+	virtual char*  GetURL() = 0;
+	virtual char*   GetStreamName() = 0;
 
-	std::string URL;
+	char* URL;
 	int m_port;
 	char quit;
 

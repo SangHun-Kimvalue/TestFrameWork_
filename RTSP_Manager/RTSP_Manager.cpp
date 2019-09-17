@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "RTSP_Manager.h"
 
-typedef m_RTSPServer* (*RTSP_Server_fptr)();
+
 
 void RTSP_Manager::InitLoad() {
 
@@ -89,8 +89,6 @@ m_RTSPServer* RTSP_Manager::DllLoad(std::string sdllname) {
 		dllname = const_cast<wchar_t*>(L"LiveRTSP_Server.dll");
 	}
 
-	RTSP_Server_fptr fptr;
-
 	hDLL = LoadLibrary(dllname);
 	if (hDLL == NULL) {
 		std::cerr << "FIle Not Found" << std::endl;
@@ -115,7 +113,8 @@ void RTSP_Manager::Release() {
 	if (RunThread.joinable() == true) {
 		RunThread.join();
 	}
-	FreeLibrary(hDLL);
+	delete RTSP_Server;
+
 }
 
 void RTSP_Manager::Run() {
@@ -133,14 +132,13 @@ void RTSP_Manager::Run() {
 //	return;
 //}
 
-std::string RTSP_Manager::Get_URL() {
+char* RTSP_Manager::Get_URL() {
 
-	std::string temp = RTSP_Server->GetURL();
 
-	return temp;
+	return RTSP_Server->GetURL();
 }
 
-std::string RTSP_Manager::Get_Stream_Name() {
+char* RTSP_Manager::Get_Stream_Name() {
 	return RTSP_Server->GetStreamName();
 }
 

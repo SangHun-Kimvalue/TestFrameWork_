@@ -28,12 +28,12 @@ extern "C"
 		return;
 	}
 
-	RTSPMANAGER_API std::string __stdcall Get_URL(RTSP_Manager* manager)
+	RTSPMANAGER_API const char* __stdcall Get_URL(RTSP_Manager* manager)
 	{
 		return manager->Get_URL();
 	}
 
-	RTSPMANAGER_API std::string __stdcall Get_Stream_Name(RTSP_Manager* manager)
+	RTSPMANAGER_API const char* __stdcall Get_Stream_Name(RTSP_Manager* manager)
 	{
 		return manager->Get_Stream_Name();
 	}
