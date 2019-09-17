@@ -1,0 +1,10 @@
+{
+  "flvSaveDir": "D:/flv/",
+  "httpFilePort": 6556,
+  "logPath": "./log/",
+  "mp4SaveDir": "D:/Visual_Local_Repo/Sample_China/IDC_AIRPORT_01.mp4/",
+  "rtspServerName": "test",
+  "rtspServerPort": 6554,
+  "rtspServerVersion": "1.0",
+  "taskPort": 6555
+}

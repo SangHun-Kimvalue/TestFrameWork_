@@ -253,7 +253,10 @@ copy $(OutDir)LiveRTSP_Server.lib $(SolutionDir)Libs\RTSP\</Command>
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BasicTaskScheduler.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="GenericMediaServer.cpp" />
+    <ClCompile Include="H264VideoFileServerMediaSubsession.cpp" />
     <ClCompile Include="Livedll.cpp" />
     <ClCompile Include="m_LiveRTSPServer.cpp" />
     <ClCompile Include="Old\LiveRTSPServer.cpp">
@@ -286,6 +289,7 @@ copy $(OutDir)LiveRTSP_Server.lib $(SolutionDir)Libs\RTSP\</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="ServerMediaSession.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
