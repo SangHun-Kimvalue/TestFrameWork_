@@ -16,6 +16,9 @@
     <Filter Include="Old">
       <UniqueIdentifier>{968c5879-bfd9-4a22-9908-7579cad54e28}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Replicate_Test">
+      <UniqueIdentifier>{6b7f6d68-8f4c-4386-b287-3b2106be0d9f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Libs\live555\include\RTSPServer.hh">
@@ -75,6 +78,42 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GenericMediaServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplicateTest\testH264VideoStreamer.cpp">
+      <Filter>Replicate_Test</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplicateTest\testH264VideoToTransportStream.cpp">
+      <Filter>Replicate_Test</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplicateTest\testH265VideoStreamer.cpp">
+      <Filter>Replicate_Test</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplicateTest\testH265VideoToTransportStream.cpp">
+      <Filter>Replicate_Test</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplicateTest\testRelay.cpp">
+      <Filter>Replicate_Test</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplicateTest\testReplicator.cpp">
+      <Filter>Replicate_Test</Filter>
+    </ClCompile>
+    <ClCompile Include="ReplicateTest\StreamReplicator.cpp">
+      <Filter>Replicate_Test</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaSink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="H264VideoFileSink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="H264or5VideoFileSink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DVVideoStreamFramer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InputFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
