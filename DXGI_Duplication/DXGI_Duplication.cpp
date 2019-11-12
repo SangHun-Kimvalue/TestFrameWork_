@@ -77,6 +77,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	
 	while (1) {
 		Cap->Capture(output);
+		Sleep(1);
 	}
 
 	return 0;

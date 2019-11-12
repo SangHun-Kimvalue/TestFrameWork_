@@ -24,12 +24,18 @@
     <ClInclude Include="DXGI_Duplication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MF_Capture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DXGI_Duplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MF_Capture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
