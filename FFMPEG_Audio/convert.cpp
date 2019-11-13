@@ -287,7 +287,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	//	return error;
 	//}
 
-	ecodec = avcodec_find_encoder(AV_CODEC_ID_MP2);
+	ecodec = avcodec_find_encoder(fmtc->audio_codec_id);
 	if (!ecodec) {
 		printf("find_encoder error.\n");
 		return -1;

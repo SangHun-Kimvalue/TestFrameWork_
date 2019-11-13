@@ -9,12 +9,12 @@ extern "C" {
 #include <libavutil/frame.h>
 #include <libavutil/mem.h>
 #include <libavcodec/avcodec.h>
+#include <libavutil/avutil.h>
 #include <libavformat/avformat.h>
 #include <libswresample/swresample.h>
 #include <libavdevice/avdevice.h>
-//#include <libavutil/opt.h>
-//#include <libavutil/channel_layout.h>
-//#include <libavutil/samplefmt.h>
+#include <libavutil/opt.h>
+#include <libavutil/channel_layout.h>
 }
 
 #define AUDIO_INBUF_SIZE 20480
@@ -166,15 +166,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	//std::string filename = "audio=마이크 배열(Realtek High Definition Audio)";
 
 	error = avformat_open_input(&fmtc, conv.c_str(), iformat, NULL);
-	av_strerror(error, errstr, sizeof(errstr));
-	std::cout << conv.c_str() << std::endl;
-	std::cout << "avformat_open_input Error : " << errstr << std::endl;
-
-	if (error != 0) {
+	if (error) {
 		av_strerror(error, errstr, sizeof(errstr));
-		std::cout << errstr << std::endl;
-		printf("Couldn't open input stream.\n");
-		//return -1;
+		std::cout << conv.c_str() << std::endl;
+		std::cout << "avformat_open_input Error : " << errstr << std::endl;
 	}
 
 	//ret = avformat_open_input(&fmtc, filename, NULL, NULL);
@@ -203,6 +198,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 		exit(1);
 	}
 
+	//c = avcodec_alloc_context3(NULL);
 	c = avcodec_alloc_context3(codec);
 	if (!c) {
 		fprintf(stderr, "Could not allocate audio codec context\n");
@@ -210,7 +206,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	}
 	
 	/* open it */
-	error = avcodec_open2(c, codec, NULL);
+	error = avcodec_open2(c, codec, &options);
 	if (error < 0) {
 		av_strerror(error, errstr, sizeof(errstr));
 		fprintf(stderr, "Could not open codec\n");
@@ -225,11 +221,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 	fopen_s(&outfile, outfilename, "wb");
 	if (!outfile) {
-		av_free(c);
+		//av_free(c);
 		exit(1);
 	}
 	
-	parser = av_parser_init(codec->id);
+	parser = av_parser_init(fmtc->streams[ASI]->codecpar->codec_id);
 	if (!parser) {
 		fprintf(stderr, "Parser not found\n");
 		exit(1);
