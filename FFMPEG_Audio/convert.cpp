@@ -260,22 +260,19 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	fmtc = avformat_alloc_context();
 	std::string conv;
 	std::wstring wchar = L"audio=마이크 배열(Realtek High Definition Audio)";
+	//std::wstring wchar = L"example.mp2";
 	int size = wchar.size();
 	convert_unicode_to_utf8_string(conv, wchar.c_str(), size);
 	//std::string filename = "audio=마이크 배열(Realtek High Definition Audio)";
-
+	
 	error = avformat_open_input(&fmtc, conv.c_str(), iformat, NULL);
-	av_strerror(error, errstr, sizeof(errstr));
-	std::cout << conv.c_str() << std::endl;
-	std::cout << "avformat_open_input Error : " << errstr << std::endl;
-
-	if (error != 0) {
-		error_pro(error, "Couldn't open input stream.\n");
-		//av_strerror(error, errstr, sizeof(errstr));
-		//std::cout << errstr << std::endl;
-		//printf("Couldn't open input stream.\n");
-		return -1;
-	}
+	//error = avformat_open_input(&fmtc, "example.mp2", NULL, NULL);
+	//if (error < 0) {
+	//	av_strerror(error, errstr, sizeof(errstr));
+	//	std::cout << conv.c_str() << std::endl;
+	//	std::cout << "avformat_open_input Error : " << errstr << std::endl;
+	//	return -1;
+	//}
 
 	//파일 디코딩 용
 	//ret = avformat_open_input(&fmtc, filename, NULL, NULL);
@@ -284,11 +281,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	//	return ret;
 	//}
 
-	error = avformat_find_stream_info(fmtc, NULL);
-	if (error < 0) {
-		error_pro(error, "avformat_find_stream_info");
-		return error;
-	}
+	//error = avformat_find_stream_info(fmtc, NULL);
+	//if (error < 0) {
+	//	error_pro(error, "avformat_find_stream_info");
+	//	return error;
+	//}
 
 	ecodec = avcodec_find_encoder(AV_CODEC_ID_MP2);
 	if (!ecodec) {
@@ -353,6 +350,24 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 		//av_strerror(error, errstr, sizeof(errstr));
 		//fprintf(stderr, "could not av_frame_get_buffer\n");
 		return error;
+	}
+
+	int buffer_size = av_samples_get_buffer_size(NULL, ec->channels, ec->frame_size,
+		ec->sample_fmt, 0);
+
+	samples = (uint16_t*)av_malloc(buffer_size);
+	if (!samples) {
+		fprintf(stderr, "Could not allocate %d bytes for samples buffer\n",
+			buffer_size);
+		exit(1);
+	}
+
+	/* setup the data pointers in the AVFrame */
+	error = avcodec_fill_audio_frame(frame, ec->channels, ec->sample_fmt,
+		(const uint8_t*)samples, buffer_size, 0);
+	if (error < 0) {
+		fprintf(stderr, "Could not setup audio frame\n");
+		exit(1);
 	}
 
 	float tan = 0;
