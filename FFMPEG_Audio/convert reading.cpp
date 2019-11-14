@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 //#include <inttypes.h>
 
 extern "C" {
@@ -16,6 +17,8 @@ extern "C" {
 #include <libavutil/pixdesc.h>
 #include <libavutil/avutil.h>
 }
+
+#include "wav.h"
 
 #define AUDIO_INBUF_SIZE 20480
 #define AUDIO_REFILL_THRESH 4096
@@ -66,11 +69,29 @@ typedef struct FilteringContext {
 } FilteringContext;
 static FilteringContext *filter_ctx;
 
+typedef struct  WAV_HEADER {
+	char                RIFF[4];        // RIFF Header      Magic header
+	unsigned long       ChunkSize;      // RIFF Chunk Size  
+	char                WAVE[4];        // WAVE Header      
+	char                fmt[4];         // FMT header       
+	unsigned long       Subchunk1Size;  // Size of the fmt chunk                                
+	unsigned short      AudioFormat;    // Audio format 1=PCM,6=mulaw,7=alaw, 257=IBM Mu-Law, 258=IBM A-Law, 259=ADPCM 
+	unsigned short      NumOfChan;      // Number of channels 1=Mono 2=Sterio                   
+	unsigned long       SamplesPerSec;  // Sampling Frequency in Hz                             
+	unsigned long       bytesPerSec;    // bytes per second 
+	unsigned short      blockAlign;     // 2=16-bit mono, 4=16-bit stereo 
+	unsigned short      bitsPerSample;  // Number of bits per sample      
+	char                Subchunk2ID[4]; // "data"  string   
+	unsigned long       Subchunk2Size;  // Sampled data length    
+
+}wav_hdr;
+
 static AVFormatContext *ifmt_ctx;
 static AVFormatContext *ofmt_ctx;
 
 static int open_output_file(const char *filename);
 static int open_input_file();
+static int save_wav(const char* outputfilename);
 static int init_filters();
 static int init_filter(FilteringContext* fctx, AVCodecContext *dec_ctx, AVCodecContext *enc_ctx, const char *filter_spec);
 
@@ -82,7 +103,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	FILE* cp = nullptr;
 	AllocConsole();
 	freopen_s(&cp, "CONOUT$", "wt", stdout);
-	AVPacket packet = { 0 };
+	AVPacket *packet = NULL;
 	AVFrame* frame = NULL;
 	int stream_index = 0;
 	enum AVMediaType type;
@@ -104,11 +125,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 		return error;
 	}
 
-	int temp = fopen_s(&f, "output_test2.wav", "wb");
-	if (!f) {
-		std::cout << "fileopen error" << std::endl;
-	}
-
+	//int temp = fopen_s(&f, "output_test2.wav", "w");
+	//if (!f) {
+	//	std::cout << "fileopen error" << std::endl;
+	//}
 
 	//uint8_t* buf = NULL;
 	//error = init_filters();
@@ -117,16 +137,30 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	//	return 0;
 	//}
 
-	while (1) {
-		if ((error = av_read_frame(ifmt_ctx, &packet)) < 0) {
+	packet = av_packet_alloc();
+
+	clock_t start = clock();
+	clock_t end = 0;
+
+	int count = 0;
+	wav* m_wav = new wav;
+	m_wav->init("output_test2.wav", (44100/2));
+
+	while (count < 100) {
+		float loopend = end - start;
+		if (loopend > 30000) {
+			break;
+		}
+
+		if ((error = av_read_frame(ifmt_ctx, packet)) < 0) {
 			std::cout << "EOF" << std::endl;
 			break;
 		}
 
-		error = avcodec_send_packet(stream_ctx->dec_ctx, &packet);
+		error = avcodec_send_packet(stream_ctx->dec_ctx, packet);
 		if (error == -11) {
 			error_pro(error, "avcodec_send_packet again");
-			av_packet_unref(&packet);
+			av_packet_unref(packet);
 			continue;
 		}
 		else if (error < 0) {
@@ -138,10 +172,18 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 			if (!frame) {
 				break;
 			}
+
+			//error = av_frame_make_writable(frame);
+			//if (error < 0) {
+			//	error_pro(error, "av_frame_make_writable");
+			//	av_packet_unref(packet);
+			//	continue;
+			//}
+
 			error = avcodec_receive_frame(stream_ctx->dec_ctx, frame);
 			if (error == -11) {
 				error_pro(error, "avcodec_send_packet again");
-				av_packet_unref(&packet);
+				av_packet_unref(packet);
 				continue;
 			}
 			else if (error < 0) {
@@ -155,15 +197,22 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 				fprintf(stderr, "Failed to calculate data size\n");
 				exit(1);
 			}
-			//for (int i = 0; i < frame->nb_samples; i++)
-			//	for (int ch = 0; ch < stream_ctx->dec_ctx->channels; ch++)
-			//		fwrite(frame->data[ch] + data_size * i, 1, data_size, f);
+			int check = 0;
+			for (int i = 0; i < frame->nb_samples; i++) {
+				//for (int ch = 0; ch < stream_ctx->dec_ctx->channels; ch++) {
+					//fwrite(frame->data[ch] + data_size * i, 1, data_size, f);
+					//check = check + fwrite(frame->data[0] + data_size * i, 1, data_size, f);
+					//
+				//}
+				check = m_wav->write_wav(frame->data[0] + data_size * i, 1, data_size);
+			}
+			check++;
 		}
 
 
 
-		stream_index = packet.stream_index;
-		type = ifmt_ctx->streams[packet.stream_index]->codecpar->codec_type;
+		stream_index = packet->stream_index;
+		type = ifmt_ctx->streams[packet->stream_index]->codecpar->codec_type;
 		
 		//fwrite(packet.data, packet.size, *f)
 
@@ -176,7 +225,18 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 
 		//디코딩 추가
+
+		end = clock();
+		count++;
 	}
+
+	//fclose(f);
+
+	return 0;
+}
+
+static int save_wav(const char* outputfilename) {
+
 
 	return 0;
 }

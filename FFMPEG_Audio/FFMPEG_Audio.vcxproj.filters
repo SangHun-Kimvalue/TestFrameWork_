@@ -24,6 +24,9 @@
     <ClInclude Include="FFWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="wav.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FFMPEG_Audio.cpp">
@@ -39,6 +42,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="write.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wav.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

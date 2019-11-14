@@ -169,6 +169,7 @@ copy ..\Libs\sndfile\Win64\bin\*.dll $(OutDir)</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="FFWriter.h" />
+    <ClInclude Include="wav.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="convert reading.cpp" />
@@ -182,6 +183,7 @@ copy ..\Libs\sndfile\Win64\bin\*.dll $(OutDir)</Command>
     <ClCompile Include="read.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="wav.cpp" />
     <ClCompile Include="write.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
