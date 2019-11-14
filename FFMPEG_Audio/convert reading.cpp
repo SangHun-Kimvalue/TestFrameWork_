@@ -92,7 +92,6 @@ static AVFormatContext *ofmt_ctx;
 
 static int open_output_file(const char *filename);
 static int open_input_file();
-static int save_wav(const char* outputfilename);
 static int init_filters();
 static int init_filter(FilteringContext* fctx, AVCodecContext *dec_ctx, AVCodecContext *enc_ctx, const char *filter_spec);
 void printAudioFrameInfo(const AVCodecContext* codecContext, const AVFrame* frame);
@@ -154,9 +153,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 	while (1) {
 		float loopend = end - start;
-		//if (loopend > 30000) {
-		//	break;
-		//}
+		if (loopend > 15000) {
+			break;
+		}
 
 		if ((error = av_read_frame(ifmt_ctx, packet)) < 0) {
 			std::cout << "EOF" << std::endl;
@@ -239,7 +238,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 	printAudioFrameInfo(stream_ctx->dec_ctx, frame);
 	
-	m_wav->save_init("output.wav", 1024, 16000, 32, 1);	//const char* filename, int duration, int smaplerate, int bit_rate, int channel
+	//pkt->duration, frame->samplerate, 32, 1
+	//m_wav->save_init("output.wav", 1024, 16000, 32, 1);	//const char* filename, int duration, int smaplerate, int bit_rate, int channel
+	m_wav->save_init("output.wav", 5000000, 44100, 32, 1);	//const char* filename, int duration, int smaplerate, int bit_rate, int channel
 
 	m_wav->save(buffer, frame->linesize[0]);
 	//buffer.pop_front();
@@ -271,8 +272,8 @@ static int open_input_file() {
 	convert_unicode_to_utf8_string(conv, wchar.c_str(), size);
 	//std::string filename = "audio=마이크 배열(Realtek High Definition Audio)";
 
-	error = avformat_open_input(&ifmt_ctx, "input_test.wav", NULL, NULL);
-	//error = avformat_open_input(&ifmt_ctx, conv.c_str(), iformat, NULL);
+	//error = avformat_open_input(&ifmt_ctx, "input_test.wav", NULL, NULL);
+	error = avformat_open_input(&ifmt_ctx, conv.c_str(), iformat, NULL);
 	if (error < 0) {
 		error_pro(error, errstr);
 		std::cout << conv.c_str() << std::endl;
