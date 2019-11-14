@@ -14,81 +14,48 @@ wav::~wav()
 {
 }
 
-void write_little_endian(unsigned int word, int num_bytes, FILE *wav_file) {
+void wav::close() {
 
-	unsigned buf;
-
-	while (num_bytes > 0)
-	{
-		buf = word & 0xff;
-
-		fwrite(&buf, 1, 1, wav_file);
-
-		num_bytes--;
-
-		word >>= 8;
-	}
-
+	fclose(wav_file);
 }
 
-int wav::init(const char * filename, unsigned long m_num_samples, int s_rate) {
-
-	num_samples = m_num_samples;
-
-	fopen_s(&wav_file, filename, "w");
-	assert(wav_file);   /* make sure it opened */
-
-	num_channels = 1;   /* monoaural */
-
-	bytes_per_sample = 1;
-
-	if (s_rate <= 0) sample_rate = 44100;
-
-	else sample_rate = (unsigned int)s_rate;
-
-	byte_rate = sample_rate * num_channels*bytes_per_sample;
 
 
-	/* write RIFF header */
+int wav::save_init(const char* filename, int duration, int smaplerate, int bit_rate, int channel) {
 
-	fwrite("RIFF", 1, 4, wav_file);
-
-	write_little_endian(36 + bytes_per_sample * num_samples * num_channels, 4, wav_file);
-
-	fwrite("WAVE", 1, 4, wav_file);
-
-	/* write fmt  subchunk */
-
-	fwrite("fmt ", 1, 4, wav_file);
-	write_little_endian(16, 4, wav_file);   /* SubChunk1Size is 16 */
-	write_little_endian(1, 2, wav_file);    /* PCM is format 1 */
-	write_little_endian(num_channels, 2, wav_file);
-	write_little_endian(sample_rate, 4, wav_file);
-	write_little_endian(byte_rate, 4, wav_file);
-	write_little_endian(num_channels*bytes_per_sample, 2, wav_file);  /* block align */
-	write_little_endian(8 * bytes_per_sample, 2, wav_file);  /* bits/sample */
-	fwrite("data", 1, 4, wav_file);
-	write_little_endian(bytes_per_sample* num_samples * num_channels, 4, wav_file);
+	fopen_s(&wav_file, filename, "wb");
+	WAVE_HEADER header;
+	memcpy(header.Riff.ChunkID, "RIFF", 4); 
+	header.Riff.ChunkSize = duration * smaplerate * channel * bit_rate / 8 + 36;
+	memcpy(header.Riff.Format, "WAVE", 4); 
+	memcpy(header.Fmt.ChunkID, "fmt ", 4); 
+	header.Fmt.ChunkSize = 0x10; 
+	header.Fmt.AudioFormat = WAVE_FORMAT_PCM; 
+	header.Fmt.NumChannels = channel;
+	header.Fmt.SampleRate = smaplerate;
+	header.Fmt.AvgByteRate = smaplerate * channel * bit_rate / 8;
+	header.Fmt.BlockAlign = channel * bit_rate / 8;
+	header.Fmt.BitPerSample = bit_rate;
+	memcpy(header.Data.ChunkID, "data", 4); 
+	header.Data.ChunkSize = duration * smaplerate * channel * bit_rate / 8;
+	fwrite(&header, sizeof(header), 1, wav_file);
+	
 
 	return 0;
 }
 
-int wav::write_wav(uint8_t* data, int data_size, int i){
+int wav::save(std::list<uint8_t*> data, int datasize) {
 
-	/* write data subchunk */
-	int check = 0;
-	
-	
-	//for (i = 0; i< num_samples; i++)
-	//{   
-		check = fwrite(data, 1, data_size, wav_file);
-		//write_little_endian((uint16_t)(datas),bytes_per_sample, wav_file);
-	//}
+	//short y[1]; double freq = 1000;
+	int size = data.size();
+	for (int i = 0; i < size; i++) {
+	//for (int i = 0; i < SAMPLE_RATE * DURATION * CHANNEL * BIT_RATE / 8; i++) {
+		//y[0] = (short)30000 * sin(2 * 3.141592 * i * freq / SAMPLE_RATE); // 제임스님 코멘트에 따른 수정 
+		//fwrite(&y[0], sizeof(short), 1, f_out);
+		uint8_t* buf = (uint8_t*)data.front();
+		fwrite(buf, 1, datasize, wav_file);
+		data.pop_front();
+	}
 
-	return check;
-}
-
-void wav::close() {
-
-	fclose(wav_file);
+	return 0;
 }

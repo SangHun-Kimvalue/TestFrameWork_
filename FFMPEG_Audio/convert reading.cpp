@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <list>
 //#include <inttypes.h>
 
 extern "C" {
@@ -94,6 +95,7 @@ static int open_input_file();
 static int save_wav(const char* outputfilename);
 static int init_filters();
 static int init_filter(FilteringContext* fctx, AVCodecContext *dec_ctx, AVCodecContext *enc_ctx, const char *filter_spec);
+void printAudioFrameInfo(const AVCodecContext* codecContext, const AVFrame* frame);
 
 int APIENTRY wWinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
@@ -108,7 +110,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	int stream_index = 0;
 	enum AVMediaType type;
 	FILE* f;
-
+	std::list<uint8_t*> buffer;
+	//std::vecter<uint8_t> buffer;
 
 	//const char* filename = "input_test.mp3";
 	const char* outfilename = "output_test.wav";
@@ -144,13 +147,16 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 	int count = 0;
 	wav* m_wav = new wav;
-	m_wav->init("output_test2.wav", (44100/2));
+	//m_wav->init("output_test2.wav", (44100/2));
 
-	while (count < 100) {
+	int check = 0;
+	int data_size = 0;
+
+	while (1) {
 		float loopend = end - start;
-		if (loopend > 30000) {
-			break;
-		}
+		//if (loopend > 30000) {
+		//	break;
+		//}
 
 		if ((error = av_read_frame(ifmt_ctx, packet)) < 0) {
 			std::cout << "EOF" << std::endl;
@@ -191,25 +197,24 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 				break;
 			}
 
-			int data_size = av_get_bytes_per_sample(stream_ctx->dec_ctx->sample_fmt);
+			data_size = av_get_bytes_per_sample(stream_ctx->dec_ctx->sample_fmt);
 			if (data_size < 0) {
 				/* This should not occur, checking just for paranoia */
 				fprintf(stderr, "Failed to calculate data size\n");
 				exit(1);
 			}
-			int check = 0;
-			for (int i = 0; i < frame->nb_samples; i++) {
+			
+			//for (int i = 0; i < frame->nb_samples; i++) {
 				//for (int ch = 0; ch < stream_ctx->dec_ctx->channels; ch++) {
 					//fwrite(frame->data[ch] + data_size * i, 1, data_size, f);
 					//check = check + fwrite(frame->data[0] + data_size * i, 1, data_size, f);
 					//
 				//}
-				check = m_wav->write_wav(frame->data[0] + data_size * i, 1, data_size);
-			}
-			check++;
+				//check = check + m_wav->write_wav(frame->data[0] + data_size * i, 1, data_size);
+				//check = check + = m_wav->save(frame->data[0] + data_size * i, data_size);
+			//}
+			buffer.push_back(frame->data[0]);
 		}
-
-
 
 		stream_index = packet->stream_index;
 		type = ifmt_ctx->streams[packet->stream_index]->codecpar->codec_type;
@@ -229,14 +234,18 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 		end = clock();
 		count++;
 	}
+	//for (int i = 0; i < SAMPLE_RATE * DURATION * CHANNEL * BIT_RATE / 8; i++){
+	//while ( 1 == buffer.size()) {
 
+	printAudioFrameInfo(stream_ctx->dec_ctx, frame);
+	
+	m_wav->save_init("output.wav", 1024, 16000, 32, 1);	//const char* filename, int duration, int smaplerate, int bit_rate, int channel
+
+	m_wav->save(buffer, frame->linesize[0]);
+	//buffer.pop_front();
+	//}
+	//m_wav->close();
 	//fclose(f);
-
-	return 0;
-}
-
-static int save_wav(const char* outputfilename) {
-
 
 	return 0;
 }
@@ -257,12 +266,13 @@ static int open_input_file() {
 	ifmt_ctx = avformat_alloc_context();
 	std::string conv;
 	std::wstring wchar = L"audio=마이크 배열(Realtek High Definition Audio)";
-	//std::wstring wchar = L"example.mp2";
+	//std::wstring wchar = L"input_test.wav";
 	int size = wchar.size();
 	convert_unicode_to_utf8_string(conv, wchar.c_str(), size);
 	//std::string filename = "audio=마이크 배열(Realtek High Definition Audio)";
 
-	error = avformat_open_input(&ifmt_ctx, conv.c_str(), iformat, NULL);
+	error = avformat_open_input(&ifmt_ctx, "input_test.wav", NULL, NULL);
+	//error = avformat_open_input(&ifmt_ctx, conv.c_str(), iformat, NULL);
 	if (error < 0) {
 		error_pro(error, errstr);
 		std::cout << conv.c_str() << std::endl;
@@ -333,6 +343,173 @@ static int open_input_file() {
 	av_dump_format(ifmt_ctx, 0, conv.c_str(), 0);
 	return 0;
 }
+
+void printAudioFrameInfo(const AVCodecContext* codecContext, const AVFrame* frame)
+{
+	// See the following to know what data type (unsigned char, short, float, etc) to use to access the audio data:
+	// http://ffmpeg.org/doxygen/trunk/samplefmt_8h.html#af9a51ca15301871723577c730b5865c5
+	std::cout << "Audio frame info:\n"
+		<< "  Sample count: " << frame->nb_samples << '\n'
+		<< "  Channel count: " << codecContext->channels << '\n'
+		<< "  Format: " << av_get_sample_fmt_name(codecContext->sample_fmt) << '\n'
+		<< "  Bytes per sample: " << av_get_bytes_per_sample(codecContext->sample_fmt) << '\n'
+		<< "  Is planar? " << av_sample_fmt_is_planar(codecContext->sample_fmt) << '\n'
+		<< "  Duration? " << frame->pkt_duration << '\n'
+		<< "  Sample rate? " << frame->sample_rate << '\n'
+		<< "  Frame length? " << (1000 / double(frame->sample_rate)*double(frame->nb_samples)) << '\n';
+
+
+	std::cout << "frame->linesize[0] tells you the size (in bytes) of each plane\n";
+
+	if (codecContext->channels > AV_NUM_DATA_POINTERS && av_sample_fmt_is_planar(codecContext->sample_fmt))
+	{
+		std::cout << "The audio stream (and its frames) have too many channels to fit in\n"
+			<< "frame->data. Therefore, to access the audio data, you need to use\n"
+			<< "frame->extended_data to access the audio data. It's planar, so\n"
+			<< "each channel is in a different element. That is:\n"
+			<< "  frame->extended_data[0] has the data for channel 1\n"
+			<< "  frame->extended_data[1] has the data for channel 2\n"
+			<< "  etc.\n";
+	}
+	else
+	{
+		std::cout << "Either the audio data is not planar, or there is enough room in\n"
+			<< "frame->data to store all the channels, so you can either use\n"
+			<< "frame->data or frame->extended_data to access the audio data (they\n"
+			<< "should just point to the same data).\n";
+	}
+
+	std::cout << "If the frame is planar, each channel is in a different element.\n"
+		<< "That is:\n"
+		<< "  frame->data[0]/frame->extended_data[0] has the data for channel 1\n"
+		<< "  frame->data[1]/frame->extended_data[1] has the data for channel 2\n"
+		<< "  etc.\n";
+
+	std::cout << "If the frame is packed (not planar), then all the data is in\n"
+		<< "frame->data[0]/frame->extended_data[0] (kind of like how some\n"
+		<< "image formats have RGB pixels packed together, rather than storing\n"
+		<< " the red, green, and blue channels separately in different arrays.\n";
+}
+
+//int _tssmain(int argc)
+//{
+//
+//
+//
+//	av_register_all();
+//
+//	AVFrame* frame = av_frame_alloc();
+//	if (!frame)
+//	{
+//		std::cout << "Error allocating the frame" << std::endl;
+//		return 1;
+//	}
+//
+//	// you can change the file name "01 Push Me to the Floor.wav" to whatever the file is you're reading, like "myFile.ogg" or
+//	// "someFile.webm" and this should still work
+//	AVFormatContext* formatContext = NULL;
+//	if (avformat_open_input(&formatContext, "C:\\Users\\Emanuele\\Downloads\\I still have soul (HBO Boxing) New Motivational and Inspirational Videov.dts", NULL, NULL) != 0)
+//	{
+//		av_free(frame);
+//		std::cout << "Error opening the file" << std::endl;
+//		return 1;
+//	}
+//
+//	if (avformat_find_stream_info(formatContext, NULL) < 0)
+//	{
+//		av_free(frame);
+//		avformat_close_input(&formatContext);
+//		std::cout << "Error finding the stream info" << std::endl;
+//		return 1;
+//	}
+//
+//	// Find the audio stream
+//	AVCodec* cdc = nullptr;
+//	int streamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO, -1, -1, &cdc, 0);
+//	if (streamIndex < 0)
+//	{
+//		av_free(frame);
+//		avformat_close_input(&formatContext);
+//		std::cout << "Could not find any audio stream in the file" << std::endl;
+//		return 1;
+//	}
+//
+//	AVStream* audioStream = formatContext->streams[streamIndex];
+//	AVCodecContext* codecContext = audioStream->codecpar;
+//	codecContext->codec = cdc;
+//
+//	if (avcodec_open2(codecContext, codecContext->codec, NULL) != 0)
+//	{
+//		av_free(frame);
+//		avformat_close_input(&formatContext);
+//		std::cout << "Couldn't open the context with the decoder" << std::endl;
+//		return 1;
+//	}
+//
+//	std::cout << "This stream has " << codecContext->channels << " channels and a sample rate of " << codecContext->sample_rate << "Hz" << std::endl;
+//	std::cout << "The data is in the format " << av_get_sample_fmt_name(codecContext->sample_fmt) << std::endl;
+//
+//	AVPacket readingPacket;
+//	av_init_packet(&readingPacket);
+//
+//	// Read the packets in a loop
+//	while (av_read_frame(formatContext, &readingPacket) == 0)
+//	{
+//		if (readingPacket.stream_index == audioStream->index)
+//		{
+//			AVPacket decodingPacket = readingPacket;
+//
+//			// Audio packets can have multiple audio frames in a single packet
+//			while (decodingPacket.size > 0)
+//			{
+//				// Try to decode the packet into a frame
+//				// Some frames rely on multiple packets, so we have to make sure the frame is finished before
+//				// we can use it
+//				int gotFrame = 0;
+//				int result = avcodec_decode_audio4(codecContext, frame, &gotFrame, &decodingPacket);
+//
+//				if (result >= 0 && gotFrame)
+//				{
+//					decodingPacket.size -= result;
+//					decodingPacket.data += result;
+//
+//					// We now have a fully decoded audio frame
+//					printAudioFrameInfo(codecContext, frame);
+//				}
+//				else
+//				{
+//					decodingPacket.size = 0;
+//					decodingPacket.data = nullptr;
+//				}
+//			}
+//		}
+//
+//		// You *must* call av_free_packet() after each call to av_read_frame() or else you'll leak memory
+//		av_free_packet(&readingPacket);
+//	}
+//
+//	// Some codecs will cause frames to be buffered up in the decoding process. If the CODEC_CAP_DELAY flag
+//	// is set, there can be buffered up frames that need to be flushed, so we'll do that
+//	if (codecContext->codec->capabilities & AV_CODEC_CAP_DELAY)
+//	{
+//		av_init_packet(&readingPacket);
+//		// Decode all the remaining frames in the buffer, until the end is reached
+//		int gotFrame = 0;
+//		while (avcodec_decode_audio4(codecContext, frame, &gotFrame, &readingPacket) >= 0 && gotFrame)
+//		{
+//			// We now have a fully decoded audio frame
+//			printAudioFrameInfo(codecContext, frame);
+//		}
+//	}
+//
+//	// Clean up!
+//	av_free(frame);
+//	avcodec_close(codecContext);
+//	avformat_close_input(&formatContext);
+//
+//	//_tprintf(_T("Done.\n"));
+//	return 0;
+//}
 
 static int open_output_file(const char *filename)
 {
