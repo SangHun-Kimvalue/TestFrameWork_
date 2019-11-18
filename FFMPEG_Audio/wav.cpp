@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <assert.h>
 
-wav::wav() : wav_file(nullptr), sample_rate(0), num_channels(0), 
-bytes_per_sample(0), byte_rate(0), i(0), num_samples(0)
+wav::wav() 
+	//: wav_file(nullptr), sample_rate(0), num_channels(0), 
+//bytes_per_sample(0), byte_rate(0), i(0), num_samples(0)
 {
 
 }

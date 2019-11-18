@@ -2,9 +2,11 @@
 
 #ifndef MAKE_WAV_H
 #define MAKE_WAV_H
+
 #include <stdint.h>
 #include <iostream>
 #include <list>
+
 #define WAVE_FORMAT_UNKNOWN 0X0000;
 #define WAVE_FORMAT_PCM 0X0001; 
 #define WAVE_FORMAT_MS_ADPCM 0X0002; 
@@ -22,11 +24,31 @@
 #define CHANNEL 1 
 #define BIT_RATE 32
 
+
+//typedef struct  WAV_HEADER {
+//	char                RIFF[4];        // RIFF Header      Magic header
+//	unsigned long       ChunkSize;      // RIFF Chunk Size  
+//	char                WAVE[4];        // WAVE Header      
+//	char                fmt[4];         // FMT header       
+//	unsigned long       Subchunk1Size;  // Size of the fmt chunk                                
+//	unsigned short      AudioFormat;    // Audio format 1=PCM,6=mulaw,7=alaw, 257=IBM Mu-Law, 258=IBM A-Law, 259=ADPCM 
+//	unsigned short      NumOfChan;      // Number of channels 1=Mono 2=Sterio                   
+//	unsigned long       SamplesPerSec;  // Sampling Frequency in Hz                             
+//	unsigned long       bytesPerSec;    // bytes per second 
+//	unsigned short      blockAlign;     // 2=16-bit mono, 4=16-bit stereo 
+//	unsigned short      bitsPerSample;  // Number of bits per sample      
+//	char                Subchunk2ID[4]; // "data"  string   
+//	unsigned long       Subchunk2Size;  // Sampled data length    
+//
+//}wav_hdr;
+
+
 typedef struct { 
 	unsigned char ChunkID[4]; // Contains the letters "RIFF" in ASCII form 
 	int ChunkSize; // This is the size of the rest of the chunk following this number 
 	unsigned char Format[4]; // Contains the letters "WAVE" in ASCII form 
 } RIFF; 
+
 //------------------------------------------- // [Channel] 
 // - streo : [left][right] 
 // - 3 channel : [left][right][center] 
@@ -34,6 +56,7 @@ typedef struct {
 // - 4 channel : [left][center][right][surround] 
 // - 6 channel : [left center][left][center][right center][right][surround] 
 //------------------------------------------- 
+
 typedef struct { 
 	unsigned char ChunkID[4]; // Contains the letters "fmt " in ASCII form unsigned 
 	int ChunkSize; // 16 for PCM. This is the size of the rest of the Subchunk which follows this number. 
@@ -69,12 +92,12 @@ public:
 private:
 
 	FILE* wav_file;
-	unsigned int sample_rate;
-	unsigned int num_channels;
-	unsigned int bytes_per_sample;
-	unsigned int byte_rate;
-	unsigned long i;    /* counter for samples */
-	unsigned long num_samples;
+	//unsigned int sample_rate;
+	//unsigned int num_channels;
+	//unsigned int bytes_per_sample;
+	//unsigned int byte_rate;
+	//unsigned long i;    /* counter for samples */
+	//unsigned long num_samples;
 
 };
 
