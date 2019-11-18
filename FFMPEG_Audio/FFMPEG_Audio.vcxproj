@@ -176,7 +176,10 @@ copy ..\Libs\sndfile\Win64\bin\*.dll $(OutDir)</Command>
     <ClInclude Include="wav.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="convert reading.cpp" />
+    <ClCompile Include="convert encoding.cpp" />
+    <ClCompile Include="convert reading.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="FFMPEG_Audio.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

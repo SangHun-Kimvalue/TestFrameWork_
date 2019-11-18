@@ -47,5 +47,8 @@
     <ClCompile Include="wav.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="convert encoding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
