@@ -76,8 +76,6 @@ static int write_frame(AVFormatContext *fmt_ctx, const AVRational *time_base, AV
 	return av_interleaved_write_frame(fmt_ctx, pkt);
 }
 
-
-
 int APIENTRY wWinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
 	LPTSTR    lpCmdLine,
