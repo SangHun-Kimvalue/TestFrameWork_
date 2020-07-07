@@ -160,6 +160,64 @@ void ourRTSPClient::continueAfterDESCRIBE(RTSPClient* rtspClient, int resultCode
 	shutdownStream(rtspClient);
 }
 
+void shutdownStream(RTSPClient *rtspClient, int exitCode) {
+
+	UsageEnvironment &env = rtspClient->envir(); // alias
+	StreamClientState &scs = ((H265RTSPClient *)rtspClient)->scs; // alias
+
+	// First, check whether any subsessions have still to be closed:
+	if (scs.session != nullptr) {
+		Boolean someSubsessionsWereActive = False;
+		MediaSubsessionIterator iter(*scs.session);
+		MediaSubsession *subsession;
+
+		while ((subsession = iter.next()) != nullptr) {
+			if (subsession->sink != nullptr) {
+				Medium::close(subsession->sink);
+				subsession->sink = nullptr;
+
+				if (subsession->rtcpInstance() != nullptr) {
+					subsession->rtcpInstance()->setByeHandler(nullptr,
+						nullptr); // in case the server sends a RTCP "BYE" while handling "TEARDOWN"
+				}
+
+				someSubsessionsWereActive = True;
+			}
+		}
+
+		if (someSubsessionsWereActive) {
+			// Send a RTSP "TEARDOWN" command, to tell the server to shutdown the stream.
+			// Don't bother handling the response to the "TEARDOWN".
+			rtspClient->sendTeardownCommand(*scs.session, nullptr);
+		}
+	}
+
+	env << *rtspClient << "Closing the stream.\n";
+	Medium::close(rtspClient);
+	// Note that this will also cause this stream's "StreamClientState" structure to get reclaimed.
+
+	eventLoopWatchVariable = 's';
+}
+
+void subsessionAfterPlaying(void *clientData) {
+	auto subsession = (MediaSubsession *)clientData;
+	auto rtspClient = (RTSPClient *)(subsession->miscPtr);
+
+	// Begin by closing this subsession's stream:
+	Medium::close(subsession->sink);
+	subsession->sink = nullptr;
+
+	// Next, check whether *all* subsessions' streams have now been closed:
+	MediaSession &session = subsession->parentSession();
+	MediaSubsessionIterator iter(session);
+	while ((subsession = iter.next()) != nullptr) {
+		if (subsession->sink != nullptr) return; // this subsession is still active
+	}
+
+	// All subsessions' streams have now been closed, so shutdown the client:
+	shutdownStream(rtspClient);
+}
+
 void ourRTSPClient::continueAfterSETUP(RTSPClient* rtspClient, int resultCode, char* resultString) {
 	do {
 		UsageEnvironment& env = rtspClient->envir(); // alias
@@ -185,13 +243,13 @@ void ourRTSPClient::continueAfterSETUP(RTSPClient* rtspClient, int resultCode, c
 
 		env << *rtspClient << "Created a data sink for the \"" << *scs.subsession << "\" subsession\n";
 		scs.subsession->miscPtr = rtspClient; // a hack to let subsession handler functions get the "RTSPClient" from the subsession 
-		//scs.subsession->sink->startPlaying(*(scs.subsession->readSource()),
-		//	subsessionAfterPlaying, scs.subsession);
+		scs.subsession->sink->startPlaying(*(scs.subsession->readSource()),
+			subsessionAfterPlaying, scs.subsession);
 		
 		// Also set a handler to be called if a RTCP "BYE" arrives for this subsession:
-		//if (scs.subsession->rtcpInstance() != NULL) {
-		//	scs.subsession->rtcpInstance()->setByeHandler(subsessionByeHandler, scs.subsession);
-		//}
+		if (scs.subsession->rtcpInstance() != NULL) {
+			scs.subsession->rtcpInstance()->setByeHandler(subsessionByeHandler, scs.subsession);
+		}
 	} while (0);
 	delete[] resultString;
 

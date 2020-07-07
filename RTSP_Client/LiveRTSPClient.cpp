@@ -386,7 +386,7 @@ Boolean LiveRTSPClient::setRequestFields(RequestRecord* request,
 
 		if (scs.session != NULL) {
 			if (scs.session->hasSubsessions())
-				originalScale = request->subsession()->scale();
+				originalScale = 0;//originalScale = request->subsession()->scale();
 			else
 				originalScale = 0;
 		}
@@ -480,7 +480,7 @@ Boolean LiveRTSPClient::setRequestFields(RequestRecord* request,
 
 		if (scs.session != NULL) {
 			if (scs.session->hasSubsessions())
-				originalScale = request->subsession()->scale();
+				originalScale = 0; //originalScale = request->subsession()->scale();
 			else
 				originalScale = 0;
 		}

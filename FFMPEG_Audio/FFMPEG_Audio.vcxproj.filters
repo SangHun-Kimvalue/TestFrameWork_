@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="FF_RTSP_SERVER_SMAPLE">
+      <UniqueIdentifier>{7e5c9933-728c-44b8-b76e-ed55cdc72557}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="audiorw.hpp">
@@ -29,6 +32,24 @@
     </ClInclude>
     <ClInclude Include="convert.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ffserver.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMPLE\FFmpegDecoder.h">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMPLE\FFmpegH264Encoder.h">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMPLE\FFmpegH264Source.h">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMPLE\LiveRTSPServer.h">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
+    </ClInclude>
+    <ClInclude Include="SAMPLE\LiveServerMediaSubsession.h">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +75,60 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="convert muxing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="convert resampling.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio_Encoding_Test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Audio_Resampling_Test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Muxing_Sample.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Muxing_Test.hpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Transcode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HW_Encode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HW_decode_Gdigrab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mux_RTSP_Test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ffserver.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SAMPLE\FFmpegDecoder.cpp">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
+    </ClCompile>
+    <ClCompile Include="SAMPLE\FFmpegH264Encoder.cpp">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
+    </ClCompile>
+    <ClCompile Include="SAMPLE\FFmpegH264Source.cpp">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
+    </ClCompile>
+    <ClCompile Include="SAMPLE\LiveRTSPServer.cpp">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
+    </ClCompile>
+    <ClCompile Include="SAMPLE\LiveServerMediaSubsession.cpp">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
+    </ClCompile>
+    <ClCompile Include="SAMPLE\main.cpp">
+      <Filter>FF_RTSP_SERVER_SMAPLE</Filter>
+    </ClCompile>
+    <ClCompile Include="MUX_RTSP_Tset2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RTSP_Client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

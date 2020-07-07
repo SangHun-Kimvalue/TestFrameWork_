@@ -5,7 +5,7 @@
 #include <iostream>
 #include "audiorw.hpp"
 
-//#define WC_ERR_INVALID_CHARS 0x00000080
+#define WC_ERR_INVALID_CHARS 0x00000080
 //class capture {
 //
 //public:

@@ -242,7 +242,7 @@ public: // Some compilers complain if this is "private:"
     double end() const { return fEnd; }
     char const* absStartTime() const { return fAbsStartTime; }
     char const* absEndTime() const { return fAbsEndTime; }
-    float scale() const { return fScale; }
+    float scale() const { return /*fScale*/0; }
     char* contentStr() const { return fContentStr; }
     responseHandler*& handler() { return fHandler; }
 

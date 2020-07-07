@@ -131,7 +131,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 	while (1) {
 		loopend = end - start;
-		if (loopend > 10000) {
+		if (loopend > 1000000) {
 			break;
 		}
 

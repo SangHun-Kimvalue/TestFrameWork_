@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="live555">
+      <UniqueIdentifier>{6889dc31-aced-4d78-be07-88a5663d6afb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sample">
+      <UniqueIdentifier>{a15a0ec7-d9cd-4dd8-89f3-92d61fa45efa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="H265RTSPClient.hpp">
+      <Filter>live555</Filter>
+    </ClInclude>
+    <ClInclude Include="SDLVideoSink.hpp">
+      <Filter>live555</Filter>
+    </ClInclude>
+    <ClInclude Include="StreamClientState.hpp">
+      <Filter>live555</Filter>
+    </ClInclude>
+    <ClInclude Include="RtspClient\Authenticator.h">
+      <Filter>Sample</Filter>
+    </ClInclude>
+    <ClInclude Include="RtspClient\Base64.h">
+      <Filter>Sample</Filter>
+    </ClInclude>
+    <ClInclude Include="RtspClient\RTCPUnpacket.h">
+      <Filter>Sample</Filter>
+    </ClInclude>
+    <ClInclude Include="RtspClient\RtpUnpacket.h">
+      <Filter>Sample</Filter>
+    </ClInclude>
+    <ClInclude Include="RtspClient\RtspClient.h">
+      <Filter>Sample</Filter>
+    </ClInclude>
+    <ClInclude Include="RtspClient\SdpParse.h">
+      <Filter>Sample</Filter>
+    </ClInclude>
+    <ClInclude Include="WinUtility.h">
+      <Filter>Sample</Filter>
+    </ClInclude>
+    <ClInclude Include="FFDecoder.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="FFMPEG_Client.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="IDecoder.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="DecoderFactory.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Libs\HLS_Source\include\CommonInfo.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>live555</Filter>
+    </ClCompile>
+    <ClCompile Include="H265RTSPClient.cpp">
+      <Filter>live555</Filter>
+    </ClCompile>
+    <ClCompile Include="SDLVideoSink.cpp">
+      <Filter>live555</Filter>
+    </ClCompile>
+    <ClCompile Include="StreamClientState.cpp">
+      <Filter>live555</Filter>
+    </ClCompile>
+    <ClCompile Include="RtspClient\Authenticator.cpp">
+      <Filter>Sample</Filter>
+    </ClCompile>
+    <ClCompile Include="RtspClient\Base64.cpp">
+      <Filter>Sample</Filter>
+    </ClCompile>
+    <ClCompile Include="RtspClient\RTCPUnpacket.cpp">
+      <Filter>Sample</Filter>
+    </ClCompile>
+    <ClCompile Include="RtspClient\RtpUnpacket.cpp">
+      <Filter>Sample</Filter>
+    </ClCompile>
+    <ClCompile Include="RtspClient\RtspClient.cpp">
+      <Filter>Sample</Filter>
+    </ClCompile>
+    <ClCompile Include="RtspClient\SdpParse.cpp">
+      <Filter>Sample</Filter>
+    </ClCompile>
+    <ClCompile Include="WinUtility.cpp">
+      <Filter>Sample</Filter>
+    </ClCompile>
+    <ClCompile Include="FFDecoder.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="FFMPEG_Client.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="RTSP_FF_CLIENT.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaFrameQ.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Libs\HLS_Source\include\CommonInfo.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

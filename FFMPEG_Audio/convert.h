@@ -18,8 +18,8 @@ extern "C" {
 #include <libavutil/opt.h>
 #include <libavutil/mathematics.h>
 #include <libavutil/timestamp.h>
-//#include <libswscale/swscale.h>
-//#include <libswresample/swresample.h>
+#include <libavutil/samplefmt.h>
+#include <libswresample/swresample.h>
 }
 
 #include "wav.h"
@@ -54,6 +54,8 @@ int Video_Init(const char* outfile);
 int Audio_Init(const char* outfile);
 void Close();
 
+std::list<uint8_t*> buffer;
+std::list<AVFrame*> fbuffer;
 
 DWORD convert_unicode_to_utf8_string(__out std::string& utf8, __in const wchar_t* unicode, __in const size_t unicode_size);
 void error_pro(int error, const char* msg);

@@ -17,8 +17,7 @@ extern "C" {
 
 char errstr[256];
 int error = 0;
-std::list<uint8_t*> buffer;
-std::list<AVFrame*> fbuffer;
+
 
 typedef struct StreamContext {
 	AVCodecContext *dec_ctx;
@@ -27,6 +26,11 @@ typedef struct StreamContext {
 static StreamContext *stream_ctx;
 
 static AVFormatContext *ifmt_ctx;
+AVFormatContext *ofmt_ctx = NULL;
+
+std::list<uint8_t*> buffer;
+std::list<AVFrame*> fbuffer;
+
 
 static int open_output_file(const char *filename);
 static int open_input_file();
@@ -162,19 +166,19 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	const char* outfilename = "output.wav";
 	const char* encode_outfilename = "encode_output.wav";
 
-	//static AVFormatContext *ofmt_ctx;
-	//ofmt_ctx = NULL;
-	//AVStream* ostream = NULL;
-	//error = open_input_file();
-	//if (error) {
-	//	error_pro(error, "input file error");
-	//	return error;
-	//}
-	//error = open_output_file(encode_outfilename);
-	//if (error) {
-	//	error_pro(error, "input file error");
-	//	return error;
-	//}
+	static AVFormatContext *ofmt_ctx;
+	ofmt_ctx = NULL;
+	AVStream* ostream = NULL;
+	error = open_input_file();
+	if (error) {
+		error_pro(error, "input file error");
+		return error;
+	}
+	error = open_output_file(encode_outfilename);
+	if (error) {
+		error_pro(error, "input file error");
+		return error;
+	}
 
 	packet = av_packet_alloc();
 
@@ -185,23 +189,23 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	float loopend = 0;
 	int data_size = 0;
 
-	//error = avformat_alloc_output_context2(&ofmt_ctx, NULL, NULL, encode_outfilename);
-	//if (!ofmt_ctx) {
-	//	//av_log(NULL, AV_LOG_ERROR, "Could not create output context\n");
-	//	//return AVERROR_UNKNOWN;
-	//	std::cout << "avformat_alloc_output_context2" << std::endl;
+	error = avformat_alloc_output_context2(&ofmt_ctx, NULL, NULL, encode_outfilename);
+	if (!ofmt_ctx) {
+		//av_log(NULL, AV_LOG_ERROR, "Could not create output context\n");
+		//return AVERROR_UNKNOWN;
+		std::cout << "avformat_alloc_output_context2" << std::endl;
+		return -1;
+	}
+	//out_stream = avformat_new_stream(ofmt_ctx, NULL);
+	//if (!out_stream) {
+	//	std::cout << "avformat_new_stream" << std::endl;
 	//	return -1;
 	//}
-	////out_stream = avformat_new_stream(ofmt_ctx, NULL);
-	////if (!out_stream) {
-	////	std::cout << "avformat_new_stream" << std::endl;
-	////	return -1;
-	////}
-	//error = avcodec_parameters_from_context(out_stream->codecpar, stream_ctx->enc_ctx);
-	//if (error < 0) {
-	//	av_log(NULL, AV_LOG_ERROR, "Failed to copy encoder parameters to output stream #%u\n", 0);
-	//	return error;
-	//}
+	error = avcodec_parameters_from_context(out_stream->codecpar, stream_ctx->enc_ctx);
+	if (error < 0) {
+		av_log(NULL, AV_LOG_ERROR, "Failed to copy encoder parameters to output stream #%u\n", 0);
+		return error;
+	}
 
 	while (1) {
 		loopend = end - start;
@@ -440,6 +444,7 @@ static int open_output_file(const char *filename)
 
 	ofmt_ctx = NULL;
 	
+	dec_ctx = stream_ctx[0].dec_ctx;
 
 	error = avformat_alloc_output_context2(&ofmt_ctx, NULL, NULL, filename);
 	if (!ofmt_ctx) {
@@ -461,7 +466,7 @@ static int open_output_file(const char *filename)
 	}
 
 	in_stream = ifmt_ctx->streams[0];
-	dec_ctx = stream_ctx[0].dec_ctx;
+	
 
 
 	for (i = 0; i < ifmt_ctx->nb_streams; i++) {

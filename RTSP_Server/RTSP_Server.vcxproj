@@ -263,6 +263,8 @@ copy $(OutDir)LiveRTSP_Server.lib $(SolutionDir)Libs\RTSP\</Command>
     <ClCompile Include="InputFile.cpp" />
     <ClCompile Include="Livedll.cpp" />
     <ClCompile Include="MediaSink.cpp" />
+    <ClCompile Include="MPEG4GenericRTPSink.cpp" />
+    <ClCompile Include="MPEG4GenericRTPSource.cpp" />
     <ClCompile Include="m_LiveRTSPServer.cpp" />
     <ClCompile Include="Old\LiveRTSPServer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

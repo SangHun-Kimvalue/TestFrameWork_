@@ -7,8 +7,8 @@ int main(int argc, char** argv) {
 	UsageEnvironment* env = BasicUsageEnvironment::createNew(*scheduler);
 
 	//const char* URI = "";
-	const char* URI = "rtsp://192.168.0.40";
-	//const char* URI = "rtsp://admin:1234@192.168.0.70/video1";
+	//const char* URI = "rtsp://192.168.0.40/0";
+	const char* URI = "rtsp://admin:1234@192.168.0.73/video1";
 	const char* ProgName = "Client_Test";
 	RTSP_Client* rtspClient = LiveRTSPClient::createNew(*env, URI, RTSP_CLIENT_VERBOSITY_LEVEL, ProgName, 0);
 
@@ -20,13 +20,13 @@ int main(int argc, char** argv) {
 	rtspClient->MakeRequest("OPTIONS");
 	rtspClient->MakeRequest("DESCRIBE");
 	rtspClient->MakeRequest("SETUP");
-	rtspClient->MakeRequest("PLAY");
-	rtspClient->MakeRequest("TEARDOWN");
+	//rtspClient->MakeRequest("PLAY");
+	//rtspClient->MakeRequest("TEARDOWN");
 
 	// All subsequent activity takes place within the event loop:
 
 
-	//system("pause");
+	system("pause");
 	// This function call does not return, unless, at some point in time, "eventLoopWatchVariable" gets set to something non-zero.
 	
 	delete rtspClient;

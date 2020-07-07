@@ -1,5 +1,36 @@
 #include "convert.h"
 
+int Aresampling(AVFrame* inFrame, StreamContext* stream_ctx, FILE* dst_file);
+
+static int get_format_from_sample_fmt(const char **fmt,
+	enum AVSampleFormat sample_fmt)
+{
+	int i;
+	struct sample_fmt_entry {
+		enum AVSampleFormat sample_fmt; const char *fmt_be, *fmt_le;
+	} sample_fmt_entries[] = {
+		{ AV_SAMPLE_FMT_U8,  "u8",    "u8"    },
+		{ AV_SAMPLE_FMT_S16, "s16be", "s16le" },
+		{ AV_SAMPLE_FMT_S32, "s32be", "s32le" },
+		{ AV_SAMPLE_FMT_FLT, "f32be", "f32le" },
+		{ AV_SAMPLE_FMT_DBL, "f64be", "f64le" },
+	};
+	*fmt = NULL;
+
+	for (i = 0; i < FF_ARRAY_ELEMS(sample_fmt_entries); i++) {
+		struct sample_fmt_entry *entry = &sample_fmt_entries[i];
+		if (sample_fmt == entry->sample_fmt) {
+			*fmt = AV_NE(entry->fmt_be, entry->fmt_le);
+			return 0;
+		}
+	}
+
+	fprintf(stderr,
+		"Sample format %s not supported as output format\n",
+		av_get_sample_fmt_name(sample_fmt));
+	return AVERROR(EINVAL);
+}
+
 static int write_frame(AVFormatContext *fmt_ctx, const AVRational *time_base, AVStream *st, AVPacket *pkt)
 {
 	/* rescale output packet timestamp values from codec to stream timebase */
@@ -51,6 +82,12 @@ void Work() {
 	int data_size = 0;
 	bool Stop = false;
 	std::thread Muxing_Stop;
+	FILE*dst_file;
+	fopen_s(&dst_file, "resample_test.avi", "wb");
+	if (!dst_file) {
+		fprintf(stderr, "Could not open destination file %s\n", "resample_test");
+		exit(1);
+	}
 
 	while (1) {
 		loopend = end - start;
@@ -61,14 +98,14 @@ void Work() {
 		bool Vencode = false;
 		bool Aencode = false;
 
-		if (Apacket->stream_index == Vpacket->stream_index)
-		{
-			error = av_read_frame(Vstream_ctx->ifmt_ctx, Vpacket);
-			if (error < 0) {
-				std::cout << "EOF" << std::endl;
-				break;
-			}
-			else Vencode = true;
+		//if (Apacket->stream_index == Vpacket->stream_index)
+		//{
+			//error = av_read_frame(Vstream_ctx->ifmt_ctx, Vpacket);
+			//if (error < 0) {
+			//	std::cout << "EOF" << std::endl;
+			//	break;
+			//}
+			//else Vencode = true;
 
 			error = av_read_frame(Astream_ctx->ifmt_ctx, Apacket);
 			if (error < 0) {
@@ -76,6 +113,39 @@ void Work() {
 				break;
 			}
 			else Aencode = true;
+
+			frame = av_frame_alloc();
+			if (!frame) {
+				break;
+			}
+
+			error = avcodec_send_packet(Astream_ctx->dec_ctx, Apacket);
+			if (error < 0) {
+				error_pro(error, "avcodec_send_packet again");
+				break;
+			}
+
+			error = avcodec_receive_frame(Astream_ctx->dec_ctx, frame);
+			if (error == -11) {
+				error_pro(error, "avcodec_send_packet again");
+				av_packet_unref(Apacket);
+				continue;
+			}
+			else if (error < 0) {
+				error_pro(error, "avcodec_send_packet again");
+				break;
+			}
+
+			fbuffer.push_back(frame);
+			buffer.push_back(frame->data[0]);
+
+			//Apacket->
+
+			error = Aresampling(frame, Astream_ctx, dst_file);
+			if (error < 0) {
+				error_pro(error, "avcodec_send_packet again");
+				break;
+			}
 
 			int Apkt_pts = Apacket->pts;
 			int Vpkt_pts = Vpacket->pts;
@@ -93,7 +163,7 @@ void Work() {
 			//Vpacket->stream_index = Vstream_ctx->out_stream->index;
 
 			// Write_File
-			error = write_frame(ofmt_ctx, &Vstream_ctx->enc_ctx->time_base, Vstream_ctx->out_stream, Vpacket);
+			error = write_frame(ofmt_ctx, &Astream_ctx->enc_ctx->time_base, Astream_ctx->out_stream, Apacket);
 			if (error < 0) {
 				error_pro(error, "av_interleaved_write_frame error");
 				av_packet_unref(Vpacket);
@@ -101,17 +171,18 @@ void Work() {
 			//Apacket->stream_index = 0;
 			//Apacket->pts = pkt_pts;
 			//Apacket->dts = pkt_dts;
-		}
+		//}
 
 		end = clock();
 		count++;
 
 	}
 
+	fclose(dst_file);
 	av_write_trailer(ofmt_ctx);
 
-	av_packet_unref(Apacket);
-	av_packet_unref(Vpacket);
+	//av_packet_unref(Apacket);
+	//av_packet_unref(Vpacket);
 	//av_frame_free(&frame);
 
 	return;
@@ -129,18 +200,19 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 	AllocConsole();
 	freopen_s(&cp, "CONOUT$", "wt", stdout);
 
-	const char* outfile = "Muxing_out_test.avi";
+	const char* outfile = "Muxing_out_test.mp3";
 
 	Vmain_error = Video_Init(outfile);
 	if (Vmain_error) {
 		std::cout << "Error in Video_Init" << std::endl;
 	}
+
 	Amain_error = Audio_Init(outfile);
 	if (Amain_error) {
 		std::cout << "Error in Audio_Init" << std::endl;
 	}
 	
-	if (Vmain_error * Amain_error < 0) {
+	if (Amain_error == 0) {
 		Work();
 	}
 
@@ -396,6 +468,126 @@ static int Aopen_input_file() {
 	return 0;
 }
 
+static void fill_samples(double *dst, int nb_samples, int nb_channels, int sample_rate, double *t)
+{
+	int i, j;
+	double tincr = 1.0 / sample_rate, *dstp = dst;
+	const double c = 2 * M_PI * 440.0;
+
+	/* generate sin tone with 440Hz frequency and duplicated channels */
+	for (i = 0; i < nb_samples; i++) {
+		*dstp = sin(c * *t);
+		for (j = 1; j < nb_channels; j++)
+			dstp[j] = dstp[0];
+		dstp += nb_channels;
+		*t += tincr;
+	}
+}
+
+static int Aresampling(AVFrame* inFrame, StreamContext* stream_ctx, FILE* dst_file) {
+	int ret = 0;
+	struct SwrContext *swr_ctx;
+	int src_nb_channels = stream_ctx->enc_ctx->channels;
+	int dst_nb_channels = 0;
+	int src_nb_samples = 1024, dst_nb_samples, max_dst_nb_samples;
+	int64_t src_ch_layout = AV_CH_LAYOUT_STEREO, dst_ch_layout = AV_CH_LAYOUT_STEREO;
+	int src_rate = 44100, dst_rate = 44100;
+	enum AVSampleFormat src_sample_fmt = AV_SAMPLE_FMT_S16, dst_sample_fmt = AV_SAMPLE_FMT_FLTP;
+	uint8_t **src_data = inFrame->data, **dst_data = NULL;
+	int src_linesize = inFrame->linesize[0];	int dst_linesize = 0;
+	
+	const char *fmt;
+
+	//stream_ctx->enc_ctx->sam
+
+
+
+	swr_ctx = swr_alloc();
+	if (!swr_ctx) {
+		fprintf(stderr, "Could not allocate resampler context\n");
+		ret = AVERROR(ENOMEM);
+		return -1;
+	}
+
+	/* set options */
+	av_opt_set_int(swr_ctx, "in_channel_layout", src_ch_layout, 0);
+	av_opt_set_int(swr_ctx, "in_sample_rate", src_rate, 0);
+	av_opt_set_sample_fmt(swr_ctx, "in_sample_fmt", src_sample_fmt, 0);
+
+	av_opt_set_int(swr_ctx, "out_channel_layout", dst_ch_layout, 0);
+	av_opt_set_int(swr_ctx, "out_sample_rate", dst_rate, 0);
+	av_opt_set_sample_fmt(swr_ctx, "out_sample_fmt", dst_sample_fmt, 0);
+
+	/* initialize the resampling context */
+	if ((ret = swr_init(swr_ctx)) < 0) {
+		fprintf(stderr, "Failed to initialize the resampling context\n");
+		return -1;
+	}
+
+	src_nb_channels = av_get_channel_layout_nb_channels(src_ch_layout);
+	ret = av_samples_alloc_array_and_samples(&src_data, &src_linesize, src_nb_channels,
+		src_nb_samples, src_sample_fmt, 0);
+	if (ret < 0) {
+		fprintf(stderr, "Could not allocate source samples\n");
+		return -1;
+	}
+
+	/* compute the number of converted samples: buffering is avoided
+	 * ensuring that the output buffer will contain at least all the
+	 * converted input samples */
+	max_dst_nb_samples = dst_nb_samples =
+		av_rescale_rnd(src_nb_samples, dst_rate, src_rate, AV_ROUND_UP);
+
+	/* buffer is going to be directly written to a rawaudio file, no alignment */
+	dst_nb_channels = av_get_channel_layout_nb_channels(dst_ch_layout);
+	ret = av_samples_alloc_array_and_samples(&dst_data, &dst_linesize, dst_nb_channels,
+		dst_nb_samples, dst_sample_fmt, 0);
+	if (ret < 0) {
+		fprintf(stderr, "Could not allocate destination samples\n");
+		return -1;
+	}
+
+	double t = 0;
+	//do {
+		/* generate synthetic audio */
+		//fill_samples((double *)src_data[0], src_nb_samples, src_nb_channels, src_rate, &t);
+
+		/* compute destination number of samples */
+		dst_nb_samples = av_rescale_rnd(swr_get_delay(swr_ctx, src_rate) +
+			src_nb_samples, dst_rate, src_rate, AV_ROUND_UP);
+		if (dst_nb_samples > max_dst_nb_samples) {
+			av_freep(&dst_data[0]);
+			ret = av_samples_alloc(dst_data, &dst_linesize, dst_nb_channels,
+				dst_nb_samples, dst_sample_fmt, 1);
+			if (ret < 0)return -1;
+				//break;
+			max_dst_nb_samples = dst_nb_samples;
+		}
+
+		/* convert to destination format */
+		ret = swr_convert(swr_ctx, dst_data, dst_nb_samples, (const uint8_t **)src_data, src_nb_samples);
+		if (ret < 0) {
+			fprintf(stderr, "Error while converting\n");
+			return -1;
+		}
+		int dst_bufsize = av_samples_get_buffer_size(&dst_linesize, dst_nb_channels,
+			ret, dst_sample_fmt, 1);
+		if (dst_bufsize < 0) {
+			fprintf(stderr, "Could not get sample buffer size\n");
+			return -1;
+		}
+		printf("t:%f in:%d out:%d\n", t, src_nb_samples, ret);
+		fwrite(dst_data[0], 1, dst_bufsize, dst_file);
+	//} while (t < 10);
+
+	//if ((ret = get_format_from_sample_fmt(&fmt, dst_sample_fmt)) < 0)
+	//	return -1;
+	//fprintf(stderr, "Resampling succeeded. Play the output file with the command:\n"
+	//	"ffplay -f %s -channel_layout %"PRId64" -channels %d -ar %d %s\n",
+	//	fmt, dst_ch_layout, dst_nb_channels, dst_rate, dst_filename);
+
+}
+
 static int Aopen_output_file(const char *filename)
 {
 	AVCodecContext *dec_ctx, *enc_ctx;
@@ -406,25 +598,25 @@ static int Aopen_output_file(const char *filename)
 	int ret;
 	
 	dec_ctx = Astream_ctx->dec_ctx;
-	//error = avformat_alloc_output_context2(&ofmt_ctx, NULL, NULL, filename);
-	//if (!ofmt_ctx) {
-	//	//av_log(NULL, AV_LOG_ERROR, "Could not create output context\n");
-	//	//return AVERROR_UNKNOWN;
-	//	std::cout << "avformat_alloc_output_context2" << std::endl;
-	//	return -1;
-	//}
+	error = avformat_alloc_output_context2(&ofmt_ctx, NULL, NULL, filename);
+	if (!ofmt_ctx) {
+		//av_log(NULL, AV_LOG_ERROR, "Could not create output context\n");
+		//return AVERROR_UNKNOWN;
+		std::cout << "avformat_alloc_output_context2" << std::endl;
+		return -1;
+	}
 	
 
 	//.으로 문자열을 나누어 확장자만 따와야함
 	tempoutfmt = av_guess_format(NULL, filename, NULL);
 	if (tempoutfmt == NULL) {
-		tempoutfmt = av_guess_format("mpeg", NULL, NULL);
+		tempoutfmt = av_guess_format("mp3", NULL, NULL);
 	}
 	ofmt_ctx->oformat = tempoutfmt;
-	ofmt_ctx->video_codec_id = Vstream_ctx->dec_ctx->codec_id;
+	//ofmt_ctx->video_codec_id = Vstream_ctx->dec_ctx->codec_id;
 	ofmt_ctx->audio_codec_id = Astream_ctx->dec_ctx->codec_id;
 
-	encoder = avcodec_find_encoder(dec_ctx->codec_id);
+	encoder = avcodec_find_encoder(ofmt_ctx->oformat->audio_codec);
 	if (!encoder) {
 		fprintf(stderr, "Codec not found\n");
 		exit(1);

@@ -9,6 +9,7 @@
 extern "C" {
 #include <libavformat/avformat.h>
 #include <libswresample/swresample.h>
+#include <libavdevice/avdevice.h>
 };
 
 namespace audiorw {
