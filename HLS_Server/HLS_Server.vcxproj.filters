@@ -128,5 +128,8 @@
     <ClInclude Include="..\Libs\HLS_Source\include\CommonInfo.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="httplib.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

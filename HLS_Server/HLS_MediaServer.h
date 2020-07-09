@@ -31,11 +31,11 @@ public:
 	//uuid 받아와얗라듯?
 
 	UUID RequestWithoutUUID(CT Type, std::string URL);
-	std::string RequestWithUUID(CT Type, std::string URL, UUID uuid);
-	bool RequestWithFile(UUID uuid, std::string filename, int resol = 1080);
+	std::string RequestWithUUID(CT Type, std::string URL, UUID uuid, int Bitrate = 0);
+	bool RequestWithFile(UUID uuid, MFT filetype, int resol = 1080);
 
 	//uuid 를 포함한 클라이언트 요청
-	std::string CreateSet(CT Type, std::string URL, UUID uuid, int Interval = 5);
+	std::string CreateSet(CT Type, std::string URL, UUID uuid, int Interval = 5, int Bitrate = 0);
 	//bool IsConnected(std::string URL, UUID uuid);
 	std::string DoWorkSBL(UUID uuid);
 	bool StopWorkSBL(std::string URL, UUID uuid);
@@ -46,9 +46,9 @@ public:
 	//라프텔
 private:
 
-	SBL* Getto_SBL(UUID uuid);
-	bool Request_m3u8();
-	bool Request_ts();
+	SBL* Get_SBL(UUID uuid);
+	bool Request_m3u8(SBL* m_sbl);
+	bool Request_ts(SBL* m_sbl, int resol);
 
 private:
 

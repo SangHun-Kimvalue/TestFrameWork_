@@ -16,7 +16,7 @@ public:
 	bool CreateSeg() {}
 	bool ChangeRunningSeg();
 
-	std::vector<ISegmenter*> Seg[4] = {};
+	std::vector<ISegmenter*> Seg[2] = {};
 	QQ* FrameQ;
 
 private:
