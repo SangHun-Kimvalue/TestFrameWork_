@@ -85,3 +85,5 @@ x64
 /RTSP_Server/Old/old.cpp
 /DllTest/x64
 /OCR_Tets/x64
+*.ts
+*.m3u8

@@ -105,7 +105,8 @@ std::string HLS_MediaServer::CreateSet(CT Type, std::string URL, UUID uuid, int 
 			SBLL.push_back(AddNewSBL);
 
 			//debug_ = nullptr;
-			debug_ = new Muxer("TestFile.m3u8", AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
+			//debug_ = new Muxer("TestFile.m3u8", AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
+			debug_ = new FFSegmenter("TestFile.m3u8", AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
 
 			Filename = DoWorkSBL(AddNewSBL->ClientUUID);
 
@@ -215,7 +216,10 @@ std::string HLS_MediaServer::DoWorkSBL(UUID uuid) {
 
 	int Check = SourceM->DoWorkClient({ WorkInfo.Type, WorkInfo.uuid, WorkInfo.URL });
 	if (Check == 1) {
-		debug_->DoWork();
+
+
+		debug_->Run();
+
 		CCommonInfo::GetInstance()->WriteLog("INFO", "It Works - %s", WorkInfo.URL.c_str());
 	}
 	else if (Check > 1) {
@@ -233,7 +237,7 @@ std::string HLS_MediaServer::DoWorkSBL(UUID uuid) {
 
 bool HLS_MediaServer::StopWorkSBL(std::string URL, UUID uuid) {
 
-	debug_->StopWork();
+	debug_->Stop();
 
 	GetClientValue GC = { CT(0), uuid, URL };
 	int res = SourceM->DeleteClient(GC);

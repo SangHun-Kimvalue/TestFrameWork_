@@ -12,7 +12,6 @@ public:
 	virtual int Init() = 0;
 	virtual int Run() = 0;
 	virtual int Close() = 0;
-	virtual int Standby() = 0;
 	virtual int Stop() = 0;
 
 public:
