@@ -133,10 +133,13 @@ int ClientManager::DeleteClient(GetClientValue GC) {
 		if (Check) {
 			if ((int)DeleteClient != 0xcd)
 				delete DeleteClient;
-			std::cout << " Successed Delete Client URL : " << URL.c_str() << ",  UUID : " << UuidToStringA(&uuid, &struuid) << std::endl;
+			UuidToStringA(&uuid, &struuid);
+			std::cout << " Successed Delete Client URL : " << URL.c_str() << ",  UUID : " << struuid << std::endl;
+			DeleteClient = nullptr;
 		}
 		else {
-			std::cout << " Failed Delete Client URL : " << URL.c_str() << ",  UUID : " << UuidToStringA(&uuid, &struuid) << std::endl;
+			UuidToStringA(&uuid, &struuid);
+			std::cout << " Failed Delete Client URL : " << URL.c_str() << ",  UUID : " << struuid << std::endl;
 		}
 		return RefCount;
 	}

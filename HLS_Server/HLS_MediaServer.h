@@ -4,7 +4,7 @@
 #include "SourceManager.h"				//RTSP 실제 클라이언트
 #include "FileManager.h"				//output 관리자 (폴더 생성 및 삭제)	//싱글톤
 
-#include "Muxer.h"			//for Debug
+//#include "Transcode.h"			//for Debug
 #include "FFSegmenter.h"	//for debug
 
 #include <vector>
@@ -39,7 +39,7 @@ public:
 	std::string CreateSet(CT Type, std::string URL, UUID uuid, int Interval = 5, int Bitrate = 0);
 	//bool IsConnected(std::string URL, UUID uuid);
 	
-	std::string DoWorkSBL(UUID uuid);
+	std::string DoWorkSBL(std::string URL, UUID uuid);
 	bool StopWorkSBL(std::string URL, UUID uuid);
 	bool DeleteSet(std::string URL, UUID uuid);
 
@@ -57,6 +57,6 @@ private:
 	std::vector<SBL*> SBLL;
 	SourceManager* SourceM;
 
-	//Muxer* debug_;
-	FFSegmenter* debug_;
+	Muxer* debug_;
+	//FFSegmenter* debug_;
 };

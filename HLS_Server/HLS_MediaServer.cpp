@@ -1,4 +1,5 @@
 #include "HLS_MediaServer.h"
+#define ___DEBUG
 
 HLS_MediaServer::HLS_MediaServer() {
 
@@ -97,25 +98,30 @@ std::string HLS_MediaServer::CreateSet(CT Type, std::string URL, UUID uuid, int 
 
 			AddNewSBL->Type = Type;
 			AddNewSBL->URL = URL;
-			AddNewSBL->Seg = new SegmenterGroup(UseAudio, UseTranscoding, Interval, VCo, ACo);
 			AddNewSBL->ClientUUID = tempinfo.uuid;
 			AddNewSBL->DataQ = SourceM->GetFrameQ(GC).get();
+
+#ifdef __DEBUG
+			debug_ = new Muxer("TestFile.m3u8", AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
+#else
+			//ST SegType, std::string Filename, bool UseAudio, bool UseTranscoding, int Interval, QQ* DataQ, AVCodecID VCo, AVCodecID ACo = AV_CODEC_ID_NONE
+			AddNewSBL->Seg = new SegmenterGroup(ST_FFSW, "TestFile.m3u8", UseAudio, UseTranscoding, Interval, AddNewSBL->DataQ, VCo, ACo);
+#endif
 			AddNewSBL->FileM = new FileManager();
 
 			SBLL.push_back(AddNewSBL);
 
 			//debug_ = nullptr;
-			//debug_ = new Muxer("TestFile.m3u8", AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
-			debug_ = new FFSegmenter("TestFile.m3u8", AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
+			//debug_ = new FFSegmenter("TestFile.m3u8", ST_FFSW, AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
 
-			Filename = DoWorkSBL(AddNewSBL->ClientUUID);
+			Filename = DoWorkSBL(AddNewSBL->URL, AddNewSBL->ClientUUID);
 
 			CCommonInfo::GetInstance()->WriteLog("INFO", "Success create SBL - %s", URL.c_str());
 
 			return Filename;
 		}
 		else {
-			Filename = DoWorkSBL(AddNewSBL->ClientUUID);
+			Filename = DoWorkSBL(AddNewSBL->URL, AddNewSBL->ClientUUID);
 		}
 
 	}
@@ -208,7 +214,7 @@ bool HLS_MediaServer::DeleteSet(std::string URL, UUID uuid) {
 	return true;
 }
 
-std::string HLS_MediaServer::DoWorkSBL(UUID uuid) {
+std::string HLS_MediaServer::DoWorkSBL(std::string URL, UUID uuid) {
 
 	SBL* Getto = Get_SBL(uuid);
 	GetClientValue GC = { Getto->Type, Getto->ClientUUID, "" };
@@ -217,12 +223,20 @@ std::string HLS_MediaServer::DoWorkSBL(UUID uuid) {
 	int Check = SourceM->DoWorkClient({ WorkInfo.Type, WorkInfo.uuid, WorkInfo.URL });
 	if (Check == 1) {
 
-
-		debug_->Run();
-
+#ifdef __DEBUG
+		debug_->DoWork();
+#else
+		Getto->Seg->Run(URL);
+#endif
 		CCommonInfo::GetInstance()->WriteLog("INFO", "It Works - %s", WorkInfo.URL.c_str());
 	}
 	else if (Check > 1) {
+
+#ifdef __DEBUG
+		debug_->DoWork();
+#else
+		Getto->Seg->Run(URL);
+#endif
 		std::cout << "SBL is already work - " << WorkInfo.URL.c_str() << std::endl;
 	}
 	else {
@@ -237,11 +251,16 @@ std::string HLS_MediaServer::DoWorkSBL(UUID uuid) {
 
 bool HLS_MediaServer::StopWorkSBL(std::string URL, UUID uuid) {
 
-	debug_->Stop();
-
+	SBL* Getto = Get_SBL(uuid);
 	GetClientValue GC = { CT(0), uuid, URL };
-	int res = SourceM->DeleteClient(GC);
 
+#ifdef __DEBUG
+	debug_->StopWork();
+#else
+	int ref = Getto->Seg->Stop(URL);
+#endif
+
+	int res = SourceM->DeleteClient(GC);
 	if (res == 0) {
 		CCommonInfo::GetInstance()->WriteLog("INFO", "Stop SBL Working - %s", URL.c_str());
 		return true;

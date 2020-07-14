@@ -44,6 +44,11 @@ HttpServer::HttpServer() {
 	}
 
 	MediaS->DeleteSet(URL->c_str(), ClientUUID);
+
+	std::string g;
+	cin >> g;
+	getchar();
+
 	//ConnectToClient("rtsp://admin:1234@192.168.0.70/video1");
 }
 
