@@ -117,7 +117,7 @@ const CLI SourceManager::GetClientInfo(GetClientValue GC) const {
 	return CM_GetClient_Info(ClientM, GC);
 }
 
-std::shared_ptr<QQ> SourceManager::GetFrameQ(GetClientValue GC) {
+QQ SourceManager::GetFrameQ(GetClientValue GC) {
 	return CM_GetFrameQ(ClientM, GC);
 }
 

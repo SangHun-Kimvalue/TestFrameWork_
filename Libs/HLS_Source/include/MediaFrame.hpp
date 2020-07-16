@@ -3,7 +3,7 @@
 #define WIN32_LEAN_AND_MEAN             // 거의 사용되지 않는 내용을 Windows 헤더에서 제외합니다.
 // Windows 헤더 파일
 #include <windows.h>
-
+#include <iostream>
 extern "C"
 {
 #include <libavutil/mathematics.h>
@@ -42,7 +42,23 @@ public:
 			Frm = av_frame_alloc();
 		}
 	}
-	~MediaFrame() { 
+	MediaFrame(MediaFrame* a) : Packing(a->Packing), Info(a->Info), Pkt(nullptr), Frm(nullptr) {
+
+		if (!Packing) {
+			Pkt = new AVPacket(*a->Pkt);
+			int error = av_packet_ref(Pkt, a->Pkt);
+			//int i = Pkt->size();
+			//std::cout << error;
+		}
+		else {
+			Pkt = new AVPacket();
+			//Frm = av_frame_alloc();
+			Frm = new AVFrame(*a->Frm);
+			int error = av_frame_ref(Frm, a->Frm);
+		}
+
+	}
+	~MediaFrame() {
 		//if (Pkt != nullptr) {
 		//	av_packet_unref(Pkt);
 		//	//if (data[0]) free(data[0]);
@@ -52,25 +68,24 @@ public:
 		//	//	delete packetData;
 		//	//}
 		//}
-		if (Pkt->size != 0) 
+		if (Pkt->size != 0)
 			av_packet_unref(Pkt);
 		if (Packing && Frm->buf != nullptr)
 			av_frame_unref(Frm);
 	}
 
-	int SetMediaFrame(FI info, void* Pkt_or_Frame){
-		
+	int SetMediaFrame(FI info, void* Pkt_or_Frame) {
+
 		Info = info;
 		if (Pkt_or_Frame == nullptr) return -1;
-		if (Packing) {
+		if (!Packing) {
 			Pkt = (AVPacket*)Pkt_or_Frame;
-		 }
+		}
 		else {
 			Frm = (AVFrame*)Pkt_or_Frame;
 		}
 		return 0;
 	}
-
 private:
 
 

@@ -10,29 +10,31 @@ const char* fferr_pro(int error, const char* msg) {
 	return errstr;
 }
 
-FFSegmenter::FFSegmenter() : ISegmenter(0, 0), Filename(""), SegType(ST_NOT_DEFINE), UseAudio(false), Interval(5),
-VCo(AV_CODEC_ID_NONE), ACo(AV_CODEC_ID_NONE), DataQ(nullptr), Stopped(true),  NeedTrans(false) {
+FFSegmenter::FFSegmenter() : ISegmenter(0), SegType(ST_NOT_DEFINE), UseAudio(false), Interval(5),
+VCo(AV_CODEC_ID_NONE), ACo(AV_CODEC_ID_NONE), Encoding(false), m_BT(BST(0)) {
 
-
+	Filename = "";
 }
 
-FFSegmenter::FFSegmenter(std::string Filename, ST SegType, QQ* DataQ, bool UseAudio, int Interval, bool Needtranscoding,
+FFSegmenter::FFSegmenter(std::string iFilename, ST SegType, int index, bool UseAudio, int Interval, bool Encoding,
 	AVCodecID VCo, AVCodecID ACo)
-	:ISegmenter(0, 0), SegType(SegType), UseAudio(UseAudio), Interval(Interval),
-	VCo(VCo), ACo(ACo), DataQ(DataQ), Stopped(true), Filename(Filename), NeedTrans(Needtranscoding) {
+	:ISegmenter(index), SegType(SegType), UseAudio(UseAudio), Interval(Interval),
+	VCo(VCo), ACo(ACo), Encoding(Encoding), m_BT(BST(index)){
 
+	Filename = iFilename;
+	HeaderTail = false;
 	Init();
-	if (Needtranscoding) {
+	if (Encoding) {
 	
 	}
 	else {
 	}
-
-
-	//DoWork();
-
+	
 }
 
+FFSegmenter::~FFSegmenter() {
+	Close();
+}
 
 int FFSegmenter::Init() {
 
@@ -74,25 +76,76 @@ int FFSegmenter::Init() {
 		}
 	}
 
+	TimeCheckthr = std::thread([&]() { TimeCheck(this); });
+	Wirte_Header(pOutFormatCtx, avdic);
+
 	return 0;
 }
 
-int FFSegmenter::Run() {
+int FFSegmenter::Run(std::shared_ptr <MediaFrame> Frame) {
 
-	if (Stopped == true) {
-		StartingTime = clock();
-		Stopped = false;
-		TimeCheckthr = std::thread([&]() { TimeCheck(this); });
-		DoMuxthr = std::thread([&]() { Muxing(this); });
+	static int encode_video;
+	static int encode_audio;
+	static int count;
+	
+	CheckTime = clock();
+	Running = true;
+
+	if (HeaderTail && Running) {
+		if (Frame->Info.StreamId == 0) {
+
+			if (UseAudio) {
+				if (av_compare_ts(video_st.next_pts, video_st.enc->time_base,
+					audio_st.next_pts, audio_st.enc->time_base) > 0) {
+					encode_audio = !write_frame(pOutFormatCtx, Frame, &audio_st);
+				}
+			}
+			encode_video = !write_frame(pOutFormatCtx, Frame, &video_st);
+		}
+		else if (Frame->Info.StreamId == 1 && UseAudio == true) {
+
+			encode_audio = !write_frame(pOutFormatCtx, Frame, &audio_st);
+		}
+		count++;
+		std::cout << "\t\t Muxer Q size : " << count << std::endl;
+		Sleep(1);
 	}
+
 	return 0;
+}
+
+void FFSegmenter::TimeCheck(FFSegmenter* SG) {
+
+	int base_time = 1000 * 65;
+	int Dif = 0;
+
+	while (1) {
+		if (Running) {
+			SG->loopTime = clock();
+			Dif = (SG->CheckTime - SG->loopTime);
+
+			if (Dif < 0)
+				Dif = Dif * -1;
+
+			if (Dif > base_time) {
+				//SG->Stop();
+				Running = false;
+				std::cout << "Time Checkout - " << std::endl;
+				return;
+			}
+		}
+		Sleep(1);
+	}
+	return;
 }
 
 int FFSegmenter::Close() {
 	
 	Stop();
 
-	DataQ = nullptr;
+	if (TimeCheckthr.joinable()) {
+		TimeCheckthr.join();
+	}
 
 	close_stream(pOutFormatCtx, &video_st);
 
@@ -109,66 +162,62 @@ int FFSegmenter::Close() {
 
 int FFSegmenter::Stop() {
 
-	Stopped = true;
-	if (DoMuxthr.joinable())
-		DoMuxthr.join();
-
+	Wirte_Trailer(pOutFormatCtx);
 	return 0;
+
 }
 
-bool FFSegmenter::TimeCheck(ISegmenter* mx) {
-	
-	FFSegmenter* mySeg = (FFSegmenter*)mx;
+int FFSegmenter::inner_encode(AVFrame *frame, AVPacket *pkt, AVCodecContext* c, int *got_packet)
+{
+	int ret = 0;
+	*got_packet = 0;
 
-	while (1) {
-		mySeg->CheckTime = clock();
-		if ((mySeg->CheckTime - mySeg->StartingTime) > 1000 * 20) {
-			mySeg->Stopped = true;
-			mySeg->Stop();
-			return true;
-		}
-		if (mySeg->Stopped == true)
-			return false;
+	av_init_packet(pkt);
+	pkt->data = NULL;
+	pkt->size = 0;
 
-		Sleep(5);
+	ret = avcodec_send_frame(c, frame);
+	if (ret < 0) {
+		fferr_pro(ret, "Send_Frame Error");
+		return ret;
 	}
 
-	Stop();
-	return true;
+	ret = avcodec_receive_packet(c, pkt);
+	if (!ret)
+		*got_packet = 1;
+	if (ret == AVERROR(EAGAIN))
+		return 0;
+	else if (ret == AVERROR_EOF) {
+		std::cout << "Detected End of Files"<< std::endl;
+		return ret;
+	}
+	else if (ret < 0) {
+		return ret;
+	}
 
+	return ret;
 }
 
 //int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, AVPacket* pkt, OutputStream* ost)
-int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, MediaFrame* MF, OutputStream* ost)
+int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, std::shared_ptr<MediaFrame> MFrame, OutputStream* ost)
 {
-	int ret = 0;
+	int ret = 0, got_output = 0;
 	static int count;
+
+	MediaFrame* MF = new MediaFrame(MFrame.get());
 
 	AVCodecContext* c = ost->enc;
 
-	if (Use_Trans) {
-		// send the frame to the encoder
-		ret = avcodec_send_frame(c, MF->Frm);
+	if (Encoding) {
+
+		ret = inner_encode(MF->Frm, MF->Pkt, c, &got_output);
 		if (ret < 0) {
-			return -1;
+			fferr_pro(ret, "Encoding Error");
+			return ret;
 		}
-		while (ret >= 0) {
-
-			ret = avcodec_receive_packet(c, MF->Pkt);
-			if (ret == AVERROR(EAGAIN)) {
-				av_packet_unref(MF->Pkt);
-				continue;
-			}
-			else if (ret == AVERROR_EOF) {
-				std::cout << "Detected End of Files - " << fmt_ctx->url << std::endl;
-				return -1;
-			}
-			else if (ret < 0) {
-				return -1;
-			}
-
+		if(got_output) {
 			/* rescale output packet timestamp values from codec to stream timebase */
-			av_packet_rescale_ts(MF->Pkt, c->time_base, ost->st->time_base);
+			//av_packet_rescale_ts(MF->Pkt, c->time_base, ost->st->time_base);
 			MF->Pkt->stream_index = ost->st->index;
 			if (MF->Pkt == nullptr) {
 				std::cout << "Error Packet Encoding - " << fmt_ctx->url << std::endl;
@@ -185,9 +234,10 @@ int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, MediaFrame* MF, OutputStr
 	}
 	else {
 		count++;
-		if (count > 50) {
+		if (count > 500) {
 			std::cout << "Success mux - " << count << std::endl;
 			count = 0;
+			Wirte_Trailer(fmt_ctx);
 		}
 	}
 
@@ -251,15 +301,16 @@ void FFSegmenter::add_stream(OutputStream *ost, AVFormatContext *oc,
 	case AVMEDIA_TYPE_VIDEO:
 		c->codec_id = codec_id;
 
-		c->bit_rate = 400000;
+		c->bit_rate = m_BT.Bitrate;
 		/* Resolution must be a multiple of two. */
-		c->width = 1920;
-		c->height = 1080;
+		c->width = m_BT.Width;
+		c->height = m_BT.Height;
 		/* timebase: This is the fundamental unit of time (in seconds) in terms
 		 * of which frame timestamps are represented. For fixed-fps content,
 		 * timebase should be 1/framerate and timestamp increments should be
 		 * identical to 1. */
 		ost->st->time_base = { 1, STREAM_FRAME_RATE };
+		//ost->st->time_base = { 1, 90000 };
 		c->time_base = ost->st->time_base;
 
 		c->gop_size = 12; /* emit one intra frame every twelve frames at most */
@@ -428,154 +479,6 @@ void FFSegmenter::close_stream(AVFormatContext *oc, OutputStream *ost)
 	swr_free(&ost->swr_ctx);
 }
 
-//트랜스코딩용
-static AVFrame *get_video_frame(OutputStream *ost)
-{
-	AVCodecContext *c = ost->enc;
-
-	/* check if we want to generate more frames */
-	if (av_compare_ts(ost->next_pts, c->time_base,
-		10, { 1, 1 }) > 0)			//interval필요
-		return NULL;
-
-	/* when we pass a frame to the encoder, it may keep a reference to it
-	 * internally; make sure we do not overwrite it here */
-	if (av_frame_make_writable(ost->frame) < 0)
-		return nullptr;
-
-	//if (c->pix_fmt != AV_PIX_FMT_YUV420P) {
-	//	/* as we only generate a YUV420P picture, we must convert it
-	//	 * to the codec pixel format if needed */
-	//	if (!ost->sws_ctx) {
-	//		ost->sws_ctx = sws_getContext(c->width, c->height,
-	//			AV_PIX_FMT_YUV420P,
-	//			c->width, c->height,
-	//			c->pix_fmt,
-	//			SCALE_FLAGS, NULL, NULL, NULL);
-	//		if (!ost->sws_ctx) {
-	//			fprintf(stderr,
-	//				"Could not initialize the conversion context\n");
-	//			exit(1);
-	//		}
-	//	}
-		/*fill_yuv_image(ost->tmp_frame, ost->next_pts, c->width, c->height);
-		sws_scale(ost->sws_ctx, (const uint8_t * const *)ost->tmp_frame->data,
-			ost->tmp_frame->linesize, 0, c->height, ost->frame->data,
-			ost->frame->linesize);*/
-			//}
-			//else {
-				//fill_yuv_image(ost->frame, ost->next_pts, c->width, c->height);
-			//}
-			//Get QQQQ
-
-
-	ost->frame->pts = ost->next_pts++;
-
-	return ost->frame;
-}
-
-/*
- * encode one video frame and send it to the muxer
- * return 1 when encoding is finished, 0 otherwise
- */
- //static int write_video_frame(AVFormatContext *oc, OutputStream *ost)
- //{
- //	return write_frame(oc, ost->enc, ost->st);
- //
- //}
-
- //트랜스코딩용
-int FFSegmenter::write_audio_frame(AVFormatContext *oc, OutputStream *ost, AVPacket *pkt, AVFrame* frame)
-{
-	AVCodecContext *c;
-	//AVFrame *frame;
-	int ret;
-	int dst_nb_samples;
-
-	c = ost->enc;
-
-	//frame = get_audio_frame(ost);
-
-	//if (frame) {
-		/* convert samples from native format to destination codec format, using the resampler */
-			/* compute destination number of samples */
-	dst_nb_samples = av_rescale_rnd(swr_get_delay(ost->swr_ctx, c->sample_rate) + frame->nb_samples,
-		c->sample_rate, c->sample_rate, AV_ROUND_UP);
-	av_assert0(dst_nb_samples == frame->nb_samples);
-
-	/* when we pass a frame to the encoder, it may keep a reference to it
-	 * internally;
-	 * make sure we do not overwrite it here
-	 */
-	ret = av_frame_make_writable(ost->frame);
-	if (ret < 0)
-		exit(1);
-
-	/* convert to destination format */
-	ret = swr_convert(ost->swr_ctx,
-		ost->frame->data, dst_nb_samples,
-		(const uint8_t **)frame->data, frame->nb_samples);
-	if (ret < 0) {
-		fprintf(stderr, "Error while converting\n");
-		exit(1);
-	}
-	frame = ost->frame;
-
-	frame->pts = av_rescale_q(ost->samples_count, { 1, c->sample_rate }, c->time_base);
-	ost->samples_count += dst_nb_samples;
-	//}
-
-	return write_frame(oc, nullptr, ost);
-}
-
-void FFSegmenter::Muxing(FFSegmenter* mx) {
-
-	int encode_video = 0;
-	int encode_audio = 0;
-
-	Wirte_Header(pOutFormatCtx, avdic);
-
-	while (!Stopped) {
-
-		if (DataQ == nullptr) {
-			Sleep(1);
-			continue;
-		}
-
-		bool Empty = DataQ->empty();
-		if (!Empty) {
-			if (DataQ->size() > 0) {
-
-				MediaFrame* Frame = nullptr;
-				Frame = DataQ->pop();
-
-				if (Frame->Info.StreamId == 0) {
-
-					if (UseAudio) {
-						if (av_compare_ts(video_st.next_pts, video_st.enc->time_base,
-							audio_st.next_pts, audio_st.enc->time_base) > 0) {
-							encode_audio = !write_frame(pOutFormatCtx, Frame, &mx->audio_st);
-						}
-					}
-					else
-						encode_video = !write_frame(pOutFormatCtx, Frame, &mx->video_st);
-				}
-				else if (Frame->Info.StreamId == 1 && UseAudio == true) {
-
-					encode_audio = !write_frame(pOutFormatCtx, Frame, &mx->audio_st);
-				}
-			}
-		}
-			//std::cout << "\t\t Muxer Q size : " << GetQSize() << std::endl;
-			Sleep(1);
-		
-	}
-
-	Wirte_Trailer(pOutFormatCtx);
-
-	return;
-}
-
 int FFSegmenter::SetOpt() {
 
 	int ret = av_dict_set(&avdic, "segment_list_flags", "live", 0);
@@ -738,6 +641,10 @@ int FFSegmenter::SetOpt() {
 
 int FFSegmenter::Wirte_Header(AVFormatContext* pFormatCtx, AVDictionary* opt) {
 
+	if (HeaderTail == true) {
+		return -1;
+	}
+
 	int ret = SetOpt();
 	if (ret >= 0) {
 		std::cout << "Options Set up Success " << std::endl;
@@ -755,12 +662,18 @@ int FFSegmenter::Wirte_Header(AVFormatContext* pFormatCtx, AVDictionary* opt) {
 		return -1;
 	}
 
+	HeaderTail = true;
+	Running = true;
+
 	return 0;
 }
 
 int FFSegmenter::Wirte_Trailer(AVFormatContext* pFormatCtx) {
 
-	av_write_trailer(pFormatCtx);
-
+	if (HeaderTail == true) {
+		av_write_trailer(pFormatCtx);
+		HeaderTail = false;
+		Running = false;
+	}
 	return 0;
 }

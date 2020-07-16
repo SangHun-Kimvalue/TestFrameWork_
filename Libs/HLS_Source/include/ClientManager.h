@@ -33,7 +33,7 @@ public:
 	void PrintInfo(GetClientValue GC);
 	const CLI GetClient_Info(GetClientValue GC);
 
-	std::shared_ptr<QQ> GetFrameQ(GetClientValue GC);
+	QQ GetFrameQ(GetClientValue GC);
 	//const IClient* GetClient(CT ClientType, UUID uuid);
 
 

@@ -3,7 +3,7 @@
 #include "MediaFrame.hpp"
 #include "Utility.hpp"
 
-typedef SharedQueue<MediaFrame*> QQ;
+typedef std::shared_ptr<SharedQueue<MediaFrame*>> QQ;
 class IClient;
 
 #define CT_TYPE_NUMBER ((int)(CT_MAX_COUNT) -1)

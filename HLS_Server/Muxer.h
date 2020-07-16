@@ -18,6 +18,7 @@ extern "C" {
 typedef struct OutputStream {
 	AVStream *st;
 	AVCodecContext *enc;
+	AVCodecContext *dec;
 
 	/* pts of the next frame that will be generated */
 	int64_t next_pts;
@@ -36,7 +37,7 @@ class Muxer
 {
 public:
 	Muxer() : Filename(""), UseAudio(false), Interval(5), VCo(AV_CODEC_ID_NONE), ACo(AV_CODEC_ID_NONE), DataQ(nullptr), Stopped(false) {}
-	Muxer(std::string Filename ,QQ* DataQ, bool UseAudio, int Interval, 
+	Muxer(std::string Filename ,QQ DataQ, bool UseAudio, int Interval, 
 		AVCodecID VCo, AVCodecID ACo = AV_CODEC_ID_NONE)
 		:UseAudio(UseAudio), Interval(Interval),
 		VCo(VCo), ACo(ACo), DataQ(DataQ), Stopped(false), Filename(Filename) {
@@ -82,7 +83,7 @@ private:
 private:
 
 	AVDictionary *avdic = nullptr;
-	QQ* DataQ;
+	QQ DataQ;
 	AVOutputFormat *fmt;
 	AVFormatContext *pOutFormatCtx;
 	OutputStream video_st = { 0 }, audio_st = { 0 };

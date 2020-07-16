@@ -185,7 +185,7 @@ void CCommonInfo::WriteLog(const char* title, const char* format, const char* st
 void CCommonInfo::WriteLog(const char * Title, const char * Format, const char * str) {
 
 	char buffer[256] = {};
-	sprintf_s(buffer, sizeof(buffer), "Success create SBL - %s", str);
+	sprintf_s(buffer, sizeof(buffer), Format, str);
 
 	CCommonInfo::GetInstance()->WriteLog(Title, buffer);
 }

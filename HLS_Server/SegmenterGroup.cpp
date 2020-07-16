@@ -6,14 +6,23 @@ SegmenterGroup::SegmenterGroup() : SegType(ST_NOT_DEFINE), UseAudio(false), UseT
 
 }
 
-SegmenterGroup::SegmenterGroup(ST SegType, std::string Filename, bool UseAudio, bool UseTranscoding, int Interval, QQ* DataQ, AVCodecID VCo, AVCodecID ACo)
-	: SegType(SegType), Filename(Filename), UseAudio(UseAudio), UseTranscoding(UseTranscoding), Interval(Interval), DataQ(DataQ), VCo(VCo), ACo(ACo)
+SegmenterGroup::SegmenterGroup(ST SegType, std::string Filename, bool UseAudio, bool UseTranscoding, int Interval, QQ m_DataQ, AVCodecID VCo, AVCodecID ACo)
+	: SegType(SegType), Filename(Filename), UseAudio(UseAudio), UseTranscoding(UseTranscoding), Interval(Interval), DataQ(m_DataQ), VCo(VCo), ACo(ACo),
+	PathDir()
 {
-	CreateSeg();
+	*PathDir = nullptr;
 }
 
 SegmenterGroup::~SegmenterGroup() {
 
+
+	if (TimeCheckthr.joinable()) {
+		TimeCheckthr.join();
+	}
+
+	if (Nofitythr.joinable()) {
+		Nofitythr.join();
+	}
 	//if (Ref > 0) {
 	//	while (Ref != 0) {
 	//		Stop();
@@ -21,16 +30,15 @@ SegmenterGroup::~SegmenterGroup() {
 	//}
 }
 
-ISegmenter* SegmenterGroup::SetType(ST SegType, std::string Filename) {
+ISegmenter* SegmenterGroup::SetType(ST SegType, std::string Filename, int i) {
 
-	int i = 0;
 
 	switch (SegType) {
 	case ST_FFSW:
 	default:
 		//(std::string Filename, ST SegType, QQ* DataQ, bool UseAudio, int Interval,
 			//AVCodecID VCo, AVCodecID ACo = AV_CODEC_ID_NONE);
-		return new FFSegmenter(Filename, SegType, DataQ , UseAudio, Interval, UseTranscoding, VCo, ACo);
+		return new FFSegmenter(Filename, SegType, i, UseAudio, Interval, UseTranscoding, VCo, ACo);
 		break;
 
 	case ST_FFHW:
@@ -46,21 +54,27 @@ ISegmenter* SegmenterGroup::SetType(ST SegType, std::string Filename) {
 
 bool SegmenterGroup::CreateSeg() {
 
-	int bitrate[SegmengerCount] = {1080, 720};
+	if (*PathDir == nullptr) {
+		return false;
+	}
+
+	int bitrate[SegmengerCount] = {1080};
 
 	for (int i = 0; i < SegmengerCount; i++) {
 
 		if (Seg[i] == nullptr) {
-			std::string tempFilename = std::string(std::to_string(bitrate[i])) + Filename.c_str();
-			Seg[i] = SetType(SegType, tempFilename);
+			//std::string tempFilename = std::string(std::to_string(bitrate[i])) + Filename.c_str();
+			//std::string root = "\\\\";
+			std::string tempFilename = PathDir[i] + Filename;
+			Seg[i] = SetType(SegType, tempFilename, i);
 			
 			if (Seg[i] == nullptr) {
 
-				CCommonInfo::GetInstance()->WriteLog("ERROR", "Error in create segmenter URL+index - ", tempFilename.c_str());
+				CCommonInfo::GetInstance()->WriteLog("ERROR", "Error in create segmenter URL - %s", tempFilename.c_str());
 				return false;
 			}
 			else {
-				CCommonInfo::GetInstance()->WriteLog("INFO", "Success in create segmenter URL+index - ", tempFilename.c_str());
+				CCommonInfo::GetInstance()->WriteLog("INFO", "Success create segmenter URL - %s", tempFilename.c_str());
 				continue;
 			}
 		}
@@ -111,6 +125,58 @@ bool SegmenterGroup::CreateSeg() {
 //
 //}
 
+void SegmenterGroup::Notify(std::shared_ptr<MediaFrame> Frame) {
+
+	parallel_for(0, SegmengerCount, [&](int i) {
+		if(Seg[i]->Running == true)
+			Seg[i]->Run(Frame);
+	});
+
+	return;
+}
+
+void SegmenterGroup::DoWork(SegmenterGroup* SG) {
+	
+	SG->Running = true;
+	SG->CheckTime = clock();
+	SG->TimeCheckthr = std::thread([&]() { SG->TimeCheck(this); });
+	while (SG->Running) {
+		if (!(SG->DataQ->empty())) {
+
+			if (SG->DataQ->size()) {
+				auto Frame = std::shared_ptr<MediaFrame>(SG->DataQ->pop());
+
+				SG->Notify(Frame);
+				//SG->CheckTime = clock();
+			}
+		}
+	}
+	if (!Running) {
+		SG->Stop();
+	}
+
+	return;
+}
+
+void SegmenterGroup::TimeCheck(SegmenterGroup* SG) {
+
+	int base_time = 1000 * 20;
+	int Dif = 0;
+	while (Running) {
+		SG->loopTime = clock();
+		Dif = (SG->CheckTime - SG->loopTime);
+
+		if (Dif < 0)
+			Dif = Dif*-1;
+
+		if (Dif > base_time) {
+			Running = false;
+			std::cout << "Time Checkout - " << std::endl;
+			return ;
+		}
+		Sleep(1);
+	}
+}
 
 int SegmenterGroup::Run(std::string URL) {
 
@@ -121,24 +187,22 @@ int SegmenterGroup::Run(std::string URL) {
 
 	int i = 0;
 	while (i < SegmengerCount) {
-		if (Seg[i]->Running == true) {
-			Seg[i]->Ref++;
-			continue;
+		if (Running == true) {
+			Seg[0]->Ref++;
+			i++;
+			return Seg[0]->Ref;
+			//continue;
 		}
-		Seg[i]->Run();
-		Seg[i]->Ref++;	
+		//DoWork(this);
+		Nofitythr = std::thread([&]() { DoWork(this); });
+		Seg[0]->Ref++;
 		i++;
 	}
 
-	return Seg[Targetindex]->Ref;
+	return Seg[0]->Ref;
 }
 
-int SegmenterGroup::Stop(std::string URL) {
-
-	int Targetindex = ParseBitrateToIndex(URL);
-	if (Targetindex < 0) {
-		Targetindex = 0;
-	}
+int SegmenterGroup::Stop() {
 
 	int i = 0;
 	while (i < SegmengerCount) {
@@ -147,11 +211,38 @@ int SegmenterGroup::Stop(std::string URL) {
 			i++;
 			continue;
 		}
+		Running = false;
+
+		if (Nofitythr.joinable()) {
+			if (TimeCheckthr.joinable()) {
+				TimeCheckthr.join();
+				Nofitythr.join();
+			}
+		}
+
 		Seg[i]->Stop();
 		i++;
 	}
 
-	return Seg[Targetindex]->Ref;
+	return Seg[0]->Ref;
+}
+
+
+bool SegmenterGroup::SetPath(char** Path) {
+
+	int count = 0;
+	for (int i = 0; i < SegCount; i++) {
+		PathDir[i] = *(Path + i);
+		count++;
+		std::cout << PathDir[i] << std::endl;
+	}
+	
+	if (count == SegCount) {
+	return true;
+	}
+	else {
+		return false;
+	}
 }
 
 int SegmenterGroup::ParseBitrateToIndex(std::string URL) {

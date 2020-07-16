@@ -2,6 +2,7 @@
 
 #include "FFMPEG_Client.h"
 #include <regex>
+#define TESTTRANS
 
 std::string GetVideoProfileLevel(std::string sdpstring);
 std::string GetVideoSPSPPS(std::string sdpstring);
@@ -25,7 +26,7 @@ m_DT(DECODE_NONE){
 
 	m_info.Connected = false;
 	//m_pRecAFrameQ = CreateRecievedFrameQueue(Qsize);
-	m_pRecFrameQ = CreateRecievedFrameQueue(Qsize);
+	m_pRecFrameQ = CreateRecievedFrameQueue(500);
 
 	m_DT = SW_FFMPEG;
 
@@ -155,8 +156,20 @@ int FFMPEG_Client::Connect() {
 	}
 	else {
 		m_info.VCodecID = pFormatCtx->streams[VSI]->codecpar->codec_id;
-
+		if (m_info.VCodecID == AV_CODEC_ID_H264) {
+			Use_Transcoding = false;
+		}
+		else {
+			Use_Transcoding = true;
+			VDec = new FFmpegDecoder();
+			int ret = VDec->Init(VSI, pFormatCtx);
+		}
 	}
+#ifdef TESTTRANS
+	Use_Transcoding = true;
+	VDec = new FFmpegDecoder();
+	int ret = VDec->Init(VSI, pFormatCtx);
+#endif
 
 	//Audio Check	---------------------------------------------------------
 	ASI = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
@@ -167,8 +180,15 @@ int FFMPEG_Client::Connect() {
 	}
 	else {
 		m_info.ACodecID = pFormatCtx->streams[ASI]->codecpar->codec_id;
-		ADec = new FFmpegDecoder();
-		int ret = ADec->Init(ASI, pFormatCtx);
+		if (m_info.ACodecID == AV_CODEC_ID_AAC) {
+			Use_Transcoding = false;
+		}
+		else {
+			ADec = new FFmpegDecoder();
+			int ret = ADec->Init(ASI, pFormatCtx);
+			Use_Transcoding = true;
+		}
+		
 	}
 
 	//All Check	---------------------------------------------------------
@@ -257,7 +277,9 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 	fc->F_Info.Fps = fc->m_StreamFPS;
 
 	while (!fc->Stopped) {
-
+#ifdef TESTTRANS
+		fc->Use_Transcoding = true;
+#endif
 		MediaFrame* MF = new MediaFrame(fc->Use_Transcoding);
 		int ret = av_read_frame(fc->pFormatCtx, MF->Pkt);
 		if (ret == AVERROR(EAGAIN)) {
@@ -279,7 +301,7 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 			failcount++;
 		}
 		else {
-			int Deret = 0;
+			int Deret = -1;
 			//Use_Transcoding
 			if (fc->Use_Transcoding) {
 				//(MF->Pkt->stream_index == VSI) ? ret = fc->Decode(MF, fc->VDec, VSI) : ret = fc->Decode(MF, fc->ADec, ASI);
@@ -290,6 +312,21 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 				else if (MF->Pkt->stream_index == fc->ASI) {
 					Deret = fc->Decode(MF, fc->ADec, fc->ASI);
 				}
+
+				if (Deret < 0) {
+					failcount++;
+					delete MF;
+					continue;
+				}
+				else {
+					
+					fc->F_Info.StreamId = MF->Pkt->stream_index;
+					MF->Frm->width = fc->F_Info.Width = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->width;
+					MF->Frm->height = fc->F_Info.Height = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->height;
+					fc->F_Info.Bitrate = (int)fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->bit_rate;
+					fc->F_Info.Samplerate = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->sample_rate;
+				}
+
 			}
 			//Non_Transcoding
 			else {
@@ -425,18 +462,20 @@ int FFMPEG_Client::ReleaseClient() {
 }
 
 int FFMPEG_Client::IncreaseRef() {
-	CCommonInfo::GetInstance()->WriteLog("INFO", "IncreaseRef - %s", m_info.URL.c_str());
+	std::string temp = m_info.URL.c_str() + std::to_string(m_info.Ref + 1);
+	CCommonInfo::GetInstance()->WriteLog("INFO", "IncreaseRef - %s", temp.c_str());
 	return ++m_info.Ref;
 }
 
 int FFMPEG_Client::DecreaseRef() {
 
 	if (m_info.Ref <= 0) {
-		CCommonInfo::GetInstance()->WriteLog("INFO", "DecreaseRef - %s", m_info.URL.c_str());
+		CCommonInfo::GetInstance()->WriteLog("INFO", "DecreaseRef - %s : < 0", m_info.URL.c_str());
 		return 0;
 	}
 
-	CCommonInfo::GetInstance()->WriteLog("INFO", "DecreaseRef - %s", m_info.URL.c_str());
+	std::string temp = m_info.URL.c_str() + std::to_string(m_info.Ref - 1);
+	CCommonInfo::GetInstance()->WriteLog("INFO", "DecreaseRef - %s", temp.c_str());
 	return --m_info.Ref;
 }
 
@@ -461,11 +500,13 @@ void FFMPEG_Client::SetCLI(AVCodecID VCo, AVCodecID ACo) {
 	m_info.VCodecID = VCo;
 	m_info.ACodecID = ACo;
 	m_info.Use_Transcoding = (m_info.ACodecID == AV_CODEC_ID_AAC && m_info.VCodecID == AV_CODEC_ID_H264) ? false : true;
-	if (m_info.VCodecID == AV_CODEC_ID_H264 && IncludedAudio == false)	
+	if (m_info.VCodecID == AV_CODEC_ID_H264)	
 		m_info.Use_Transcoding = false;
 	m_info.IncludedAudio = IncludedAudio;
 	//m_info.URL;
-
+#ifdef TESTTRANS
+	m_info.Use_Transcoding = true;
+#endif
 	return;
 
 }

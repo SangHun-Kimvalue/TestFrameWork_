@@ -16,7 +16,7 @@ typedef struct BIND_LIST {
 	UUID ClientUUID = {};
 
 	SegmenterGroup* Seg = nullptr;
-	QQ* DataQ = nullptr;
+	QQ DataQ = nullptr;
 	FileManager* FileM = nullptr;
 
 }SBL;
@@ -38,7 +38,7 @@ public:
 	//uuid 를 포함한 클라이언트 요청
 	std::string CreateSet(CT Type, std::string URL, UUID uuid, int Interval = 5, int Bitrate = 0);
 	//bool IsConnected(std::string URL, UUID uuid);
-	
+
 	std::string DoWorkSBL(std::string URL, UUID uuid);
 	bool StopWorkSBL(std::string URL, UUID uuid);
 	bool DeleteSet(std::string URL, UUID uuid);

@@ -325,7 +325,7 @@ const CLI ClientManager::GetClient_Info(GetClientValue GC)
 	return GetClient(GC)->GetCLI();
 }
 
-std::shared_ptr<QQ> ClientManager::GetFrameQ(GetClientValue GC) {
+QQ ClientManager::GetFrameQ(GetClientValue GC) {
 
 	//IClient* temp = GetClientList((CT)Type)->get(0);
 	//return /*const_cast<IClient*>*/(GetClient({ GC.Type, GC.uuid, GC.URL }))->GetQptr();

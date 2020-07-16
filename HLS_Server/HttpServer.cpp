@@ -28,8 +28,7 @@ HttpServer::HttpServer() {
 	clock_t End = clock();
 
 	RequestWithoutUUID(*URL);
-	RequestWithUUID(URLWithID2);
-
+	//RequestWithUUID(URLWithID2);
 
 	while (1) {
 		Sleep(1);
@@ -46,8 +45,7 @@ HttpServer::HttpServer() {
 	MediaS->DeleteSet(URL->c_str(), ClientUUID);
 
 	std::string g;
-	cin >> g;
-	getchar();
+	cin >> g;	getchar();
 
 	//ConnectToClient("rtsp://admin:1234@192.168.0.70/video1");
 }

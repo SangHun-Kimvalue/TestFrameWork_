@@ -22,6 +22,39 @@ extern "C" {
 #include <libswresample/swresample.h>
 }
 
+typedef struct BitrateSupportTable {
+
+	int Width;
+	int Height;
+	int Bitrate;
+
+	BitrateSupportTable(int i) {
+		switch (i) {
+		case 0:
+		default:
+			Width = 1920;
+			Height = 1080;
+			Bitrate = 400000;
+			break;
+		case 1:
+			Width = 1280;
+			Height = 720;
+			Bitrate = 250000;
+			break;
+		case 2:
+			Width = 720;
+			Height = 480;
+			Bitrate = 140000;
+			break;
+		case 3:
+			Width = 640;
+			Height = 360;
+			Bitrate = 100000;
+			break;
+		}
+	}
+}BST;
+
 //#define STREAM_FRAME_RATE 30
 
 //typedef struct OutputStream {
@@ -47,66 +80,60 @@ class FFSegmenter : public ISegmenter
 public:
 
 	int Init();
-	int Run();
+	int Run(std::shared_ptr<MediaFrame> Frame);
+	//int Run(MediaFrame* Frame);
 	int Close();
 	int Stop();
-	bool TimeCheck(ISegmenter* mx);
 
 public:
 	FFSegmenter();
-	FFSegmenter(std::string Filename, ST SegType, QQ* DataQ, bool UseAudio, int Interval, bool Needtranscoding,
+	FFSegmenter(std::string Filename, ST SegType, int index, bool UseAudio, int Interval, bool Needtranscoding,
 		AVCodecID VCo, AVCodecID ACo = AV_CODEC_ID_NONE);
-	~FFSegmenter() {}
+	~FFSegmenter();
 
 private:
 
 	int SetOpt();
-	void Muxing(FFSegmenter* mx);
+	//void Muxing(std::shared_ptr<MediaFrame> Frame);
 	int Wirte_Header(AVFormatContext* pFormatCtx, AVDictionary* opt);
 	int Wirte_Trailer(AVFormatContext* pFormatCtx);
 
-	//int write_frame(AVFormatContext *fmt_ctx, AVPacket* pkt, OutputStream* ost);
-	int write_frame(AVFormatContext *fmt_ctx, MediaFrame* MF, OutputStream* ost);
+	int inner_encode(AVFrame *frame, AVPacket *pkt, AVCodecContext* c,int *got_packet);
+	int write_frame(AVFormatContext *fmt_ctx, std::shared_ptr<MediaFrame> MF, OutputStream* ost);
 	void add_stream(OutputStream *ost, AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id);
 	AVFrame *alloc_picture(enum AVPixelFormat pix_fmt, int width, int height);
 	void open_video(AVFormatContext *oc, AVCodec *codec, OutputStream *ost/*, AVDictionary *opt_arg*/);
 	void open_audio(AVFormatContext *oc, AVCodec *codec, OutputStream *ost/*, AVDictionary *opt_arg*/);
 	void close_stream(AVFormatContext *oc, OutputStream *ost);
 
-	int write_audio_frame(AVFormatContext *oc, OutputStream *ost, AVPacket *pkt, AVFrame* frame);
+	void TimeCheck(FFSegmenter* SG);
 
 public:
-
-	bool Use_Trans;
-	std::string Filename;
-
+	
 private:
 
-	clock_t StartingTime;
+	clock_t loopTime;
 	clock_t CheckTime;
 
 	AVDictionary *avdic = nullptr;
-	QQ* DataQ;
 	AVOutputFormat *fmt;
 	AVFormatContext *pOutFormatCtx;
+	AVFormatContext *ifmt_ctx;
 	OutputStream video_st = { NULL }, audio_st = { NULL };
 
 	const AVCodecID VCo;
 	const AVCodecID ACo;
+
 	AVCodec* VC = nullptr, *AC = nullptr;
 
 	const bool UseAudio;// , UseTranscoding;
-	const bool NeedTrans;
+	const bool Encoding;
 	const int Interval;
+	const BST m_BT;
+	const ST SegType = ST_NOT_DEFINE;
 
-	int TargetWidth = 0;
-	int TargetHeight = 0;
-
-	std::thread DoMuxthr;
 	std::thread TimeCheckthr;
 
-	ST SegType = ST_NOT_DEFINE;
-
-	bool Stopped;
+	bool HeaderTail;
 
 };

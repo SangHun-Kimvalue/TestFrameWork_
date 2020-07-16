@@ -60,6 +60,7 @@ std::string HLS_MediaServer::CreateSet(CT Type, std::string URL, UUID uuid, int 
 	int Check = false;
 	std::string Filename = "";
 	GetClientValue GC = { Type, uuid, URL };
+	SBL* AddNewSBL = nullptr;
 
 	Check = CreateClient(Type, uuid, URL, Interval);
 	if (Check < -1) {
@@ -72,8 +73,6 @@ std::string HLS_MediaServer::CreateSet(CT Type, std::string URL, UUID uuid, int 
 		return "Create";
 	}
 	else if (Check == 1) {
-
-		SBL* AddNewSBL = nullptr;
 
 		AddNewSBL = Get_SBL(uuid);
 
@@ -99,7 +98,8 @@ std::string HLS_MediaServer::CreateSet(CT Type, std::string URL, UUID uuid, int 
 			AddNewSBL->Type = Type;
 			AddNewSBL->URL = URL;
 			AddNewSBL->ClientUUID = tempinfo.uuid;
-			AddNewSBL->DataQ = SourceM->GetFrameQ(GC).get();
+			//AddNewSBL->DataQ = SourceM->GetFrameQ(GC).get();
+			AddNewSBL->DataQ = SourceM->GetFrameQ(GC);
 
 #ifdef __DEBUG
 			debug_ = new Muxer("TestFile.m3u8", AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
@@ -107,7 +107,12 @@ std::string HLS_MediaServer::CreateSet(CT Type, std::string URL, UUID uuid, int 
 			//ST SegType, std::string Filename, bool UseAudio, bool UseTranscoding, int Interval, QQ* DataQ, AVCodecID VCo, AVCodecID ACo = AV_CODEC_ID_NONE
 			AddNewSBL->Seg = new SegmenterGroup(ST_FFSW, "TestFile.m3u8", UseAudio, UseTranscoding, Interval, AddNewSBL->DataQ, VCo, ACo);
 #endif
-			AddNewSBL->FileM = new FileManager();
+			AddNewSBL->FileM = new FileManager(AddNewSBL->Seg->SegCount, AddNewSBL->ClientUUID);
+			char** DirPath = nullptr;
+			DirPath = AddNewSBL->FileM->GetDirPath();
+			AddNewSBL->Seg->SetPath(DirPath);
+			AddNewSBL->Seg->CreateSeg();
+
 
 			SBLL.push_back(AddNewSBL);
 
@@ -185,7 +190,7 @@ bool HLS_MediaServer::RequestWithFile(UUID uuid, MFT filetype, int resol) {
 
 	return Check;
 }
-
+	
 bool HLS_MediaServer::DeleteSet(std::string URL, UUID uuid) {
 	
 	SBL* Getto = Get_SBL(uuid);
@@ -199,6 +204,7 @@ bool HLS_MediaServer::DeleteSet(std::string URL, UUID uuid) {
 	bool Check = StopWorkSBL(URL, uuid);
 	if (Check) {
 		//Segment 지우는 작업
+		Getto->Seg->Stop();
 		Getto->Seg->~SegmenterGroup();
 		Getto->FileM->~FileManager();
 
@@ -207,7 +213,8 @@ bool HLS_MediaServer::DeleteSet(std::string URL, UUID uuid) {
 		CCommonInfo::GetInstance()->WriteLog("INFO", "Success delete SBL - %s", URL.c_str());
 	}
 	else {
-		//Getto->Seg->DecreaseRef();
+
+		Getto->Seg->Stop();
 
 	}
 
@@ -228,7 +235,13 @@ std::string HLS_MediaServer::DoWorkSBL(std::string URL, UUID uuid) {
 #else
 		Getto->Seg->Run(URL);
 #endif
-		CCommonInfo::GetInstance()->WriteLog("INFO", "It Works - %s", WorkInfo.URL.c_str());
+		unsigned char* str;
+		UuidToStringA(&WorkInfo.uuid, &str);
+		string str_array(reinterpret_cast<char const *>(str));
+		std::string url_uuid = WorkInfo.URL.c_str();	
+		url_uuid = url_uuid + " / ";	
+		url_uuid  = url_uuid + str_array;
+		CCommonInfo::GetInstance()->WriteLog("INFO", "It Works - %s", url_uuid.c_str());
 	}
 	else if (Check > 1) {
 
@@ -257,7 +270,7 @@ bool HLS_MediaServer::StopWorkSBL(std::string URL, UUID uuid) {
 #ifdef __DEBUG
 	debug_->StopWork();
 #else
-	int ref = Getto->Seg->Stop(URL);
+	int ref = Getto->Seg->Stop();
 #endif
 
 	int res = SourceM->DeleteClient(GC);

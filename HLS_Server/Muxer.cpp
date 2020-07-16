@@ -441,8 +441,7 @@ void Muxer::Muxing(Muxer* mx) {
 
 		if (DataQ->size() > 0) {
 
-			MediaFrame* Frame = nullptr;
-			Frame = DataQ->pop();
+			auto Frame = std::shared_ptr<MediaFrame>(DataQ->pop());
 
 			if(Frame->Info.StreamId == 0){
 				

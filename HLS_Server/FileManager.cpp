@@ -1,14 +1,33 @@
 #include "FileManager.h"
 
-FileManager::FileManager() : SegCount(DEFAULTSEGCOUNT), arr(nullptr), m_UUID({}) {
-	InitBitrate(SegCount);
-}
+//FileManager::FileManager() : SegCount(DEFAULTSEGCOUNT), arr(nullptr), m_UUID({}) {
+//	InitBitrate(SegCount);
+//}
 
 FileManager::FileManager(int segCount, UUID uuid) : SegCount(segCount), arr(nullptr), m_UUID(uuid) {
-	InitBitrate(SegCount);
+	
+	unsigned char* astr = nullptr;
+	UuidToStringA(&m_UUID, &astr);
+	string str_array(reinterpret_cast<char const *>(astr));
+
+	m_UUIDDir = ".\\" + str_array;
+
+	cout << m_UUIDDir.c_str() << endl;
+	_mkdir(m_UUIDDir.c_str());
+
+	cout << " Create Dir count : " << MakeFolder() << endl;
+
+	//unsigned short* wstr = nullptr;
+	//UuidToStringW(&m_UUID, &wstr);
+	//std::wstring Path;
+	//Path = (wchar_t*)wstr;
+	//CreateDirectory((Path.c_str()), NULL);
+
+	//InitBitrate(SegCount);
 }
 
 FileManager::~FileManager() {
+	
 	DeleteFolder();
 	
 	free(arr);
@@ -27,21 +46,206 @@ bool FileManager::InitBitrate(int SegCount) {
 	return true;
 }
 
-bool FileManager::MakeFolder() {
-
-	unsigned short* str = nullptr;
-
-	UuidToStringW(&m_UUID, &str);
-
-	std::wstring Path;
-
-	Path = (wchar_t*)str;
+int FileManager::MakeFolder() {
 	
-	CreateDirectory((L".\\LOG"), NULL);
+	if (m_UUIDDir == "") {
+		return -1;
+	}
+
+	int count = 0;
 	
-	return true;
+
+	for(int i = 0 ; i < SegCount ; i++) {
+
+		string* makedir = new string("");
+
+		*makedir = m_UUIDDir + "\\" + BitratePreset[i]+ "\\";
+		_mkdir(makedir->c_str());
+
+		CreatedDir[i] = const_cast<char*>(makedir->c_str());
+		count++;
+	}
+
+	return count;
+}
+
+char** FileManager::GetDirPath() {
+	return CreatedDir;
+}
+
+int isFileOrDir(_finddata_t fd)
+//파일인지 디렉토리인지 판별
+{
+	if (fd.attrib & _A_SUBDIR)
+		return 0; // 디렉토리면 0 반환
+	else
+		return 1; // 그밖의 경우는 "존재하는 파일"이기에 1 반환
+}
+
+void remove_dir(const wchar_t* folder)
+{
+	std::wstring search_path = std::wstring(folder) + (L"/*.*");
+	std::wstring s_p = std::wstring(folder) + (L"/");
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		do {
+			if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				if (wcscmp(fd.cFileName, (L".")) != 0 && wcscmp(fd.cFileName, (L"..")) != 0)
+				{
+					remove_dir((wchar_t*)(s_p + fd.cFileName).c_str());
+				}
+			}
+			else {
+				DeleteFile((s_p + fd.cFileName).c_str());
+			}
+		} while (::FindNextFile(hFind, &fd));
+		::FindClose(hFind);
+		_wrmdir(folder);
+	}
+}
+
+int DeleteDirectory(const std::string &refcstrRootDirectory,
+	bool              bDeleteSubdirectories = true)
+{
+	bool            bSubdirectory = false;       // Flag, indicating whether
+												 // subdirectories have been found
+	HANDLE          hFile;                       // Handle to directory
+	std::string     strFilePath;                 // Filepath
+	std::string     strPattern;                  // Pattern
+	WIN32_FIND_DATAA FileInformation;             // File information
+
+
+	strPattern = refcstrRootDirectory + "\\*.*";
+	hFile = ::FindFirstFileA(strPattern.c_str(), &FileInformation);
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			if (FileInformation.cFileName[0] != '.')
+			{
+				strFilePath.erase();
+				strFilePath = refcstrRootDirectory + "\\" + FileInformation.cFileName;
+
+				if (FileInformation.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+				{
+					if (bDeleteSubdirectories)
+					{
+						// Delete subdirectory
+						int iRC = DeleteDirectory(strFilePath, bDeleteSubdirectories);
+						if (iRC)
+							return iRC;
+					}
+					else
+						bSubdirectory = true;
+				}
+				else
+				{
+					// Set file attributes
+					if (::SetFileAttributesA(strFilePath.c_str(),
+						FILE_ATTRIBUTE_NORMAL) == FALSE)
+						return ::GetLastError();
+
+					// Delete file
+					if (::DeleteFileA(strFilePath.c_str()) == FALSE)
+						return ::GetLastError();
+				}
+			}
+		} while (::FindNextFileA(hFile, &FileInformation) == TRUE);
+
+		// Close handle
+		::FindClose(hFile);
+
+		DWORD dwError = ::GetLastError();
+		if (dwError != ERROR_NO_MORE_FILES)
+			return dwError;
+		else
+		{
+			if (!bSubdirectory)
+			{
+				// Set directory attributes
+				if (::SetFileAttributesA(refcstrRootDirectory.c_str(),
+					FILE_ATTRIBUTE_NORMAL) == FALSE)
+					return ::GetLastError();
+
+				// Delete directory
+				if (::RemoveDirectoryA(refcstrRootDirectory.c_str()) == FALSE)
+					return ::GetLastError();
+			}
+		}
+	}
+
+	return 0;
 }
 
 bool FileManager::DeleteFolder() {
-	return true;
+
+	int Delete = 0;
+	for (int i = SegCount-1; i >= 0; i--) {
+
+		string temp = CreatedDir[i];
+		wstring wwtemp;
+		wwtemp.assign(temp.begin(), temp.end());
+		//const wchar_t* wtemp = wwtemp.c_str();
+		remove_dir(const_cast<wchar_t*>(wwtemp.c_str()));
+		Delete++;
+	}
+
+	if (Delete == SegCount) {
+		if (_rmdir(m_UUIDDir.c_str()) == 0) {
+			CCommonInfo::GetInstance()->WriteLog("INFO", "Success Delete Folder %s", CreatedDir[0]);
+			return true;
+		}
+		else {
+			CCommonInfo::GetInstance()->WriteLog("ERROR", "Error Delete Folder %s", CreatedDir[0]);
+			return false;
+		}
+	}
+	else {
+		CCommonInfo::GetInstance()->WriteLog("ERROR", "Error Delete Folder %s", CreatedDir[0]);
+		return false;
+	}
+}
+
+int searchingDir(string path)
+{
+	int checkDirFile = 0;
+	bool Find = false;
+	string dirPath = path + "\\*.*";
+	struct _finddata_t fd;//디렉토리 내 파일 및 폴더 정보 저장 객체
+	intptr_t handle;
+	list<_finddata_t> fdlist;//디렉토리, 파일 정보 객체 리스트
+
+	if ((handle = _findfirst(dirPath.c_str(), &fd)) == -1L) //fd 구조체 초기화.
+	{
+		//파일이나 디렉토리가 없을 경우.
+		cout << "No file in directory!" << endl;
+		return -1;
+	}
+
+	do //폴더 탐색 반복 시작
+	{
+		checkDirFile = isFileOrDir(fd);//현재 객체 종류 확인(파일 or 디렉토리)
+		if (checkDirFile == 0 && fd.name[0] != '.') {
+			//디렉토리일 때의 로직
+			cout << "Dir  : " << path << "\\" << fd.name << endl;
+			int check = searchingDir(path + "\\" + fd.name);//재귀적 호출
+			if (check = 1)
+				Find = true;
+		}
+		else if (checkDirFile == 1 && fd.name[0] != '.') {
+			//파일일 때의 로직
+			cout << "File : " << path << "\\" << fd.name << endl;
+			fdlist.push_back(fd);
+			Find = true;
+		}
+
+	} while (_findnext(handle, &fd) == 0);
+	_findclose(handle);
+
+	if (Find)
+		return 1;
+	else
+		return -1;
+
 }
