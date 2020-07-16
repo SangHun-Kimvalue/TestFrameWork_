@@ -39,7 +39,8 @@ public:
 		else {
 			Pkt = new AVPacket();
 			av_init_packet(Pkt);
-			Frm = av_frame_alloc();
+			//Frm = av_frame_alloc();
+			Frm = new AVFrame();
 		}
 	}
 	MediaFrame(MediaFrame* a) : Packing(a->Packing), Info(a->Info), Pkt(nullptr), Frm(nullptr) {
@@ -47,6 +48,7 @@ public:
 		if (!Packing) {
 			Pkt = new AVPacket(*a->Pkt);
 			int error = av_packet_ref(Pkt, a->Pkt);
+			PRef++;
 			//int i = Pkt->size();
 			//std::cout << error;
 		}
@@ -55,6 +57,7 @@ public:
 			//Frm = av_frame_alloc();
 			Frm = new AVFrame(*a->Frm);
 			int error = av_frame_ref(Frm, a->Frm);
+			FRef++;
 		}
 
 	}
@@ -68,10 +71,15 @@ public:
 		//	//	delete packetData;
 		//	//}
 		//}
-		if (Pkt->size != 0)
+		if (Pkt->size != 0) {
 			av_packet_unref(Pkt);
-		if (Packing && Frm->buf != nullptr)
+		}
+		if (Packing && Frm->buf != nullptr) {
+			//av_freep(&Frm->data[0]);
 			av_frame_unref(Frm);
+			//av_frame_free(&Frm);
+
+		}
 	}
 
 	int SetMediaFrame(FI info, void* Pkt_or_Frame) {
@@ -94,6 +102,9 @@ public:
 	FI Info;
 	//false = Not Trans, true = Need Trans
 	const bool Packing;
+
+	int FRef = 0;
+	int PRef = 0;
 
 	AVPacket* Pkt;
 	AVFrame* Frm;

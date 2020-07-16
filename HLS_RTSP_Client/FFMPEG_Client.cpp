@@ -2,7 +2,7 @@
 
 #include "FFMPEG_Client.h"
 #include <regex>
-#define TESTTRANS
+#define TESTTRANS_
 
 std::string GetVideoProfileLevel(std::string sdpstring);
 std::string GetVideoSPSPPS(std::string sdpstring);
@@ -22,13 +22,13 @@ const char* err_pro(int error, const char* msg) {
 
 FFMPEG_Client::FFMPEG_Client(CLI info, int qsize) :m_info(info), Qsize(qsize), Stopped(true),
 IncludedAudio(false), VSI(-1), ASI(-1), Use_Transcoding(false), VDec(nullptr), ADec(nullptr),
-m_DT(DECODE_NONE){
+m_DT(DT_DECODE_NONE){
 
 	m_info.Connected = false;
 	//m_pRecAFrameQ = CreateRecievedFrameQueue(Qsize);
 	m_pRecFrameQ = CreateRecievedFrameQueue(500);
 
-	m_DT = SW_FFMPEG;
+	m_DT = DT_SW_FFMPEG;
 
 }
 
@@ -161,6 +161,7 @@ int FFMPEG_Client::Connect() {
 		}
 		else {
 			Use_Transcoding = true;
+			//int ret = DecoderSet(VDec, DT_SW_FFMPEG, VSI);
 			VDec = new FFmpegDecoder();
 			int ret = VDec->Init(VSI, pFormatCtx);
 		}
@@ -168,7 +169,7 @@ int FFMPEG_Client::Connect() {
 #ifdef TESTTRANS
 	Use_Transcoding = true;
 	VDec = new FFmpegDecoder();
-	int ret = VDec->Init(VSI, pFormatCtx);
+	int tret = VDec->Init(VSI, pFormatCtx);
 #endif
 
 	//Audio Check	---------------------------------------------------------
@@ -184,6 +185,7 @@ int FFMPEG_Client::Connect() {
 			Use_Transcoding = false;
 		}
 		else {
+			//int ret = DecoderSet(ADec, DT_SW_FFMPEG, ASI);
 			ADec = new FFmpegDecoder();
 			int ret = ADec->Init(ASI, pFormatCtx);
 			Use_Transcoding = true;
@@ -330,6 +332,7 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 			}
 			//Non_Transcoding
 			else {
+				Deret = 0;
 				fc->F_Info.StreamId = MF->Pkt->stream_index;
 				fc->F_Info.Width = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->width;
 				fc->F_Info.Height = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->height;
@@ -343,7 +346,7 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 				failcount = 0;
 				int max_size = fc->m_pRecFrameQ->max_size();
 				if (max_size < fc->m_pRecFrameQ->size()) {
-					fc->m_pRecFrameQ->pop();
+					delete fc->m_pRecFrameQ->pop();
 					fc->m_pRecFrameQ->push_back(MF);
 				}
 				else {
@@ -376,7 +379,7 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 	return 0;
 }
 
-int FFMPEG_Client::Decode(MediaFrame* MF, IDecoder* Dec, int StreamID) {
+int FFMPEG_Client::Decode(MediaFrame* MF, FFmpegDecoder* Dec, int StreamID) {
 
 	int ret = Dec->Decode(MF);
 	if (ret < 0) {
@@ -587,13 +590,14 @@ std::string FFMPEG_Client::MakeSDP() {
 	return SDPString;
 }
 
-int FFMPEG_Client::DecoderSet(IDecoder* Dec, DT DecoderType, int StreamID) {
+int FFMPEG_Client::DecoderSet(FFmpegDecoder* Dec, DT DecoderType, int StreamID) {
 
 	if (Dec != nullptr) {
 		Dec->Release();
 		delete Dec;
 	}
-	Dec = DecoderFactory::CreateDecoder(DecoderType);
+	//Dec = DecoderFactory::CreateDecoder(DecoderType);
+	Dec = new FFmpegDecoder();
 	if (Dec != nullptr)
 		int ret = Dec->Init(StreamID, pFormatCtx);
 	else
@@ -601,14 +605,15 @@ int FFMPEG_Client::DecoderSet(IDecoder* Dec, DT DecoderType, int StreamID) {
 
 }
 
-int FFMPEG_Client::DecoderReset(IDecoder* Dec, DT DecoderType, int StreamID) {
+int FFMPEG_Client::DecoderReset(FFmpegDecoder* Dec, DT DecoderType, int StreamID) {
 	
 	if (Dec != nullptr) {
 		Dec->Release();
 		delete Dec;
 	}
 
-	Dec = DecoderFactory::CreateDecoder(DecoderType);
+	//Dec = DecoderFactory::CreateDecoder(DecoderType);
+	Dec = new FFmpegDecoder();
 	if (Dec != nullptr)
 		int ret = Dec->Init(StreamID, pFormatCtx);
 	else

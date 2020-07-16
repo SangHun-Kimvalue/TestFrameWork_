@@ -65,21 +65,6 @@ FFmpegDecoder::~FFmpegDecoder()
 int FFmpegDecoder::Init(int SI, void *FormatCtx)
 {
 
-	//for (unsigned int i = 0; i < pFormatCtx->nb_streams; i++)
-	//{
-	//	if (pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
-	//	{
-	//		videoStream = i;
-	//	}
-	//}
-	//
-	//if (videoStream == -1)
-	//{
-	//	std::cout << "Not Included video stream" << std::endl;
-	//	bConnected = false;
-	//	return -1;
-	//}
-
 	m_SI = SI;
 	pFormatCtx = (AVFormatContext*)FormatCtx;
 	pCodecID = pFormatCtx->streams[m_SI]->codecpar->codec_id;
@@ -138,13 +123,13 @@ int FFmpegDecoder::Decode(MediaFrame* MF)
 
 	int ret = 0;
 
-	AVPacket* packet = MF->Pkt;
-	if (packet->stream_index == m_SI)
+	
+	if (MF->Pkt->stream_index == m_SI)
 	{
-		ret = avcodec_send_packet(pCodecCtx, packet);
+		ret = avcodec_send_packet(pCodecCtx, MF->Pkt);
 
 		if (ret == AVERROR(EAGAIN)) {
-			av_packet_unref(packet);
+			av_packet_unref(MF->Pkt);
 			return ret;
 		}
 		else if (ret < 0) {
@@ -153,11 +138,12 @@ int FFmpegDecoder::Decode(MediaFrame* MF)
 			return -1;
 		}
 
-		AVFrame *pFrame = av_frame_alloc();
+		//AVFrame *pFrame = av_frame_alloc();
+		//AVFrame *pFrame = av_frame_alloc();
 
-		ret = avcodec_receive_frame(pCodecCtx, pFrame);
+		ret = avcodec_receive_frame(pCodecCtx, MF->Frm);
 		if (ret == AVERROR(EAGAIN)) {
-			av_packet_unref(packet);
+			av_packet_unref(MF->Pkt);
 			return ret;
 		}
 		else if (ret == AVERROR_EOF) {
@@ -171,10 +157,12 @@ int FFmpegDecoder::Decode(MediaFrame* MF)
 			return ret;
 		}
 
-		MF->SetMediaFrame(F_info, (void*)pFrame);
+		//MF->SetMediaFrame(F_info, (void*)pFrame);
 
 		std::cout << "Decode Success - " << count++ << std::endl;
 
+		//av_packet_unref(MF->Pkt);
+		//av_frame_unref(pFrame);
 		FailCount = 0;
 	}
 

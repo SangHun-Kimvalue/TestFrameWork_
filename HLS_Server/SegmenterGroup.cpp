@@ -135,10 +135,15 @@ void SegmenterGroup::Notify(std::shared_ptr<MediaFrame> Frame) {
 	return;
 }
 
+int deleteMF(std::shared_ptr<MediaFrame> MF) {
+
+	return -1;
+}
+
 void SegmenterGroup::DoWork(SegmenterGroup* SG) {
 	
 	SG->Running = true;
-	SG->CheckTime = clock();
+
 	SG->TimeCheckthr = std::thread([&]() { SG->TimeCheck(this); });
 	while (SG->Running) {
 		if (!(SG->DataQ->empty())) {
@@ -147,12 +152,12 @@ void SegmenterGroup::DoWork(SegmenterGroup* SG) {
 				auto Frame = std::shared_ptr<MediaFrame>(SG->DataQ->pop());
 
 				SG->Notify(Frame);
-				//SG->CheckTime = clock();
+				SG->CheckTime = clock();
+
+				Frame.reset();
+
 			}
 		}
-	}
-	if (!Running) {
-		SG->Stop();
 	}
 
 	return;

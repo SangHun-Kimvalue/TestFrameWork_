@@ -28,6 +28,7 @@ private:
 	AVFormatContext *pFormatCtx;
 	AVCodecContext *pCodecCtx;
 	AVCodecID pCodecID;
+
 	FI F_info;
 	int m_SI;
 	int FailCount;

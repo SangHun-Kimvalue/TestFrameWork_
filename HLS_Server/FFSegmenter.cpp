@@ -167,11 +167,35 @@ int FFSegmenter::Stop() {
 
 }
 
+int FFSegmenter::SWScaling(AVCodecContext* c) {
+
+
+	/* convert to destination format */
+	//sws_scale(sws_ctx, (const uint8_t * const*)src_data,
+	//	src_linesize, 0, src_h, dst_data, dst_linesize);
+	return -1;
+}
+
+int FFSegmenter::SWScaling_Init(AVCodecContext* c) {
+	/* create scaling context */
+	sws_ctx = sws_getContext(c->width, c->height, src_pix_fmt,
+		c->width, c->height, dst_pix_fmt,
+		SWS_BILINEAR, NULL, NULL, NULL);
+
+	if (!sws_ctx) {
+		std::cout << "SWS Error init" << std::endl;
+		return -1;
+	}
+
+	return 0;
+}
+
 int FFSegmenter::inner_encode(AVFrame *frame, AVPacket *pkt, AVCodecContext* c, int *got_packet)
 {
 	int ret = 0;
 	*got_packet = 0;
 
+	av_packet_unref(pkt);
 	av_init_packet(pkt);
 	pkt->data = NULL;
 	pkt->size = 0;
@@ -179,21 +203,28 @@ int FFSegmenter::inner_encode(AVFrame *frame, AVPacket *pkt, AVCodecContext* c, 
 	ret = avcodec_send_frame(c, frame);
 	if (ret < 0) {
 		fferr_pro(ret, "Send_Frame Error");
+		av_frame_unref(frame);
 		return ret;
 	}
 
 	ret = avcodec_receive_packet(c, pkt);
 	if (!ret)
 		*got_packet = 1;
-	if (ret == AVERROR(EAGAIN))
+	if (ret == AVERROR(EAGAIN)) {
+		av_packet_unref(pkt);
 		return 0;
+	}
 	else if (ret == AVERROR_EOF) {
 		std::cout << "Detected End of Files"<< std::endl;
 		return ret;
 	}
 	else if (ret < 0) {
+		av_packet_unref(pkt);
 		return ret;
 	}
+
+	//av_freep(&frame->data[0]);
+	av_frame_unref(frame);
 
 	return ret;
 }

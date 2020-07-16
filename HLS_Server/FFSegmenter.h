@@ -105,12 +105,18 @@ private:
 	void open_video(AVFormatContext *oc, AVCodec *codec, OutputStream *ost/*, AVDictionary *opt_arg*/);
 	void open_audio(AVFormatContext *oc, AVCodec *codec, OutputStream *ost/*, AVDictionary *opt_arg*/);
 	void close_stream(AVFormatContext *oc, OutputStream *ost);
+	
+	int SWScaling(AVCodecContext* c);
+	int SWScaling_Init(AVCodecContext* c);
 
 	void TimeCheck(FFSegmenter* SG);
 
 public:
 	
 private:
+
+	struct SwsContext *sws_ctx;
+	enum AVPixelFormat src_pix_fmt = AV_PIX_FMT_NONE, dst_pix_fmt = AV_PIX_FMT_YUV420P;
 
 	clock_t loopTime;
 	clock_t CheckTime;

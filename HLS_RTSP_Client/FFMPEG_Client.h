@@ -27,14 +27,14 @@ public:
 private:
 
 	static int DoWork(FFMPEG_Client*);
-	int Decode(MediaFrame*, IDecoder* Dec, int StreamID);
+	int Decode(MediaFrame*, FFmpegDecoder* Dec, int StreamID);
 
 	int SetFFOption();
 	void SetCLI(AVCodecID VCo, AVCodecID ACo);
 	std::string MakeSDP();
 
-	int DecoderSet(IDecoder* Dec, DT DecoderType, int StreamID);
-	int DecoderReset(IDecoder* Dec, DT DecoderType, int StreamID);
+	int DecoderSet(FFmpegDecoder* Dec, DT DecoderType, int StreamID);
+	int DecoderReset(FFmpegDecoder* Dec, DT DecoderType, int StreamID);
 
 private:
 
@@ -46,8 +46,8 @@ private:
 	std::thread Keepalivethr;
 
 	DT m_DT;
-	IDecoder* VDec;
-	IDecoder* ADec;
+	FFmpegDecoder* VDec;
+	FFmpegDecoder* ADec;
 	AVFormatContext *pFormatCtx;
 	FI F_Info;
 	//AVCodecContext *pCodecCtx;
