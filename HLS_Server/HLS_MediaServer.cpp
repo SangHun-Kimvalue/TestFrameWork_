@@ -206,7 +206,7 @@ bool HLS_MediaServer::DeleteSet(std::string URL, UUID uuid) {
 		//Segment 지우는 작업
 		Getto->Seg->Stop();
 		Getto->Seg->~SegmenterGroup();
-		Getto->FileM->~FileManager();
+		//Getto->FileM->~FileManager();
 
 		delete Getto;//Getto = nullptr;
 

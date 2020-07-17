@@ -8,7 +8,7 @@
 
 using namespace concurrency;
 
-#define SegmengerCount 1
+#define SegmengerCount 2
 
 class SegmenterGroup
 {

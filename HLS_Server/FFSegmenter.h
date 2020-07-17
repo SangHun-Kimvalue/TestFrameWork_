@@ -11,6 +11,7 @@
 //#include "Muxer.h"
 #include "Transcode.h"
 
+
 extern "C" {
 #include <libavutil/avassert.h>
 #include <libavutil/channel_layout.h>
@@ -106,8 +107,8 @@ private:
 	void open_audio(AVFormatContext *oc, AVCodec *codec, OutputStream *ost/*, AVDictionary *opt_arg*/);
 	void close_stream(AVFormatContext *oc, OutputStream *ost);
 	
-	int SWScaling(AVCodecContext* c);
-	int SWScaling_Init(AVCodecContext* c);
+	int SWScaling(AVFrame *frame, AVCodecContext* c);
+	int SWScaling_Init(AVFrame *frame, AVCodecContext* c);
 
 	void TimeCheck(FFSegmenter* SG);
 
@@ -115,8 +116,8 @@ public:
 	
 private:
 
-	struct SwsContext *sws_ctx;
-	enum AVPixelFormat src_pix_fmt = AV_PIX_FMT_NONE, dst_pix_fmt = AV_PIX_FMT_YUV420P;
+	struct SwsContext *sws_ctx = nullptr;
+	enum AVPixelFormat /*src_pix_fmt = AV_PIX_FMT_NONE,*/ dst_pix_fmt = AV_PIX_FMT_YUV420P;
 
 	clock_t loopTime;
 	clock_t CheckTime;
@@ -131,6 +132,7 @@ private:
 	const AVCodecID ACo;
 
 	AVCodec* VC = nullptr, *AC = nullptr;
+	AVFrame* TransFrame = nullptr;
 
 	const bool UseAudio;// , UseTranscoding;
 	const bool Encoding;

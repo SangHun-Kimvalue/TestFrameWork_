@@ -127,10 +127,12 @@ bool SegmenterGroup::CreateSeg() {
 
 void SegmenterGroup::Notify(std::shared_ptr<MediaFrame> Frame) {
 
-	parallel_for(0, SegmengerCount, [&](int i) {
-		if(Seg[i]->Running == true)
-			Seg[i]->Run(Frame);
-	});
+	//parallel_for(0, SegmengerCount, [&](int i) {
+	//	if(Seg[i]->Running == true)
+	//		Seg[i]->Run(Frame);
+	//});
+
+	Seg[1]->Run(Frame);
 
 	return;
 }

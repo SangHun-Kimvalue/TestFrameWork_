@@ -167,24 +167,43 @@ int FFSegmenter::Stop() {
 
 }
 
-int FFSegmenter::SWScaling(AVCodecContext* c) {
+int FFSegmenter::SWScaling(AVFrame *frame, AVCodecContext* c) {
 
+	const int linesize[6] = { c->width, c->width/2, c->width/2, 0,  };
 
 	/* convert to destination format */
-	//sws_scale(sws_ctx, (const uint8_t * const*)src_data,
-	//	src_linesize, 0, src_h, dst_data, dst_linesize);
-	return -1;
+	int ret = sws_scale(sws_ctx, (const uint8_t * const*)frame->data,
+		frame->linesize, 0, frame->height, TransFrame->data, TransFrame->linesize);
+	if (ret < 1) {
+		return -1;
+	}
+	//av_frame_unref(frame);
+
+
+	return ret;
 }
 
-int FFSegmenter::SWScaling_Init(AVCodecContext* c) {
+int FFSegmenter::SWScaling_Init(AVFrame *frame, AVCodecContext* c) {
 	/* create scaling context */
-	sws_ctx = sws_getContext(c->width, c->height, src_pix_fmt,
+	sws_ctx = NULL;
+	enum AVPixelFormat src_pix_fmt = (AVPixelFormat)frame->format;
+	sws_ctx = sws_getCachedContext(sws_ctx, frame->width, frame->height, src_pix_fmt,
 		c->width, c->height, dst_pix_fmt,
 		SWS_BILINEAR, NULL, NULL, NULL);
 
 	if (!sws_ctx) {
 		std::cout << "SWS Error init" << std::endl;
 		return -1;
+	}
+	TransFrame = av_frame_alloc();
+
+	TransFrame->format = c->pix_fmt;
+	TransFrame->width = c->width;
+	TransFrame->height = c->height;
+
+	int ret = av_image_alloc(TransFrame->data, TransFrame->linesize, c->width, c->height, c->pix_fmt, 32);
+	if (ret < 0) {
+		return ret;
 	}
 
 	return 0;
@@ -193,9 +212,21 @@ int FFSegmenter::SWScaling_Init(AVCodecContext* c) {
 int FFSegmenter::inner_encode(AVFrame *frame, AVPacket *pkt, AVCodecContext* c, int *got_packet)
 {
 	int ret = 0;
+
+	if (sws_ctx == nullptr) {
+		ret = SWScaling_Init(frame, c);
+	}
+
+	if (ret == 0) {
+		ret = SWScaling(frame, c);
+		if (ret < 0) {
+			return ret;
+		}
+	}
+
 	*got_packet = 0;
 
-	av_packet_unref(pkt);
+	//av_packet_unref(pkt);
 	av_init_packet(pkt);
 	pkt->data = NULL;
 	pkt->size = 0;
@@ -235,13 +266,17 @@ int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, std::shared_ptr<MediaFram
 	int ret = 0, got_output = 0;
 	static int count;
 
-	MediaFrame* MF = new MediaFrame(MFrame.get());
+	//MediaFrame* MF = new MediaFrame(MFrame.get());
+	AVPacket* Packet = av_packet_alloc();
+	//av_new_packet();
 
 	AVCodecContext* c = ost->enc;
 
-	if (Encoding) {
+	if (Encoding || ((c->width != MFrame->Info.Width) && (c->height != MFrame->Info.Height))) {
 
-		ret = inner_encode(MF->Frm, MF->Pkt, c, &got_output);
+		av_frame_ref(ost->frame, MFrame->Frm);
+
+		ret = inner_encode(ost->frame, Packet, c, &got_output);
 		if (ret < 0) {
 			fferr_pro(ret, "Encoding Error");
 			return ret;
@@ -249,16 +284,21 @@ int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, std::shared_ptr<MediaFram
 		if(got_output) {
 			/* rescale output packet timestamp values from codec to stream timebase */
 			//av_packet_rescale_ts(MF->Pkt, c->time_base, ost->st->time_base);
-			MF->Pkt->stream_index = ost->st->index;
-			if (MF->Pkt == nullptr) {
+			Packet->stream_index = ost->st->index;
+			if (Packet == nullptr) {
 				std::cout << "Error Packet Encoding - " << fmt_ctx->url << std::endl;
 				return -1;
 			}
 		}
 	}
-		/* Write the compressed frame to the media file. */
-	ret = av_interleaved_write_frame(fmt_ctx, MF->Pkt);
-	av_packet_unref(MF->Pkt);
+	else
+		av_packet_ref(Packet, MFrame->Pkt);
+
+	/* Write the compressed frame to the media file. */
+	ret = av_interleaved_write_frame(fmt_ctx, Packet);
+	av_packet_unref(Packet);
+	//MFrame.reset();
+
 	if (ret < 0) {
 		fferr_pro(ret, "Error in write_frame");
 		return -1;
@@ -420,6 +460,7 @@ void FFSegmenter::open_video(AVFormatContext *oc, AVCodec *codec, OutputStream *
 	 * picture is needed too. It is then converted to the required
 	 * output format. */
 	ost->tmp_frame = NULL;
+
 	if (c->pix_fmt != AV_PIX_FMT_YUV420P) {
 		ost->tmp_frame = alloc_picture(AV_PIX_FMT_YUV420P, c->width, c->height);
 		if (!ost->tmp_frame) {

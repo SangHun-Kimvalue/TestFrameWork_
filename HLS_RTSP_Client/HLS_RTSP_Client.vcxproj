@@ -102,7 +102,9 @@
       <AdditionalDependencies>avcodec.lib;avdevice.lib;avformat.lib;avutil.lib;swscale.lib;swresample.lib;avfilter.lib;postproc.lib;libsndfile-1.lib;cpprest141_2_10.lib;cpprest141d_2_10.lib;BasicUsageEnvironment.lib;groupsock.lib;liveMedia.lib;UsageEnvironment.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(TargetDir)FFMPEG_ClientD.dll $(SolutionDir)Libs\HLS_Source\include</Command>
+      <Command>copy $(TargetDir)FFMPEG_ClientD.dll $(SolutionDir)Libs\HLS_Source\include
+copy $(ProjectDir)FFDecoder.h $(SolutionDir)Libs\HLS_Source\include
+copy $(ProjectDir)FFDecoder.cpp $(SolutionDir)Libs\HLS_Source\include</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

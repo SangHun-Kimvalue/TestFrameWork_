@@ -162,9 +162,10 @@ int FFMPEG_Client::Connect() {
 		else {
 			Use_Transcoding = true;
 			//int ret = DecoderSet(VDec, DT_SW_FFMPEG, VSI);
-			VDec = new FFmpegDecoder();
-			int ret = VDec->Init(VSI, pFormatCtx);
+			
 		}
+		VDec = new FFmpegDecoder();
+		int ret = VDec->Init(VSI, pFormatCtx);
 	}
 #ifdef TESTTRANS
 	Use_Transcoding = true;
@@ -305,44 +306,49 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 		else {
 			int Deret = -1;
 			//Use_Transcoding
-			if (fc->Use_Transcoding) {
+			//if (fc->Use_Transcoding) {
 				//(MF->Pkt->stream_index == VSI) ? ret = fc->Decode(MF, fc->VDec, VSI) : ret = fc->Decode(MF, fc->ADec, ASI);
 				
-				if (MF->Pkt->stream_index == fc->VSI) {
-					Deret = fc->Decode(MF, fc->VDec, fc->VSI);
-				}
-				else if (MF->Pkt->stream_index == fc->ASI) {
-					Deret = fc->Decode(MF, fc->ADec, fc->ASI);
-				}
-
-				if (Deret < 0) {
-					failcount++;
-					delete MF;
-					continue;
-				}
-				else {
-					
-					fc->F_Info.StreamId = MF->Pkt->stream_index;
-					MF->Frm->width = fc->F_Info.Width = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->width;
-					MF->Frm->height = fc->F_Info.Height = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->height;
-					fc->F_Info.Bitrate = (int)fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->bit_rate;
-					fc->F_Info.Samplerate = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->sample_rate;
-				}
-
+			if (MF->Pkt->stream_index == fc->VSI) {
+				Deret = fc->Decode(MF, fc->VDec, fc->VSI);
 			}
-			//Non_Transcoding
+			else if (MF->Pkt->stream_index == fc->ASI) {
+				Deret = fc->Decode(MF, fc->ADec, fc->ASI);
+			}
+
+			if (Deret < 0) {
+				failcount++;
+				delete MF;
+				continue;
+			}
 			else {
-				Deret = 0;
+					
 				fc->F_Info.StreamId = MF->Pkt->stream_index;
-				fc->F_Info.Width = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->width;
-				fc->F_Info.Height = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->height;
+				MF->Frm->width = fc->F_Info.Width = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->width;
+				MF->Frm->height = fc->F_Info.Height = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->height;
 				fc->F_Info.Bitrate = (int)fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->bit_rate;
 				fc->F_Info.Samplerate = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->sample_rate;
 			}
 
+			//}
+			//Non_Transcoding
+			//else {
+			//	Deret = 0;
+			//	fc->F_Info.StreamId = MF->Pkt->stream_index;
+			//	fc->F_Info.Width = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->width;
+			//	fc->F_Info.Height = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->height;
+			//	fc->F_Info.Bitrate = (int)fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->bit_rate;
+			//	fc->F_Info.Samplerate = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->sample_rate;
+			//}
+
 			//all success
 			if (Deret >= 0) {
+			
+				FI info = { fc->F_Info.StreamId, fc->F_Info.Width, fc->F_Info.Height, fc->F_Info.Fps,
+					fc->F_Info.Bitrate, fc->F_Info.Samplerate, MF->Pkt->pts };
 				
+				MF->SetMediaFrame(info);
+
 				failcount = 0;
 				int max_size = fc->m_pRecFrameQ->max_size();
 				if (max_size < fc->m_pRecFrameQ->size()) {

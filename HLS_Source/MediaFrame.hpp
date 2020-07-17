@@ -35,30 +35,31 @@ public:
 		if (!Packing) {
 			Pkt = new AVPacket();
 			av_init_packet(Pkt);
+			Frm = av_frame_alloc();
 		}
 		else {
 			Pkt = new AVPacket();
 			av_init_packet(Pkt);
-			//Frm = av_frame_alloc();
-			Frm = new AVFrame();
+			Frm = av_frame_alloc();
+			//Frm = new AVFrame();
 		}
 	}
 	MediaFrame(MediaFrame* a) : Packing(a->Packing), Info(a->Info), Pkt(nullptr), Frm(nullptr) {
 
-		if (!Packing) {
+		//if (!Packing) {
 			Pkt = new AVPacket(*a->Pkt);
 			int error = av_packet_ref(Pkt, a->Pkt);
 			PRef++;
 			//int i = Pkt->size();
 			//std::cout << error;
-		}
-		else {
-			Pkt = new AVPacket();
-			//Frm = av_frame_alloc();
+		//}
+		//else {
+		//	Pkt = new AVPacket();
+		//	//Frm = av_frame_alloc();
 			Frm = new AVFrame(*a->Frm);
-			int error = av_frame_ref(Frm, a->Frm);
-			FRef++;
-		}
+			error = av_frame_ref(Frm, a->Frm);
+		//	FRef++;
+		//}
 
 	}
 	~MediaFrame() {
@@ -80,6 +81,13 @@ public:
 			//av_frame_free(&Frm);
 
 		}
+	}
+
+	int SetMediaFrame(FI info) {
+
+		Info = info;
+
+		return 0;
 	}
 
 	int SetMediaFrame(FI info, void* Pkt_or_Frame) {
