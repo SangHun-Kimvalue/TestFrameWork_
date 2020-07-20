@@ -199,24 +199,26 @@ int FFSegmenter::SWScaling_Init(AVFrame *frame, AVCodecContext* c) {
 		return -1;
 	}
 	
-	TransFrame = av_frame_alloc();
+	TransFrame = alloc_picture(AV_PIX_FMT_YUV420P, c->width, c->height);
+	//TransFrame = av_frame_alloc();
 	
 
-	TransFrame->format = c->pix_fmt;
-	TransFrame->width = c->width;
-	TransFrame->height = c->height;
+	//TransFrame->format = c->pix_fmt;
+	//TransFrame->width = c->width;
+	//TransFrame->height = c->height;
 
-	int ret = av_image_alloc(TransFrame->data, TransFrame->linesize, c->width, c->height, c->pix_fmt, 24);
-	if (ret < 0) {
-		return ret;
-	}
+	//int ret = av_image_alloc(TransFrame->data, TransFrame->linesize, c->width, c->height, c->pix_fmt, 24);
+	//if (ret < 0) {
+	//	return ret;
+	//}
 
 	return 0;
 }
 
 int FFSegmenter::inner_encode(AVFrame *frame, AVPacket* pkt, AVCodecContext* c, int *got_packet)
 {
-	int ret = -1;
+	int ret = 0;
+
 
 	if (sws_ctx == nullptr) {
 		ret = SWScaling_Init(frame, c);
@@ -461,24 +463,24 @@ void FFSegmenter::open_video(AVFormatContext *oc, AVCodec *codec, OutputStream *
 	}
 
 	/* allocate and init a re-usable frame */
-	ost->frame = alloc_picture(c->pix_fmt, c->width, c->height);
-	if (!ost->frame) {
-		fprintf(stderr, "Could not allocate video frame\n");
-		exit(1);
-	}
+	//ost->frame = alloc_picture(c->pix_fmt, c->width, c->height);
+	//if (!ost->frame) {
+	//	fprintf(stderr, "Could not allocate video frame\n");
+	//	exit(1);
+	//}
 
 	/* If the output format is not YUV420P, then a temporary YUV420P
 	 * picture is needed too. It is then converted to the required
 	 * output format. */
-	ost->tmp_frame = NULL;
-
-	if (c->pix_fmt != AV_PIX_FMT_YUV420P) {
-		ost->tmp_frame = alloc_picture(AV_PIX_FMT_YUV420P, c->width, c->height);
-		if (!ost->tmp_frame) {
-			fprintf(stderr, "Could not allocate temporary picture\n");
-			exit(1);
-		}
-	}
+	//ost->tmp_frame = NULL;
+	//
+	//if (c->pix_fmt != AV_PIX_FMT_YUV420P) {
+	//	ost->tmp_frame = alloc_picture(AV_PIX_FMT_YUV420P, c->width, c->height);
+	//	if (!ost->tmp_frame) {
+	//		fprintf(stderr, "Could not allocate temporary picture\n");
+	//		exit(1);
+	//	}
+	//}
 
 	/* copy the stream parameters to the muxer */
 	ret = avcodec_parameters_from_context(ost->st->codecpar, c);
@@ -518,9 +520,9 @@ void FFSegmenter::open_audio(AVFormatContext *oc, AVCodec *codec, OutputStream *
 	else
 		nb_samples = c->frame_size;
 
-	ost->frame = av_frame_alloc();
+	//ost->frame = av_frame_alloc();
 	//alloc_audio_frame(/*c->sample_fmt, c->channel_layout,	c->sample_rate, nb_samples*/);
-	ost->tmp_frame = av_frame_alloc();
+	//ost->tmp_frame = av_frame_alloc();
 	//ost->tmp_frame = alloc_audio_frame(AV_SAMPLE_FMT_S16, c->channel_layout,
 	//	c->sample_rate, nb_samples);
 
@@ -556,8 +558,8 @@ void FFSegmenter::open_audio(AVFormatContext *oc, AVCodec *codec, OutputStream *
 void FFSegmenter::close_stream(AVFormatContext *oc, OutputStream *ost)
 {
 	avcodec_free_context(&ost->enc);
-	av_frame_free(&ost->frame);
-	av_frame_free(&ost->tmp_frame);
+	//av_frame_free(&ost->frame);
+	//av_frame_free(&ost->tmp_frame);
 	sws_freeContext(ost->sws_ctx);
 	swr_free(&ost->swr_ctx);
 }

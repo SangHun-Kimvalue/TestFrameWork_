@@ -546,10 +546,8 @@ static AVFrame *get_video_frame(OutputStream *ost, AVFrame* in)
 		/* as we only generate a YUV420P picture, we must convert it
 		 * to the codec pixel format if needed */
 		if (!ost->sws_ctx) {
-			ost->sws_ctx = sws_getContext(in->width, in->height,
-				AV_PIX_FMT_YUV420P,
-				c->width, c->height,
-				c->pix_fmt,
+			ost->sws_ctx = sws_getContext(in->width, in->height, AV_PIX_FMT_YUV420P,
+				c->width, c->height, c->pix_fmt, 
 				SCALE_FLAGS, NULL, NULL, NULL);
 			if (!ost->sws_ctx) {
 				fprintf(stderr,

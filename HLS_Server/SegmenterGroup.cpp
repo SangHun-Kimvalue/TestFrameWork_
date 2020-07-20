@@ -58,8 +58,31 @@ bool SegmenterGroup::CreateSeg() {
 		return false;
 	}
 
-	int bitrate[SegmengerCount] = {1080};
+#define ONESEG_X
+#ifdef ONESEG
+	//for (int i = 0; i < SegmengerCount; i++) {
+	int i = 0;
+	if (Seg[i] == nullptr) {
+		//std::string tempFilename = std::string(std::to_string(bitrate[i])) + Filename.c_str();
+		//std::string root = "\\\\";
+		std::string tempFilename = PathDir[1] + Filename;
+		Seg[i] = SetType(SegType, tempFilename, 1);
 
+		if (Seg[i] == nullptr) {
+
+			CCommonInfo::GetInstance()->WriteLog("ERROR", "Error in create segmenter URL - %s", tempFilename.c_str());
+			return false;
+		}
+		else {
+			CCommonInfo::GetInstance()->WriteLog("INFO", "Success create segmenter URL - %s", tempFilename.c_str());
+			//continue;
+		}
+	}
+	//	else {
+	//		continue;
+	//	}
+
+#else 
 	for (int i = 0; i < SegmengerCount; i++) {
 
 		if (Seg[i] == nullptr) {
@@ -67,7 +90,7 @@ bool SegmenterGroup::CreateSeg() {
 			//std::string root = "\\\\";
 			std::string tempFilename = PathDir[i] + Filename;
 			Seg[i] = SetType(SegType, tempFilename, i);
-			
+
 			if (Seg[i] == nullptr) {
 
 				CCommonInfo::GetInstance()->WriteLog("ERROR", "Error in create segmenter URL - %s", tempFilename.c_str());
@@ -82,8 +105,7 @@ bool SegmenterGroup::CreateSeg() {
 			continue;
 		}
 	}
-
-
+#endif
 	return true;
 }
 //
@@ -127,12 +149,14 @@ bool SegmenterGroup::CreateSeg() {
 
 void SegmenterGroup::Notify(std::shared_ptr<MediaFrame> Frame) {
 
-	//parallel_for(0, SegmengerCount, [&](int i) {
-	//	if(Seg[i]->Running == true)
-	//		Seg[i]->Run(Frame);
-	//});
-
+#ifdef ONESEG
 	Seg[1]->Run(Frame);
+#else
+	parallel_for(0, SegmengerCount, [&](int i) {
+	if(Seg[i]->Running == true)
+		Seg[i]->Run(Frame);
+	});
+#endif
 	//Seg[0]->Run(Frame);
 
 	return;
