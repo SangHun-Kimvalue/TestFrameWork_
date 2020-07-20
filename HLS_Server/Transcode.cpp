@@ -1,6 +1,6 @@
 #include "Transcode.h"
 
-const char* error_pro(int error, const char* msg) {
+const char* eerror_pro(int error, const char* msg) {
 
 	char errstr[256] = "";
 

@@ -99,7 +99,7 @@ private:
 	int Wirte_Header(AVFormatContext* pFormatCtx, AVDictionary* opt);
 	int Wirte_Trailer(AVFormatContext* pFormatCtx);
 
-	int inner_encode(AVFrame *frame, AVPacket *pkt, AVCodecContext* c,int *got_packet);
+	int inner_encode(AVFrame *frame, AVPacket* pkt, AVCodecContext* c,int *got_packet);
 	int write_frame(AVFormatContext *fmt_ctx, std::shared_ptr<MediaFrame> MF, OutputStream* ost);
 	void add_stream(OutputStream *ost, AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id);
 	AVFrame *alloc_picture(enum AVPixelFormat pix_fmt, int width, int height);

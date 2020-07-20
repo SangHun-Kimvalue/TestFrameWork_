@@ -1,4 +1,4 @@
-#include "Muxer.h"
+ï»¿#include "Muxer.h"
 
 const char* merr_pro(int error, const char* msg) {
 
@@ -42,7 +42,7 @@ bool Muxer::InitMux() {
 	}
 
 	open_video(pOutFormatCtx, VC, &video_st);
-	//   HLS Option Ã£¾ÆºÁ¾ßÇÔ.
+	//   HLS Option ì°¾ì•„ë´ì•¼í•¨.
 	
 	if (UseAudio)
 		open_audio(pOutFormatCtx, AC, &audio_st);
@@ -330,14 +330,14 @@ void Muxer::close_stream(AVFormatContext *oc, OutputStream *ost)
 	swr_free(&ost->swr_ctx);
 }
 
-//Æ®·£½ºÄÚµù¿ë
+//íŠ¸ëžœìŠ¤ì½”ë”©ìš©
 static AVFrame *get_video_frame(OutputStream *ost)
 {
 	AVCodecContext *c = ost->enc;
 
 	/* check if we want to generate more frames */
 	if (av_compare_ts(ost->next_pts, c->time_base,
-		10,{ 1, 1 }) > 0)			//intervalÇÊ¿ä
+		10,{ 1, 1 }) > 0)			//intervalí•„ìš”
 		return NULL;
 
 	/* when we pass a frame to the encoder, it may keep a reference to it
@@ -386,7 +386,7 @@ static AVFrame *get_video_frame(OutputStream *ost)
 //
 //}
 
-//Æ®·£½ºÄÚµù¿ë
+//íŠ¸ëžœìŠ¤ì½”ë”©ìš©
 int Muxer::write_audio_frame(AVFormatContext *oc, OutputStream *ost, AVPacket *pkt, AVFrame* frame)
 {
 	AVCodecContext *c;
@@ -533,14 +533,14 @@ int Muxer::SetOpt() {
 		return ret;
 	}
 
-	//ÇÊ¿äÇÒµí
+	//í•„ìš”í• ë“¯
 	//ret = av_dict_set(&avdic, "hls_start_number_source", "0", 0);
 	//if (ret < 0) {
 	//	return ret;
 	//}
-	//start-segments-with-iframe¼³¸í ÀÌ ÇÊ¿äÇÕ´Ï´Ù. ÀÌ¸§¿¡¼­ ¾Ë ¼ö ÀÖµíÀÌ 
-	//ÀÌ ¿É¼ÇÀº °¢ ¼¼±×¸ÕÆ®°¡ I- ÇÁ·¹ÀÓÀ¸·Î ½ÃÀÛµÇµµ·Ï º¸ÀåÇÕ´Ï´Ù. ÀÌ°ÍÀÌ ¿Ö Áß¿äÇÑ°¡? 
-	//½ºÆ®¸²À» ÀüÈ¯ ÇÒ ¶§ ºñµð¿À¸¦ ÃÖ´ëÇÑ ¿øÈ°ÇÏ°Ô Àç»ýÇÕ´Ï´Ù.
+	//start-segments-with-iframeì„¤ëª… ì´ í•„ìš”í•©ë‹ˆë‹¤. ì´ë¦„ì—ì„œ ì•Œ ìˆ˜ ìžˆë“¯ì´ 
+	//ì´ ì˜µì…˜ì€ ê° ì„¸ê·¸ë¨¼íŠ¸ê°€ I- í”„ë ˆìž„ìœ¼ë¡œ ì‹œìž‘ë˜ë„ë¡ ë³´ìž¥í•©ë‹ˆë‹¤. ì´ê²ƒì´ ì™œ ì¤‘ìš”í•œê°€? 
+	//ìŠ¤íŠ¸ë¦¼ì„ ì „í™˜ í•  ë•Œ ë¹„ë””ì˜¤ë¥¼ ìµœëŒ€í•œ ì›í™œí•˜ê²Œ ìž¬ìƒí•©ë‹ˆë‹¤.
 	//method
 	//ffmpeg -re -i in.ts -f hls -method PUT http://example.com/live/out.m3u8
 

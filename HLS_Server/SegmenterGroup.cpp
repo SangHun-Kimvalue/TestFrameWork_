@@ -133,13 +133,9 @@ void SegmenterGroup::Notify(std::shared_ptr<MediaFrame> Frame) {
 	//});
 
 	Seg[1]->Run(Frame);
+	//Seg[0]->Run(Frame);
 
 	return;
-}
-
-int deleteMF(std::shared_ptr<MediaFrame> MF) {
-
-	return -1;
 }
 
 void SegmenterGroup::DoWork(SegmenterGroup* SG) {
