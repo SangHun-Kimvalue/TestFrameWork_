@@ -35,7 +35,7 @@ HttpServer::HttpServer() {
 
 		End = clock();
 		
-		if ((End - Start) > 50000) {
+		if ((End - Start) > 10000) {
 		
 			bool Check = MediaS->DeleteSet(URL->c_str(), ClientUUID);
 			break;

@@ -219,7 +219,6 @@ int FFSegmenter::inner_encode(AVFrame *frame, AVPacket* pkt, AVCodecContext* c, 
 {
 	int ret = 0;
 
-
 	if (sws_ctx == nullptr) {
 		ret = SWScaling_Init(frame, c);
 	}
@@ -243,7 +242,7 @@ int FFSegmenter::inner_encode(AVFrame *frame, AVPacket* pkt, AVCodecContext* c, 
 	ret = avcodec_send_frame(c, TransFrame);
 	if (ret < 0) {
 		fferr_pro(ret, "Send_Frame Error");
-		av_frame_unref(TransFrame);
+		//av_frame_unref(TransFrame);
 		return ret;
 	}
 
@@ -251,7 +250,7 @@ int FFSegmenter::inner_encode(AVFrame *frame, AVPacket* pkt, AVCodecContext* c, 
 	if (!ret)
 		*got_packet = 1;
 	if (ret == AVERROR(EAGAIN)) {
-		av_packet_unref(pkt);
+		//av_packet_unref(pkt);
 		return 0;
 	}
 	else if (ret == AVERROR_EOF) {
@@ -259,13 +258,10 @@ int FFSegmenter::inner_encode(AVFrame *frame, AVPacket* pkt, AVCodecContext* c, 
 		return ret;
 	}
 	else if (ret < 0) {
-		av_packet_unref(pkt);
+		//av_packet_unref(pkt);
 		return ret;
 	}
-
-	//av_freep(&frame->data[0]);
-	//av_frame_unref(TransFrame);
-
+	
 	return ret;
 }
 
@@ -275,10 +271,7 @@ int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, std::shared_ptr<MediaFram
 	int ret = 0, got_output = 0;
 	static int count;
 
-	//MediaFrame* MF = new MediaFrame(MFrame.get());
-	AVPacket* Packet = new AVPacket();;
-	//av_new_packet();
-
+	AVPacket* Packet = new AVPacket();
 	AVCodecContext* c = ost->enc;
 
 	if (Encoding || ((c->width != MFrame->Info.Width) && (c->height != MFrame->Info.Height))) {
@@ -308,7 +301,7 @@ int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, std::shared_ptr<MediaFram
 
 	/* Write the compressed frame to the media file. */
 	ret = av_interleaved_write_frame(fmt_ctx, Packet);
-	av_packet_unref(Packet);
+	//av_packet_unref(Packet);
 	//MFrame.reset();
 
 	if (ret < 0) {
@@ -317,7 +310,7 @@ int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, std::shared_ptr<MediaFram
 	}
 	else {
 		count++;
-		if (count > 500) {
+		if (count % 500 == 0) {
 			std::cout << "Success mux - " << count << std::endl;
 			count = 0;
 			Wirte_Trailer(fmt_ctx);

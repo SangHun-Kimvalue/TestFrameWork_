@@ -31,37 +31,37 @@ class MediaFrame {
 	//{ StreamId(streamid), Width(0), Height(0), Fps(0), Bitrate(0), Samplerate(0), Pkt(NULL), Frm(NULL), Pts(0) }
 public:
 	MediaFrame(bool Pack, int streamid = 0) : Packing(Pack), Info({ streamid , 0, 0, 0, 0, 0, 0 }), Pkt(nullptr), Frm(nullptr) {
-
-		if (!Packing) {
-			Pkt = new AVPacket();
-			av_init_packet(Pkt);
-			Frm = av_frame_alloc();
-		}
-		else {
-			Pkt = new AVPacket();
-			av_init_packet(Pkt);
-			Frm = av_frame_alloc();
-			//Frm = new AVFrame();
-		}
-	}
-	MediaFrame(MediaFrame* a) : Packing(a->Packing), Info(a->Info), Pkt(nullptr), Frm(nullptr) {
-
+	
 		//if (!Packing) {
-		Pkt = new AVPacket(*a->Pkt);
-		int error = av_packet_ref(Pkt, a->Pkt);
-		PRef++;
-		//int i = Pkt->size();
-		//std::cout << error;
-	//}
-	//else {
-	//	Pkt = new AVPacket();
-	//	//Frm = av_frame_alloc();
-		Frm = new AVFrame(*a->Frm);
-		error = av_frame_ref(Frm, a->Frm);
-		//	FRef++;
+		Pkt = new AVPacket();
+		av_init_packet(Pkt);
+		Frm = av_frame_alloc();
 		//}
-
+		//else {
+		//	Pkt = new AVPacket();
+		//	av_init_packet(Pkt);
+		//	Frm = av_frame_alloc();
+		//	//Frm = new AVFrame();
+		//}
 	}
+	//MediaFrame(MediaFrame* a) : Packing(a->Packing), Info(a->Info), Pkt(nullptr), Frm(nullptr) {
+	//
+	//	//if (!Packing) {
+	//		Pkt = new AVPacket(*a->Pkt);
+	//		int error = av_packet_ref(Pkt, a->Pkt);
+	//		PRef++;
+	//		//int i = Pkt->size();
+	//		//std::cout << error;
+	//	//}
+	//	//else {
+	//	//	Pkt = new AVPacket();
+	//	//	//Frm = av_frame_alloc();
+	//		Frm = new AVFrame(*a->Frm);
+	//		error = av_frame_ref(Frm, a->Frm);
+	//	//	FRef++;
+	//	//}
+	//
+	//}
 	~MediaFrame() {
 		//if (Pkt != nullptr) {
 		//	av_packet_unref(Pkt);
@@ -75,11 +75,11 @@ public:
 		if (Pkt->size != 0) {
 			av_packet_unref(Pkt);
 		}
-		if (Packing && Frm->buf != nullptr) {
+		//if (Frm->buf != nullptr) {
+		if(Frm != NULL){
 			//av_freep(&Frm->data[0]);
 			av_frame_unref(Frm);
 			//av_frame_free(&Frm);
-
 		}
 	}
 

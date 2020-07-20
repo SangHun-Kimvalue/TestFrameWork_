@@ -135,12 +135,10 @@ int FFmpegDecoder::Decode(MediaFrame* MF)
 		else if (ret < 0) {
 			error_pro(ret, "send_packet error");
 			FailCount++;
+			av_packet_unref(MF->Pkt);
 			return -1;
 		}
-
-		//AVFrame *pFrame = av_frame_alloc();
-		//AVFrame *pFrame = av_frame_alloc();
-
+		
 		ret = avcodec_receive_frame(pCodecCtx, MF->Frm);
 		if (ret == AVERROR(EAGAIN)) {
 			av_packet_unref(MF->Pkt);
@@ -149,20 +147,23 @@ int FFmpegDecoder::Decode(MediaFrame* MF)
 		else if (ret == AVERROR_EOF) {
 			ret = 0;
 			std::cout << "AVERROR_EOF - " << count++ << std::endl;
+			av_packet_unref(MF->Pkt);
+			av_freep(&MF->Frm->data[0]);
+			av_frame_unref(MF->Frm);
+			av_frame_free(&MF->Frm);
 			return -10;
 		}
 		else if (ret < 0) {
 			error_pro(ret, "avcodec_receive_frame error");
 			FailCount++;
+			av_freep(&MF->Frm->data[0]);
+			av_frame_unref(MF->Frm);
+			av_frame_free(&MF->Frm);
 			return ret;
 		}
 
-		
-
 		std::cout << "Decode Success - " << count++ << std::endl;
 
-		//av_packet_unref(MF->Pkt);
-		//av_frame_unref(pFrame);
 		FailCount = 0;
 	}
 

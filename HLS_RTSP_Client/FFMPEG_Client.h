@@ -9,7 +9,7 @@ class FFMPEG_Client : public IClient {
 
 public:
 
-	FFMPEG_Client(CLI info = {}, int qsize = 50);
+	FFMPEG_Client(CLI info = {}, int qsize = 100);
 	~FFMPEG_Client();
 
 	int InitClient(CLI info);
@@ -50,6 +50,7 @@ private:
 	FFmpegDecoder* ADec;
 	AVFormatContext *pFormatCtx;
 	FI F_Info;
+	MediaFrame* MF;
 	//AVCodecContext *pCodecCtx;
 	//AVCodec *pCodec;
 	//AVPacket *packet;
