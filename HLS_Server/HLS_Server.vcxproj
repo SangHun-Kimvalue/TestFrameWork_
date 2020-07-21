@@ -92,13 +92,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Visual_Local_Repo\Libs\HLS_Source\include;D:\Visual_Local_Repo\Libs\Casablanca\include;D:\Visual_Local_Repo\Libs\ffmpeg\4_1_1\include;D:\Visual_Local_Repo\Libs\sndfile\include;C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\Linux\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Visual_Local_Repo\Libs\HLS_Source\include;D:\Visual_Local_Repo\Libs\Casablanca\include;D:\Visual_Local_Repo\Libs\ffmpeg\4_1_1\include;D:\Visual_Local_Repo\Libs\sndfile\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Visual_Local_Repo\Libs\HLS_Source\win64\Debug;D:\Visual_Local_Repo\Libs\HLS_Source\include;D:\Visual_Local_Repo\Libs\Casablanca\win64\lib;D:\Visual_Local_Repo\Libs\ffmpeg\4_1_1\win64\lib;D:\Visual_Local_Repo\Libs\sndfile\Win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>avcodec.lib;avdevice.lib;avformat.lib;avutil.lib;swscale.lib;swresample.lib;avfilter.lib;postproc.lib;libsndfile-1.lib;cpprest141d_2_10.lib;ClientManagerD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec.lib;avdevice.lib;avformat.lib;avutil.lib;swscale.lib;swresample.lib;avfilter.lib;postproc.lib;libsndfile-1.lib;ClientManagerD.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy ..\Libs\ffmpeg\4_1_1\win64\bin\*.dll $(OutDir)
@@ -194,12 +194,10 @@ copy ..\Libs\Casablanca\win64\bin\*.dll $(OutDir)</Command>
     <ClCompile Include="HttpServer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="HLS_MediaServer.cpp" />
-    <ClCompile Include="Muxer.cpp" />
     <ClCompile Include="segmenter.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Transcode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Libs\HLS_Source\include\CommonInfo.h" />
@@ -220,8 +218,6 @@ copy ..\Libs\Casablanca\win64\bin\*.dll $(OutDir)</Command>
     <ClInclude Include="HLS_Server.hpp" />
     <ClInclude Include="HttpServer.h" />
     <ClInclude Include="HLS_MediaServer.h" />
-    <ClInclude Include="Muxer.h" />
-    <ClInclude Include="Transcode.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

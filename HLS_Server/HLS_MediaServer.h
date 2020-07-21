@@ -57,6 +57,6 @@ private:
 	std::vector<SBL*> SBLL;
 	SourceManager* SourceM;
 
-	Muxer* debug_;
+	//Muxer* debug_;
 	//FFSegmenter* debug_;
 };

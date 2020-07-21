@@ -246,7 +246,7 @@ int SegmenterGroup::Stop() {
 				Nofitythr.join();
 			}
 		}
-
+		Seg[i]->Running = false;
 		Seg[i]->Stop();
 		i++;
 	}

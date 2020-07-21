@@ -9,7 +9,7 @@
 #include "ClientFormat.h"
 #include "ISegmenter.hpp"
 //#include "Muxer.h"
-#include "Transcode.h"
+//#include "Transcode.h"
 
 
 extern "C" {
@@ -56,24 +56,24 @@ typedef struct BitrateSupportTable {
 	}
 }BST;
 
-//#define STREAM_FRAME_RATE 30
+#define STREAM_FRAME_RATE 30
 
-//typedef struct OutputStream {
-//	AVStream *st;
-//	AVCodecContext *enc;
-//
-//	/* pts of the next frame that will be generated */
-//	int64_t next_pts;
-//	int samples_count;
-//
-//	AVFrame *frame;
-//	AVFrame *tmp_frame;
-//
-//	float t, tincr, tincr2;
-//
-//	struct SwsContext *sws_ctx;
-//	struct SwrContext *swr_ctx;
-//} OutputStream;
+typedef struct OutputStream {
+	AVStream *st;
+	AVCodecContext *enc;
+
+	/* pts of the next frame that will be generated */
+	int64_t next_pts;
+	int samples_count;
+
+	AVFrame *frame;
+	AVFrame *tmp_frame;
+
+	float t, tincr, tincr2;
+
+	struct SwsContext *sws_ctx;
+	struct SwrContext *swr_ctx;
+} OutputStream;
 
 class FFSegmenter : public ISegmenter
 {

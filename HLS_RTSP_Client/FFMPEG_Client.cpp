@@ -277,16 +277,16 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 	int ret = 0;
 	int failcount = 0;
 
-	fc->F_Info.Fps = fc->m_StreamFPS;
+	fc->F_Info.Fps = fc->m_StreamFPS = 24;
 
 	while (!fc->Stopped) {
 #ifdef TESTTRANS
 		fc->Use_Transcoding = true;
 #endif
-		/*MediaFrame**/ fc->MF = new MediaFrame(fc->Use_Transcoding);
-		int ret = av_read_frame(fc->pFormatCtx, fc->MF->Pkt);
+		MediaFrame* MF = new MediaFrame(fc->Use_Transcoding);
+		int ret = av_read_frame(fc->pFormatCtx, MF->Pkt);
 		if (ret == AVERROR(EAGAIN)) {
-			delete fc->MF;
+			delete MF;
 			continue;
 		}
 		else if (ret < 0)
@@ -294,55 +294,55 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 			if (ret == AVERROR_EOF) {
 				err_pro(ret, "[ERROR] - ");
 				std::cout << "Disconnected to server : " << fc->m_info.URL.c_str() << std::endl;
-				delete fc->MF;
+				delete MF;
 				return ret;
 			}
 
 			err_pro(ret, "[ERROR] - ");
 			std::cout << "Error in av_read_frame : " << fc->m_info.URL.c_str() << std::endl;
-			delete fc->MF;
+			delete MF;
 			failcount++;
 		}
 		else {
 			int Deret = -1;
 
-			if (fc->MF->Pkt->stream_index == fc->VSI) {
-				Deret = fc->Decode(fc->MF, fc->VDec, fc->VSI);
+			if (MF->Pkt->stream_index == fc->VSI) {
+				Deret = fc->Decode(MF, fc->VDec, fc->VSI);
 			}
-			else if (fc->MF->Pkt->stream_index == fc->ASI) {
-				Deret = fc->Decode(fc->MF, fc->ADec, fc->ASI);
+			else if (MF->Pkt->stream_index == fc->ASI) {
+				Deret = fc->Decode(MF, fc->ADec, fc->ASI);
 			}
 
 			if (Deret < 0) {
 				failcount++;
-				delete fc->MF;
+				delete MF;
 				continue;
 			}
 			else {
 					
-				fc->F_Info.StreamId = fc->MF->Pkt->stream_index;
-				fc->MF->Frm->width = fc->F_Info.Width = fc->pFormatCtx->streams[fc->MF->Pkt->stream_index]->codecpar->width;
-				fc->MF->Frm->height = fc->F_Info.Height = fc->pFormatCtx->streams[fc->MF->Pkt->stream_index]->codecpar->height;
-				fc->F_Info.Bitrate = (int)fc->pFormatCtx->streams[fc->MF->Pkt->stream_index]->codecpar->bit_rate;
-				fc->F_Info.Samplerate = fc->pFormatCtx->streams[fc->MF->Pkt->stream_index]->codecpar->sample_rate;
+				fc->F_Info.StreamId = MF->Pkt->stream_index;
+				MF->Frm->width = fc->F_Info.Width = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->width;
+				MF->Frm->height = fc->F_Info.Height = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->height;
+				fc->F_Info.Bitrate = (int)fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->bit_rate;
+				fc->F_Info.Samplerate = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->sample_rate;
 			}
 
 			//all success
 			if (Deret >= 0) {
 			
 				FI info = { fc->F_Info.StreamId, fc->F_Info.Width, fc->F_Info.Height, fc->F_Info.Fps,
-					fc->F_Info.Bitrate, fc->F_Info.Samplerate, fc->MF->Pkt->pts };
+					fc->F_Info.Bitrate, fc->F_Info.Samplerate, MF->Pkt->pts };
 				
-				fc->MF->SetMediaFrame(info);
+				MF->SetMediaFrame(info);
 
 				failcount = 0;
 				int max_size = fc->m_pRecFrameQ->max_size();
 				if (max_size < fc->m_pRecFrameQ->size()) {
 					delete fc->m_pRecFrameQ->pop();
-					fc->m_pRecFrameQ->push_back(fc->MF);
+					fc->m_pRecFrameQ->push_back(MF);
 				}
 				else {
-					fc->m_pRecFrameQ->push_back(fc->MF);
+					fc->m_pRecFrameQ->push_back(MF);
 				}
 				count++;
 #ifdef _DEBUG
@@ -354,7 +354,7 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 			}
 			else {
 				failcount++;
-				delete fc->MF;
+				delete MF;
 			}
 				
 		}

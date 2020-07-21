@@ -169,9 +169,6 @@ int FFSegmenter::Stop() {
 
 int FFSegmenter::SWScaling(AVFrame *frame, AVCodecContext* c) {
 	
-	//if (av_frame_make_writable(frame) < 0)
-	//	return -1;
-
 	const int linesize[6] = { c->width, c->width/2, c->width/2, 0,  };
 
 	/* convert to destination format */
@@ -180,8 +177,6 @@ int FFSegmenter::SWScaling(AVFrame *frame, AVCodecContext* c) {
 	if (ret < 1) {
 		return -1;
 	}
-	//av_frame_unref(frame);
-
 
 	return ret;
 }
@@ -200,17 +195,6 @@ int FFSegmenter::SWScaling_Init(AVFrame *frame, AVCodecContext* c) {
 	}
 	
 	TransFrame = alloc_picture(AV_PIX_FMT_YUV420P, c->width, c->height);
-	//TransFrame = av_frame_alloc();
-	
-
-	//TransFrame->format = c->pix_fmt;
-	//TransFrame->width = c->width;
-	//TransFrame->height = c->height;
-
-	//int ret = av_image_alloc(TransFrame->data, TransFrame->linesize, c->width, c->height, c->pix_fmt, 24);
-	//if (ret < 0) {
-	//	return ret;
-	//}
 
 	return 0;
 }
@@ -229,7 +213,6 @@ int FFSegmenter::inner_encode(AVFrame *frame, AVPacket* pkt, AVCodecContext* c, 
 			return ret;
 		}
 		TransFrame->pts = frame->pts;
-//		TransFrame->pkt_pts = frame->pkt_pts;
 		TransFrame->pkt_dts = frame->pkt_dts;
 		TransFrame->channels = frame->channels;
 
@@ -242,7 +225,6 @@ int FFSegmenter::inner_encode(AVFrame *frame, AVPacket* pkt, AVCodecContext* c, 
 	ret = avcodec_send_frame(c, TransFrame);
 	if (ret < 0) {
 		fferr_pro(ret, "Send_Frame Error");
-		//av_frame_unref(TransFrame);
 		return ret;
 	}
 
@@ -250,7 +232,6 @@ int FFSegmenter::inner_encode(AVFrame *frame, AVPacket* pkt, AVCodecContext* c, 
 	if (!ret)
 		*got_packet = 1;
 	if (ret == AVERROR(EAGAIN)) {
-		//av_packet_unref(pkt);
 		return 0;
 	}
 	else if (ret == AVERROR_EOF) {
@@ -258,7 +239,6 @@ int FFSegmenter::inner_encode(AVFrame *frame, AVPacket* pkt, AVCodecContext* c, 
 		return ret;
 	}
 	else if (ret < 0) {
-		//av_packet_unref(pkt);
 		return ret;
 	}
 	
@@ -270,6 +250,12 @@ int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, std::shared_ptr<MediaFram
 {
 	int ret = 0, got_output = 0;
 	static int count;
+
+	//if (MFrame->Info.Fps != 30) {
+	//	fmt_ctx->streams[0]->time_base = { 1, MFrame->Info.Fps };
+	//	ost->enc->time_base = fmt_ctx->streams[0]->time_base;
+	//
+	//}
 
 	AVPacket* Packet = new AVPacket();
 	AVCodecContext* c = ost->enc;
@@ -301,8 +287,6 @@ int FFSegmenter::write_frame(AVFormatContext *fmt_ctx, std::shared_ptr<MediaFram
 
 	/* Write the compressed frame to the media file. */
 	ret = av_interleaved_write_frame(fmt_ctx, Packet);
-	//av_packet_unref(Packet);
-	//MFrame.reset();
 
 	if (ret < 0) {
 		fferr_pro(ret, "Error in write_frame");

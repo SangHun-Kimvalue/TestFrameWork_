@@ -11,7 +11,6 @@ extern "C"
 #include <libswscale/swscale.h>
 #include <libavutil/pixdesc.h>
 #include <libavdevice/avdevice.h>
-
 }
 
 typedef struct FrameInfo {
@@ -28,8 +27,9 @@ typedef struct FrameInfo {
 }FI;
 
 class MediaFrame {
-	//{ StreamId(streamid), Width(0), Height(0), Fps(0), Bitrate(0), Samplerate(0), Pkt(NULL), Frm(NULL), Pts(0) }
+
 public:
+	//{ StreamId(streamid), Width(0), Height(0), Fps(0), Bitrate(0), Samplerate(0), Pkt(NULL), Frm(NULL), Pts(0) }
 	MediaFrame(bool Pack, int streamid = 0) : Packing(Pack), Info({ streamid , 0, 0, 0, 0, 0, 0 }), Pkt(nullptr), Frm(nullptr) {
 	
 		//if (!Packing) {
@@ -63,19 +63,11 @@ public:
 	//
 	//}
 	~MediaFrame() {
-		//if (Pkt != nullptr) {
-		//	av_packet_unref(Pkt);
-		//	//if (data[0]) free(data[0]);
-		//	delete Pkt;
-		//	//if (packetData != nullptr) {
-		//	//	packetData = 0;
-		//	//	delete packetData;
-		//	//}
-		//}
+
 		if (Pkt->size != 0) {
 			av_packet_unref(Pkt);
 		}
-		//if (Frm->buf != nullptr) {
+
 		if(Frm != NULL){
 			//av_freep(&Frm->data[0]);
 			av_frame_unref(Frm);

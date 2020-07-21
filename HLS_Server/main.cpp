@@ -42,6 +42,22 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
 
 #ifndef  TEST
 	HttpServer* m_HttpServer = new HttpServer();
+	m_HttpServer->Start();
+
+	clock_t Start = clock();
+	clock_t End = clock();
+	while (1) {
+		Sleep(1);
+
+		End = clock();
+
+		if ((End - Start) > 100000) {
+
+			//bool Check = MediaS->DeleteSet(URL->c_str(), ClientUUID);
+			break;
+	}
+}
+
 #endif // ! TEST
 
 #ifdef TEST

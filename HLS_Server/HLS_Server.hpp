@@ -8,7 +8,6 @@ public:
 
 	HLS_Server() {
 		m_MediaServer = new HLS_MediaServer();
-
 	}
 	~HLS_Server() {
 

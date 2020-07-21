@@ -50,7 +50,7 @@ private:
 	FFmpegDecoder* ADec;
 	AVFormatContext *pFormatCtx;
 	FI F_Info;
-	MediaFrame* MF;
+	//MediaFrame* MF;
 	//AVCodecContext *pCodecCtx;
 	//AVCodec *pCodec;
 	//AVPacket *packet;
