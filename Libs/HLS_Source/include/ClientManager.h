@@ -39,15 +39,15 @@ public:
 
 private:
 
-	UUID Create_UUID(CT Type);
+	//UUID Create_UUID(CT Type);
 
 	bool SetList();
 	void DeleteList();
 	//std::vector<LLIST*>* GetList(CT type);
 
 	IClient* GetClient(GetClientValue GC);
-	LLIST* GetTypeList(CT type) { return TypeList->at((int)type);	 }
+	TYPELIST* GetTypeList(CT type) { return TypeList->at((int)type);	 }
 	LinkedList<IClient*>* GetClientList(CT type);
 
-	std::vector<LLIST*>* TypeList;
+	std::vector<TYPELIST*>* TypeList;
 };

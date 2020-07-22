@@ -24,8 +24,6 @@ public:
 	
 	void PrintInfo(GetClientValue GC);
 
-	UUID GetUUID(std::string URL);
-
 	QQ GetFrameQ(GetClientValue GC);
 
 private:

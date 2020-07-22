@@ -385,11 +385,11 @@ int FFMPEG_Client::Decode(MediaFrame* MF, FFmpegDecoder* Dec, int StreamID) {
 
 void FFMPEG_Client::PrintClientInfo() {
 	unsigned char* str = nullptr;
-	UuidToStringA(&m_info.uuid, &str);
+//	UuidToStringA(&m_info.uuid, &str);
 
 	std::cout << "Connected - " << (m_info.Connected ? "True" : "False") << std::endl					//Connected 
 
-		<< "UUID - " << str << std::endl						//index 쓸지 uuid 쓸지
+//		<< "UUID - " << str << std::endl						
 
 		<< "Type - " << (m_info.Type == CT_RTSP_FF_CLIENT ? "RTSP_FF_CLIENT" 
 			: m_info.Type == CT_RTSP_LIVE_CLIENT ? "RTSP_LIVE_CLIENT" : "UNKHOWN") << std::endl	

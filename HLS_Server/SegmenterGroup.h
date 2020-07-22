@@ -8,14 +8,14 @@
 
 using namespace concurrency;
 
-#define SegmengerCount 2
+#define SegmengerCount 1
 
 class SegmenterGroup
 {
 public:
 
 	SegmenterGroup();
-	SegmenterGroup(ST SegType, std::string Filename, bool UseAudio, bool UseTranscoding, int Interval,
+	SegmenterGroup(ST SegType, bool UseAudio, bool UseTranscoding, int Interval,
 		QQ DataQ, AVCodecID VCo, AVCodecID ACo = AV_CODEC_ID_NONE);
 	~SegmenterGroup();
 
@@ -47,7 +47,7 @@ private:
 	const AVCodecID ACo;
 	const bool UseAudio ,UseTranscoding ;
 	const int Interval;
-	const std::string Filename;
+	std::string Filename;
 
 	std::thread Nofitythr;
 	std::thread TimeCheckthr;

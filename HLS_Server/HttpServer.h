@@ -50,25 +50,26 @@ public:
 	void Start();
 
 public:
-	//pplx::task<void> open();
 
 private:
 
-
-	void handle_error(pplx::task<void>& t);
+	bool CheckClientExist(std::string URL, CT Type = CT_NOT_DEFINED);
+	bool CreateClient(CT Type, std::string URL);
 
 	UUID RequestWithoutUUID(string URL);
 	std::string RequestWithUUID(string* URL);
 
 	CT ParseURLtoType(string URL);
 	UUID ParseURLtoUUID(string *URL);
-	MFT ParseURLtoFile(string *URL);
-	int ParseURLtoBitrate(string *URL);
+	MFT ParseURLtoFile(string URL);
+	int ParseURLtoBitrate(string URL);
 
 	int ConnectToClient(string URL);
 
+	void ParsetoURL(string URL, string &ConnectURL, string &FileType);
+	const char* ParsePercentEncodingA(wstring &URL, string &Temp);
 	std::wstring GetServerIP();
-	
+	void handle_error(pplx::task<void>& t);
 	void HandeHttpGet(web::http::http_request msg);
 	unsigned int WrapCheck();
 

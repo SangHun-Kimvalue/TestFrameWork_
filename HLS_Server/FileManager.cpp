@@ -4,25 +4,19 @@
 //	InitBitrate(SegCount);
 //}
 
-FileManager::FileManager(int segCount, UUID uuid) : SegCount(segCount), arr(nullptr), m_UUID(uuid) {
+FileManager::FileManager(std::string URL) : SegCount(1), ConnectURL(URL) ,arr(nullptr), m_Dir(""){
 	
-	unsigned char* astr = nullptr;
-	UuidToStringA(&m_UUID, &astr);
-	string str_array(reinterpret_cast<char const *>(astr));
+	ParseURL();
+	MakeFolder();
 
-	m_UUIDDir = ".\\" + str_array;
-
-	cout << m_UUIDDir.c_str() << endl;
-	_mkdir(m_UUIDDir.c_str());
-
-	cout << " Create Dir count : " << MakeFolder() << endl;
-
+	//unsigned char* astr = nullptr;
+	//UuidToStringA(&m_UUID, &astr);
+	//string str_array(reinterpret_cast<char const *>(astr));
 	//unsigned short* wstr = nullptr;
 	//UuidToStringW(&m_UUID, &wstr);
 	//std::wstring Path;
 	//Path = (wchar_t*)wstr;
 	//CreateDirectory((Path.c_str()), NULL);
-
 	//InitBitrate(SegCount);
 }
 
@@ -33,7 +27,31 @@ FileManager::~FileManager() {
 	free(arr);
 }
 
-bool FileManager::InitBitrate(int SegCount) {
+void FileManager::ParseURL(){
+
+	size_t fpos = ConnectURL.find("[");
+	size_t epos = ConnectURL.find("]");
+
+	m_Dir = ConnectURL.substr(fpos + 1, (fpos - epos) - 1);
+	size_t syntax = m_Dir.find("://");
+	m_Dir.replace(syntax, 3, "_");
+	syntax = m_Dir.find("/");
+	m_Dir.replace(syntax, 1, "_");
+
+	return ;
+}
+
+bool FileManager::CopytoDummy() {
+
+
+	//fs::copy(originalTextPath, m_Dir);
+	//fs::copy(originalDirPath, copiedDirPath1);
+	//fs::copy(originalDirPath, copiedDirPath2, fs::copy_options::skip_existing);
+
+	return false;
+}
+
+bool FileManager::InitBitrate() {
 
 	int preset[5] = { 1080, 720, 480, 360 };
 	arr = (int *)malloc(sizeof(int) * SegCount);
@@ -48,23 +66,28 @@ bool FileManager::InitBitrate(int SegCount) {
 
 int FileManager::MakeFolder() {
 	
-	if (m_UUIDDir == "") {
+	if (m_Dir == "") {
 		return -1;
 	}
 
+	cout << m_Dir.c_str() << endl;
+	_mkdir(m_Dir.c_str());
+
+	cout << " Create Dir count : " << MakeFolder() << endl;
+
 	int count = 0;
 	
-
-	for(int i = 0 ; i < SegCount ; i++) {
-
-		string* makedir = new string("");
-
-		*makedir = m_UUIDDir + "\\" + BitratePreset[i]+ "\\";
-		_mkdir(makedir->c_str());
-
-		CreatedDir[i] = const_cast<char*>(makedir->c_str());
-		count++;
-	}
+	//For ABS
+	//for(int i = 0 ; i < SegCount ; i++) {
+	//
+	//	string* makedir = new string("");
+	//
+	//	*makedir = m_UUIDDir + "\\" + BitratePreset[i]+ "\\";
+	//	_mkdir(makedir->c_str());
+	//
+	//	CreatedDir[i] = const_cast<char*>(makedir->c_str());
+	//	count++;
+	//}
 
 	return count;
 }
@@ -192,7 +215,7 @@ bool FileManager::DeleteFolder() {
 	}
 
 	if (Delete == SegCount) {
-		if (_rmdir(m_UUIDDir.c_str()) == 0) {
+		if (_rmdir(m_Dir.c_str()) == 0) {
 			CCommonInfo::GetInstance()->WriteLog("INFO", "Success Delete Folder %s", CreatedDir[0]);
 			return true;
 		}

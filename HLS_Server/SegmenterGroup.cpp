@@ -6,8 +6,8 @@ SegmenterGroup::SegmenterGroup() : SegType(ST_NOT_DEFINE), UseAudio(false), UseT
 
 }
 
-SegmenterGroup::SegmenterGroup(ST SegType, std::string Filename, bool UseAudio, bool UseTranscoding, int Interval, QQ m_DataQ, AVCodecID VCo, AVCodecID ACo)
-	: SegType(SegType), Filename(Filename), UseAudio(UseAudio), UseTranscoding(UseTranscoding), Interval(Interval), DataQ(m_DataQ), VCo(VCo), ACo(ACo),
+SegmenterGroup::SegmenterGroup(ST SegType, bool UseAudio, bool UseTranscoding, int Interval, QQ m_DataQ, AVCodecID VCo, AVCodecID ACo)
+	: SegType(SegType), Filename(""), UseAudio(UseAudio), UseTranscoding(UseTranscoding), Interval(Interval), DataQ(m_DataQ), VCo(VCo), ACo(ACo),
 	PathDir()
 {
 	*PathDir = nullptr;
@@ -58,15 +58,14 @@ bool SegmenterGroup::CreateSeg() {
 		return false;
 	}
 
-#define ONESEG_X
+#define ONESEG
 #ifdef ONESEG
-	//for (int i = 0; i < SegmengerCount; i++) {
 	int i = 0;
 	if (Seg[i] == nullptr) {
 		//std::string tempFilename = std::string(std::to_string(bitrate[i])) + Filename.c_str();
 		//std::string root = "\\\\";
-		std::string tempFilename = PathDir[1] + Filename;
-		Seg[i] = SetType(SegType, tempFilename, 1);
+		std::string tempFilename = PathDir[i] + Filename;
+		Seg[i] = SetType(SegType, tempFilename, i);
 
 		if (Seg[i] == nullptr) {
 
@@ -78,9 +77,6 @@ bool SegmenterGroup::CreateSeg() {
 			//continue;
 		}
 	}
-	//	else {
-	//		continue;
-	//	}
 
 #else 
 	for (int i = 0; i < SegmengerCount; i++) {
@@ -88,6 +84,8 @@ bool SegmenterGroup::CreateSeg() {
 		if (Seg[i] == nullptr) {
 			//std::string tempFilename = std::string(std::to_string(bitrate[i])) + Filename.c_str();
 			//std::string root = "\\\\";
+			if (i != 1) { Filename = "1080_"; }
+			else { Filename = "720_"; }
 			std::string tempFilename = PathDir[i] + Filename;
 			Seg[i] = SetType(SegType, tempFilename, i);
 
@@ -108,49 +106,11 @@ bool SegmenterGroup::CreateSeg() {
 #endif
 	return true;
 }
-//
-//bool SegmenterGroup::ChangeRunningSeg(int Bitrate) {
-//
-//	int Targetindex = -1;
-//	int Runningindex = -1;
-//
-//	if (Bitrate == 1080) {
-//		Targetindex = 0;
-//	}
-//	else if (Bitrate == 720) {
-//		Targetindex = 1;
-//	}
-//	else {
-//		Targetindex = -1;
-//		return false;
-//	}
-//
-//	if (RunningSegIndex == Targetindex) {
-//		return true;
-//	}
-//	else {
-//		for (int i = 0; i < SegmengerCount; i++) {
-//			
-//			if (Seg[i]->Index == Targetindex) {
-//				continue;
-//			}
-//			else {
-//				Seg[i]->Stop();
-//			}
-//		}
-//		RunningSegIndex = Targetindex;
-//		Seg[RunningSegIndex]->Run();
-//		return true;
-//	}
-//
-//	return false;
-//
-//}
 
 void SegmenterGroup::Notify(std::shared_ptr<MediaFrame> Frame) {
 
 #ifdef ONESEG
-	Seg[1]->Run(Frame);
+	Seg[0]->Run(Frame);
 #else
 	parallel_for(0, SegmengerCount, [&](int i) {
 	if(Seg[i]->Running == true)

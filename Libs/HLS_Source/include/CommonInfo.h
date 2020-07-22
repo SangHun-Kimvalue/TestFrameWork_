@@ -30,8 +30,8 @@ private:
 	wchar_t m_pIniPath[2048];
 	wchar_t m_pFullPath[2048];
 	wchar_t m_pLogPath[2048];
-	wchar_t m_pConverter[2048];
-	wchar_t m_pConverterData[2048];
+	wchar_t m_pStreamer[2048];
+	wchar_t m_pStreamData[2048];
 
 	std::mutex m_write_lock;
 	std::string m_serverip;

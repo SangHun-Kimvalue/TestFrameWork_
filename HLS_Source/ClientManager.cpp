@@ -4,14 +4,13 @@
 
 ClientManager::ClientManager() {
 
-	TypeList = new std::vector<LLIST*> ();
 	bool Set_List = SetList();
 	
 }
 
 ClientManager::~ClientManager() {
 
-	TypeList = new std::vector<LLIST*>();
+	DeleteList();
 }
 
 void ClientManager::DeleteList(){
@@ -48,11 +47,8 @@ int ClientManager::ReleaseCM() {
 int ClientManager::CreateClient(CLI info) {
 	
 	auto temp = GetClientList(info.Type);
-	if (info.uuid.Data1 == 0) {
-		info.uuid = Create_UUID(info.Type);
-	}
 
-	bool Check = CheckClient({ info.Type, info.uuid, info.URL });
+	bool Check = CheckClient({ info.Type, info.URL });
 	if (Check) {
 		return 1;
 	}
@@ -75,34 +71,34 @@ int ClientManager::CreateClient(CLI info) {
 	return 0;
 }
 
-UUID ClientManager::Create_UUID(CT Type) {
-
-	UUID ReturnUUID; //= new UUID();
-	
-	//try {
-		for (int i = 0; i < 3; i++) {
-			if (UuidCreate(&ReturnUUID) == RPC_S_OK) {
-
-				auto ClientforCheck = GetClient({ Type, ReturnUUID, "" });
-				if (ClientforCheck == nullptr)
-					return ReturnUUID;
-
-				unsigned char * str = nullptr;
-				UuidToStringA(&ReturnUUID, &str);
-
-				std::cout << " Alreay existed before same uuid : " << str << " - retrying ..." << std::endl;
-			}
-		}
-		//throw;
-	//}
-	//catch(...) {
-	//	std::cout << " Error - Failed to Create uuid 3 times." << std::endl;
-	//	return { 0, };
-	//}
-
-	return { 0, };
-}
-
+//UUID ClientManager::Create_UUID(CT Type) {
+//
+//	UUID ReturnUUID; //= new UUID();
+//	
+//	//try {
+//		for (int i = 0; i < 3; i++) {
+//			if (UuidCreate(&ReturnUUID) == RPC_S_OK) {
+//
+//				auto ClientforCheck = GetClient({ Type, "" });
+//				if (ClientforCheck == nullptr)
+//					return ReturnUUID;
+//
+//				unsigned char * str = nullptr;
+//				UuidToStringA(&ReturnUUID, &str);
+//
+//				std::cout << " Alreay existed before same uuid : " << str << " - retrying ..." << std::endl;
+//			}
+//		}
+//		//throw;
+//	//}
+//	//catch(...) {
+//	//	std::cout << " Error - Failed to Create uuid 3 times." << std::endl;
+//	//	return { 0, };
+//	//}
+//
+//	return { 0, };
+//}
+//
 //int ClientManager::UpdateClient(CLI info, GetClientValue GC, char* dataType, ...) {
 //
 //	IClient* des = GetClient(GC);
@@ -121,7 +117,7 @@ int ClientManager::DeleteClient(GetClientValue GC) {
 
 	auto DeleteClient = GetClient(GC);
 	std::string URL = DeleteClient->GetCLI().URL;
-	UUID uuid = DeleteClient->GetCLI().uuid;
+	//UUID uuid = DeleteClient->GetCLI().uuid;
 	unsigned char* struuid = nullptr;
 
 
@@ -133,13 +129,11 @@ int ClientManager::DeleteClient(GetClientValue GC) {
 		if (Check) {
 			if ((int)DeleteClient != 0xcd)
 				delete DeleteClient;
-			UuidToStringA(&uuid, &struuid);
-			std::cout << " Successed Delete Client URL : " << URL.c_str() << ",  UUID : " << struuid << std::endl;
+			std::cout << " Successed Delete Client URL : " << URL.c_str() << std::endl;
 			DeleteClient = nullptr;
 		}
 		else {
-			UuidToStringA(&uuid, &struuid);
-			std::cout << " Failed Delete Client URL : " << URL.c_str() << ",  UUID : " << struuid << std::endl;
+			std::cout << " Failed Delete Client URL : " << URL.c_str() << std::endl;
 		}
 		return RefCount;
 	}
@@ -226,24 +220,29 @@ bool ClientManager::CheckClient(GetClientValue GC) {
 
 	if (GC.Type == CT_NOT_DEFINED) {
 		for (int i = 0; i < CT_TYPE_NUMBER; i++) {
-			if (GC.URL == "" && GC.uuid.Data1 != 0) {
-				Find = (GetClient({ (CT)i, GC.uuid, "" }) != nullptr) ? true : false;
-			}
-			else if (GC.URL != "" && GC.uuid.Data1 == 0) {
-				Find = (GetClient({ (CT)i, {0,}, GC.URL }) != nullptr) ? true : false;
+			//if (GC.URL == "" && GC.uuid.Data1 != 0) {
+			//	Find = (GetClient({ (CT)i, "" }) != nullptr) ? true : false;
+			//	info = GetClient({ (CT)i, "" })->GetCLI();
+			//}
+			//else 
+			if (GC.URL != "") {// && GC.uuid.Data1 == 0) {
+				Find = (GetClient({ (CT)i, GC.URL }) != nullptr) ? true : false;
 			}
 			return Find ? true : false;
 		}
 	}
 	else {
-		if (GC.URL == "" && GC.uuid.Data1 != 0) {
-			Find = (GetClient({ GC.Type, GC.uuid, "" }) != nullptr) ? true : false;
-		}
-		else if (GC.URL != "" && GC.uuid.Data1 == 0) {
-			Find = (GetClient({ GC.Type, {0,}, GC.URL }) != nullptr) ? true : false;
-		}
-		else if (GC.URL != "" && GC.uuid.Data1 != 0) {
-			Find = (GetClient({ GC.Type, GC.uuid, GC.URL }) != nullptr) ? true : false;
+		//if (GC.URL == "" && GC.uuid.Data1 != 0) {
+		//	Find = (GetClient({ GC.Type, "" }) != nullptr) ? true : false;
+		//	info = GetClient({ GC.Type,  "" })->GetCLI();
+		//}
+		//else if (GC.URL != "" && GC.uuid.Data1 == 0) {
+		//	Find = (GetClient({ GC.Type, GC.URL }) != nullptr) ? true : false;
+		//	info = GetClient({ GC.Type, GC.URL })->GetCLI();
+		//}
+		//else 
+		if (GC.URL != "") {// && GC.uuid.Data1 != 0) {
+			Find = (GetClient({ GC.Type, GC.URL }) != nullptr) ? true : false;
 		}
 		if (Find)
 		{
@@ -260,29 +259,31 @@ bool ClientManager::CheckClient(GetClientValue GC, CLI &info) {
 
 	if (GC.Type == CT_NOT_DEFINED) {
 		for (int i = 0; i < CT_TYPE_NUMBER; i++) {
-			if (GC.URL == "" && GC.uuid.Data1 != 0) {
-				Find = (GetClient({ (CT)i, GC.uuid, "" }) != nullptr) ? true : false;
-				info = GetClient({ (CT)i, GC.uuid, "" })->GetCLI();
-			}
-			else if (GC.URL != "" && GC.uuid.Data1 == 0) {
-				Find = (GetClient({ (CT)i, {0,}, GC.URL }) != nullptr) ? true : false;
-				info = GetClient({ (CT)i, {0,}, GC.URL })->GetCLI();
+			//if (GC.URL == "" && GC.uuid.Data1 != 0) {
+			//	Find = (GetClient({ (CT)i, "" }) != nullptr) ? true : false;
+			//	info = GetClient({ (CT)i, "" })->GetCLI();
+			//}
+			//else 
+			if (GC.URL != ""){// && GC.uuid.Data1 == 0) {
+				Find = (GetClient({ (CT)i, GC.URL }) != nullptr) ? true : false;
+				info = GetClient({ (CT)i, GC.URL })->GetCLI();
 			}
 			return Find ? true : false;
 		}
 	}
 	else {
-		if (GC.URL == "" && GC.uuid.Data1 != 0) {
-			Find = (GetClient({ GC.Type, GC.uuid, "" }) != nullptr) ? true : false;
-			info = GetClient({ GC.Type, GC.uuid, "" })->GetCLI();
-		}
-		else if (GC.URL != "" && GC.uuid.Data1 == 0) {
-			Find = (GetClient({ GC.Type, {0,}, GC.URL }) != nullptr) ? true : false;
-			info = GetClient({ GC.Type, {0,}, GC.URL })->GetCLI();
-		}
-		else if (GC.URL != "" && GC.uuid.Data1 != 0) {
-			Find = (GetClient({ GC.Type, GC.uuid, GC.URL }) != nullptr) ? true : false;
-			info = GetClient({ GC.Type, GC.uuid, GC.URL })->GetCLI();
+		//if (GC.URL == "" && GC.uuid.Data1 != 0) {
+		//	Find = (GetClient({ GC.Type, "" }) != nullptr) ? true : false;
+		//	info = GetClient({ GC.Type,  "" })->GetCLI();
+		//}
+		//else if (GC.URL != "" && GC.uuid.Data1 == 0) {
+		//	Find = (GetClient({ GC.Type, GC.URL }) != nullptr) ? true : false;
+		//	info = GetClient({ GC.Type, GC.URL })->GetCLI();
+		//}
+		//else 
+		if (GC.URL != ""){// && GC.uuid.Data1 != 0) {
+			Find = (GetClient({ GC.Type, GC.URL }) != nullptr) ? true : false;
+			info = GetClient({ GC.Type, GC.URL })->GetCLI();
 		}
 		if (Find)
 		{
@@ -346,12 +347,11 @@ IClient* ClientManager::GetClient(GetClientValue GC) {
 
 	bool TypeNot = false;
 
-	if (GC.URL == "" && GC.uuid.Data1 == 0) {
+	if (GC.URL == "") {
 		return nullptr;
 	}
-
 	if (GC.Type == CT_NOT_DEFINED) {
-
+		//0이 CT_NOT_DEFINED이라서 1부터 시작
 		for (int i = 1; i <= CT_TYPE_NUMBER; i++) {
 
 			LinkedList<IClient*>* tempsearchlist = GetClientList((CT)i);
@@ -364,11 +364,12 @@ IClient* ClientManager::GetClient(GetClientValue GC) {
 				IClient* Client = nullptr;
 				for (int i = 0; i < tempsearchlist->size(); i++) {
 					CLI compare = tempsearchlist->get(i)->GetCLI();
-					if (GC.URL == "" && GC.uuid.Data1 != 0)
-						return Client = (compare.uuid == GC.uuid) ? tempsearchlist->get(i) : nullptr;
-					else if (GC.URL != "" && GC.uuid.Data1 == 0)
-						return Client = (compare.URL == GC.URL) ? tempsearchlist->get(i) : nullptr;
-					else if ((GC.URL != "" && GC.uuid.Data1 != 0)) {
+					//if (compare.URL == "")
+					//	return Client = (compare.uuid == GC.uuid) ? tempsearchlist->get(i) : nullptr;
+					//else if (compare.URL != "" && compare.uuid.Data1 == 0)
+					//	return Client = (compare.URL == GC.URL) ? tempsearchlist->get(i) : nullptr;
+					//else 
+					if (compare.URL != "") {
 						return Client = (compare.URL == GC.URL) ? tempsearchlist->get(i) : nullptr;
 					}
 				}
@@ -386,11 +387,12 @@ IClient* ClientManager::GetClient(GetClientValue GC) {
 			IClient* Client = nullptr;
 			for (int i = 0; i < templist->size(); i++) {
 				CLI compare = templist->get(i)->GetCLI();
-				if (GC.URL == "" && GC.uuid.Data1 != 0)
-					return Client = (compare.uuid == GC.uuid) ? templist->get(i) : nullptr;
-				else if (GC.URL != "" && GC.uuid.Data1 == 0)
-					return Client = (compare.URL == GC.URL) ? templist->get(i) : nullptr;
-				else if ((GC.URL != "" && GC.uuid.Data1 != 0)) {
+				//if (compare.URL == "")
+				//	return Client = (compare.uuid == GC.uuid) ? tempsearchlist->get(i) : nullptr;
+				//else if (compare.URL != "" && compare.uuid.Data1 == 0)
+				//	return Client = (compare.URL == GC.URL) ? tempsearchlist->get(i) : nullptr;
+				//else 
+				if (compare.URL != "") {
 					return Client = (compare.URL == GC.URL) ? templist->get(i) : nullptr;
 				}
 			}
@@ -399,7 +401,7 @@ IClient* ClientManager::GetClient(GetClientValue GC) {
 
 	unsigned char* str = nullptr;
 	std::cout << "Could not find Client in list - " << ParseCT(GC.Type)
-		<< " / URL - " << GC.URL << " / uuid = " << UuidToStringA(&GC.uuid, &str) << std::endl;
+		<< " / URL - " << GC.URL << std::endl;
 	return nullptr;
 }
 
@@ -411,22 +413,23 @@ LinkedList<IClient*>* ClientManager::GetClientList(CT type) {
 }
 
 bool Setparam() {
-	return true;
+	return false;
 }
 
 template < typename Ty, typename ... Args >
 bool SetParams(Ty ty, Args... args) {
-	return true;
+	return false;
 }
 
 bool ClientManager::SetList() {
 
+	TypeList = new std::vector<TYPELIST*>();
 	int size_temp = TypeList->size();
 
 	if (TypeList->size() == 0) {
 		for (int i = 0; i < CT_TYPE_NUMBER; i++) {
-			CT tmp_enum = (CT)(i + 1);
-			LLIST* L_Type = new LLIST(tmp_enum, new LinkedList<IClient*>());
+			CT tmp_enum = (CT)(i);
+			TL* L_Type = new TL(tmp_enum, new LinkedList<IClient*>());
 			//LinkedList<IClient*>* Cli;
 			//LLIST* temp = new LLIST(tmp_enum, Cli);
 	
