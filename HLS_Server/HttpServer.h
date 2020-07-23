@@ -3,9 +3,9 @@
 #include <cpprest/http_listener.h>
 #include <cpprest/uri.h>
 #include <cpprest/asyncrt_utils.h>
+#include <cpprest/filestream.h>
 
 #include "HLS_MediaServer.h"
-#include "HLS_Server.hpp"
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <winsock.h>
@@ -41,6 +41,11 @@ using namespace http::experimental::listener;
 using namespace std;
 //using namespace httplib;
 
+const std::string textHtml = "text/html";
+//const std::string appMpegUrl = "application/x-mpegURL";
+const utility::string_t appMpegUrl = U("application/x-mpegURL");
+const utility::string_t videoMP2T = U("video/MP2T");
+
 class HttpServer
 {
 public:
@@ -54,20 +59,19 @@ public:
 private:
 
 	bool CheckClientExist(std::string URL, CT Type = CT_NOT_DEFINED);
-	bool CreateClient(CT Type, std::string URL);
+	//bool CreateClient(CT Type, std::string URL);
 
-	UUID RequestWithoutUUID(string URL);
-	std::string RequestWithUUID(string* URL);
+	bool ResponseFile(MFT FileType, string &FileNumber, web::http::http_request msg);
 
+	std::string RequestWithURL(string URL, string &ConnectURL, string &FileType, string &FileNumber
+		, web::http::http_request msg);
 	CT ParseURLtoType(string URL);
 	UUID ParseURLtoUUID(string *URL);
-	MFT ParseURLtoFile(string URL);
+	MFT ParseURLtoFile(string URL, string &FileNumber);
 	int ParseURLtoBitrate(string URL);
-
-	int ConnectToClient(string URL);
-
-	void ParsetoURL(string URL, string &ConnectURL, string &FileType);
+	void ParsetoURL(string URL, string &ConnectURL, string &FileType, string &Filename);
 	const char* ParsePercentEncodingA(wstring &URL, string &Temp);
+
 	std::wstring GetServerIP();
 	void handle_error(pplx::task<void>& t);
 	void HandeHttpGet(web::http::http_request msg);

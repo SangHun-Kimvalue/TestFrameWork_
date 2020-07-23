@@ -215,7 +215,6 @@ copy ..\Libs\Casablanca\win64\bin\*.dll $(OutDir)</Command>
     <ClInclude Include="SourceManager.h" />
     <ClInclude Include="FFSegmenter.h" />
     <ClInclude Include="FileManager.h" />
-    <ClInclude Include="HLS_Server.hpp" />
     <ClInclude Include="HttpServer.h" />
     <ClInclude Include="HLS_MediaServer.h" />
   </ItemGroup>

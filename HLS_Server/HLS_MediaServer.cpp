@@ -13,7 +13,7 @@ HLS_MediaServer::~HLS_MediaServer() {
 
 }
 
-int HLS_MediaServer::CreateClient(CT Type, std::string URL, int Interval) {
+bool HLS_MediaServer::CreateClient(CT Type, std::string URL, int Interval) {
 
 	CLI TempCLI = {};
 	TempCLI.Type = Type;
@@ -24,54 +24,40 @@ int HLS_MediaServer::CreateClient(CT Type, std::string URL, int Interval) {
 
 	//If return 1 == Already had, 0 == Create Success
 	int Check = SourceM->Create_Client(TempCLI);
+	TempCLI = SourceM->GetClientInfo(GC);
 	if (Check == 0) {
 		std::cout << "Create Client Success - URL : " << URL.c_str() << std::endl;
 		SourceM->PrintInfo(GC);
+		return true;
 	}
 	else if (Check == 1) {
 		std::cout << "Already has Client  - URL : " << URL.c_str() << std::endl;
+		return true;
 	}
 	else {
 		std::cout << "Create Client Failed - URL : " << URL.c_str() << std::endl;
-		return -1;
+		return false;
 	}
-
-	TempCLI = SourceM->GetClientInfo(GC);
 
 	//CCommonInfo::GetInstance()->WriteLog("INFO", "Success create SBL - %s", URL.c_str());
 
-	return Check;
+	return false;
 }
 
-UUID HLS_MediaServer::RequestWithoutUUID(CT Type, std::string URL) {
+bool HLS_MediaServer::CreateSet(CT Type, std::string URL, int Interval, int Bitrate) {
 
-	UUID ReturnUUID = {};
-
-	int Check = CreateClient(Type, URL);
-
-	return ReturnUUID;
-}
-
-//uuid 를 포함한 클라이언트 요청
-std::string HLS_MediaServer::CreateSet(CT Type, std::string URL, int Interval, int Bitrate) {
-
-	int Check = false;
-	std::string Filename = "";
+	bool Check = false;
+	std::string Filename = "Error";
 	GetClientValue GC = { Type, URL };
 	SBL* AddNewSBL = nullptr;
 
 	Check = CreateClient(Type, URL/*, Interval*/);
-	if (Check < -1) {
+	if (!Check) {
 		//std::cout << " Error - in Create Set SBL - URL :  " << URL << std::endl;
 		CCommonInfo::GetInstance()->WriteLog("ERROR", " Error - in Create Set SBL - URL : %s", URL.c_str());
-		return "Error";
+		return false;
 	}
-	else if (Check == 0) {
-		CCommonInfo::GetInstance()->WriteLog("INFO", "Create new Client - URL : %s", URL.c_str());
-		//return "Create";
-		Check = 1;
-	}
-	if (Check == 1) {
+	else{
 
 		AddNewSBL = Get_SBL(URL);
 
@@ -117,27 +103,31 @@ std::string HLS_MediaServer::CreateSet(CT Type, std::string URL, int Interval, i
 			//debug_ = nullptr;
 			//debug_ = new FFSegmenter("TestFile.m3u8", ST_FFSW, AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
 
+			
 			Filename = DoWorkSBL(AddNewSBL->URL);
 
 			CCommonInfo::GetInstance()->WriteLog("INFO", "Success create SBL - %s", URL.c_str());
 
-			return Filename;
+			return true;
 		}
 		else {
 			Filename = DoWorkSBL(AddNewSBL->URL);
+			return true;
 		}
 
 	}
 	//UUID temp = SourceM->GetUUID(URL);
 
-	return Filename;
+	return false;
 }
 
-std::string HLS_MediaServer::RequestWithUUID(CT Type, std::string URL,int Bitrate) {
+std::string HLS_MediaServer::RequestWithUUID(CT Type, std::string URL, int Bitrate) {
 
 	std::string m3u8FileURI = "";
+	bool Check = false;
+	Check = CreateSet(Type, URL);
 
-	m3u8FileURI = CreateSet(Type, URL);
+
 
 	return m3u8FileURI;
 }
@@ -146,20 +136,20 @@ std::string HLS_MediaServer::RequestWithUUID(CT Type, std::string URL,int Bitrat
 //	return true;
 //}
 
-//bool HLS_MediaServer::Request_m3u8(SBL* m_sbl) {
-//	
-//	//m_sbl->Seg->Getm3u8()
-//	
-//	return true;
-//}
-//
-//bool HLS_MediaServer::Request_ts(SBL* m_sbl, int resol) {
-//
-//	
-//	//m_sbl->Seg->ChangeRunningSeg(/*resol*/);
-//
-//	return true;
-//}
+bool HLS_MediaServer::Request_m3u8(SBL* m_sbl) {
+	
+	//m_sbl->Seg->Getm3u8()
+	
+	return true;
+}
+
+bool HLS_MediaServer::Request_ts(SBL* m_sbl, int resol) {
+
+	
+	//m_sbl->Seg->ChangeRunningSeg(/*resol*/);
+
+	return true;
+}
 
 bool HLS_MediaServer::RequestWithFile(std::string URL, MFT filetype, int resol) {
 	
@@ -174,10 +164,10 @@ bool HLS_MediaServer::RequestWithFile(std::string URL, MFT filetype, int resol) 
 	}
 
 	if (filetype == MFT_M3U8) {
-		//Check = Request_m3u8(sbl);
+		Check = Request_m3u8(sbl);
 	}
 	else if (filetype == MFT_TS) {
-		//Check = Request_ts(sbl, resol);
+		Check = Request_ts(sbl, resol);
 	}
 	else if (filetype == MFT_MKV) {
 		//Check = Request_ts();

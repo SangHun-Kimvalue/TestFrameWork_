@@ -26,18 +26,11 @@ public:
 	HLS_MediaServer();
 	~HLS_MediaServer();
 
-	//uuid 를 미포함한 클라이언트 초기 요청 m3u8파일에 의한 uuid를 클라이언트에게 전달해야함.
-	int CreateClient(CT Type, std::string URL, int Interval = 5);
-	//uuid 받아와얗라듯?
-
-	UUID RequestWithoutUUID(CT Type, std::string URL);
+	//UUID RequestWithoutUUID(CT Type, std::string URL);
 	std::string RequestWithUUID(CT Type, std::string URL, int Bitrate = 0);
 	bool RequestWithFile(std::string URL, MFT filetype, int resol = 1080);
 
-	//uuid 를 포함한 클라이언트 요청
-	std::string CreateSet(CT Type, std::string URL, int Interval = 5, int Bitrate = 0);
-	//bool IsConnected(std::string URL, UUID uuid);
-
+	bool CreateSet(CT Type, std::string URL, int Interval = 5, int Bitrate = 0);
 	std::string DoWorkSBL(std::string URL);
 	bool StopWorkSBL(std::string URL);
 	bool DeleteSet(std::string URL);
@@ -48,9 +41,10 @@ public:
 	//라프텔
 private:
 
+	bool CreateClient(CT Type, std::string URL, int Interval = 5);
 	SBL* Get_SBL(std::string URL);
-	//bool Request_m3u8(SBL* m_sbl);
-	//bool Request_ts(SBL* m_sbl, int resol);
+	bool Request_m3u8(SBL* m_sbl);
+	bool Request_ts(SBL* m_sbl, int resol);
 
 private:
 
