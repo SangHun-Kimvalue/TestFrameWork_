@@ -357,10 +357,10 @@ std::string HttpServer::RequestWithURL(std::string URL, string &ConnectURL, stri
 	std::string FileURI = "";
 	bool Check = MediaS->CreateSet(Type, ConnectURL);
 	//std::string FileURI = MediaS->RequestWithUUID(Type, URL);
-	if (Check) {
-		//먼저 Seg랑 클라이언트랑 활성화 시키고 시간 갱신 시켜주고 들어가야함.
-		Check = ResponseFile(TempMFT, FileNumber, msg);
-	}
+	//if (Check) {
+	//	//먼저 Seg랑 클라이언트랑 활성화 시키고 시간 갱신 시켜주고 들어가야함.
+	//	Check = ResponseFile(TempMFT, FileNumber, msg);
+	//}
 
 }
 
@@ -510,8 +510,9 @@ void HttpServer::HandeHttpGet(web::http::http_request msg) {
 		std::string Filename = RequestWithURL(URL, ConnectURL, FileURL, FileNumber, msg);
 
 
-		//ucout << msg.to_string() << std::endl;
-		//msg.reply(status_codes::OK, U("GET"));
+		ucout << msg.to_string() << std::endl;
+		msg.reply(status_codes::OK, U("GET"));
+		return;
 	}
 
 	//MediaS = new HLS_MediaServer();
