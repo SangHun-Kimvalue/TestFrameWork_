@@ -1,16 +1,24 @@
 #include "HLS_MediaServer.h"
 #define ___DEBUG
 
-HLS_MediaServer::HLS_MediaServer() {
+HLS_MediaServer::HLS_MediaServer(CRITICAL_SECTION m_disLock) :m_disLock(m_disLock){
 
 	SourceM = new SourceManager();
 	//FileM = new FileManager();
+
+	SBL* It = new SBL({ "", CT_NOT_DEFINED, nullptr, nullptr, nullptr, clock() });
+	SBLL.push_back(It);
 	
 }
 
 HLS_MediaServer::~HLS_MediaServer() {
 
 
+}
+
+
+std::vector<SBL*>* HLS_MediaServer::GetSBLList() {
+	return &SBLL;
 }
 
 bool HLS_MediaServer::CreateClient(CT Type, std::string URL, int Interval) {
@@ -98,20 +106,25 @@ bool HLS_MediaServer::CreateSet(CT Type, std::string URL, int Interval, int Bitr
 			AddNewSBL->Seg->SetPath(DirPath);
 			AddNewSBL->Seg->CreateSeg();
 
+			EnterCriticalSection(&m_disLock);
 			SBLL.push_back(AddNewSBL);
-
+		
 			//debug_ = nullptr;
 			//debug_ = new FFSegmenter("TestFile.m3u8", ST_FFSW, AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
 
-			
-			Filename = DoWorkSBL(AddNewSBL->URL);
+			Check = DoWorkSBL(AddNewSBL->URL);
+			AddNewSBL->Updatetime = clock();
+			LeaveCriticalSection(&m_disLock);
 
 			CCommonInfo::GetInstance()->WriteLog("INFO", "Success create SBL - %s", URL.c_str());
 
 			return true;
 		}
 		else {
+			EnterCriticalSection(&m_disLock);
 			Filename = DoWorkSBL(AddNewSBL->URL);
+			AddNewSBL->Updatetime = clock();
+			LeaveCriticalSection(&m_disLock);
 			return true;
 		}
 
@@ -126,8 +139,6 @@ std::string HLS_MediaServer::RequestWithUUID(CT Type, std::string URL, int Bitra
 	std::string m3u8FileURI = "";
 	bool Check = false;
 	Check = CreateSet(Type, URL);
-
-
 
 	return m3u8FileURI;
 }
@@ -187,24 +198,23 @@ bool HLS_MediaServer::DeleteSet(std::string URL) {
 		CCommonInfo::GetInstance()->WriteLog("ERROR", "Not included in list SBL " );
 		return false;
 	}
-
+	EnterCriticalSection(&m_disLock);
+	for (int i = 0; i < SBLL.size(); i++) {
+		if (SBLL.at(i)->URL == URL) {
+			SBLL.erase(SBLL.begin()+i);
+		}
+	}
+	LeaveCriticalSection(&m_disLock);
 	//true면 지우고 false면 참조 감소
 	bool Check = StopWorkSBL(URL);
-	if (Check) {
-		//Segment 지우는 작업
-		Getto->Seg->Stop();
-		Getto->Seg->~SegmenterGroup();
-		//Getto->FileM->~FileManager();
 
-		delete Getto;//Getto = nullptr;
+	//Segment 지우는 작업
+	Getto->Seg->Stop();
+	Getto->Seg->~SegmenterGroup();
+	//Getto->FileM->~FileManager();
+	delete Getto;//Getto = nullptr;
 
-		CCommonInfo::GetInstance()->WriteLog("INFO", "Success delete SBL - %s", URL.c_str());
-	}
-	else {
-
-		Getto->Seg->Stop();
-
-	}
+	CCommonInfo::GetInstance()->WriteLog("INFO", "Success delete SBL - %s", URL.c_str());
 
 	return true;
 }
@@ -214,10 +224,10 @@ const CLI  HLS_MediaServer::GetClientInfo(CT Type, std::string URL) const {
 	return SourceM->GetClientInfo(GC);
 }
 
-std::string HLS_MediaServer::DoWorkSBL(std::string URL) {
+bool HLS_MediaServer::DoWorkSBL(std::string URL) {
 
 	SBL* Getto = Get_SBL(URL);
-	GetClientValue GC = { Getto->Type, "" };
+	GetClientValue GC = { Getto->Type, URL };
 	CLI WorkInfo = SourceM->GetClientInfo(GC);
 
 	int Check = SourceM->DoWorkClient({ WorkInfo.Type, WorkInfo.URL });
@@ -235,8 +245,9 @@ std::string HLS_MediaServer::DoWorkSBL(std::string URL) {
 		//url_uuid = url_uuid + " / ";	
 		//url_uuid  = url_uuid + str_array;
 		CCommonInfo::GetInstance()->WriteLog("INFO", "It Works - %s", URL.c_str());
+		return true;
 	}
-	else if (Check > 1) {
+	/*else if (Check > 1) {
 
 #ifdef __DEBUG
 		debug_->DoWork();
@@ -244,15 +255,17 @@ std::string HLS_MediaServer::DoWorkSBL(std::string URL) {
 		Getto->Seg->Run(URL);
 #endif
 		std::cout << "SBL is already work - " << WorkInfo.URL.c_str() << std::endl;
-	}
+	}*/
+
 	else {
 		CCommonInfo::GetInstance()->WriteLog("ERROR", "Error in DoWork - %s", WorkInfo.URL.c_str());
+		return false;
 	}
 
 	//Getto->Seg->DoWork();
 	//std::string FileURI = Getto->FileM->DoWork();
 
-	return "";
+	return false;
 }
 
 bool HLS_MediaServer::StopWorkSBL(std::string URL) {
@@ -282,6 +295,7 @@ bool HLS_MediaServer::StopWorkSBL(std::string URL) {
 
 SBL* HLS_MediaServer::Get_SBL(std::string URL) {
 
+	EnterCriticalSection(&m_disLock);
 	SBL* Getto = nullptr;
 	int size = SBLL.size();
 	if (size == 0) {
@@ -293,6 +307,7 @@ SBL* HLS_MediaServer::Get_SBL(std::string URL) {
 			Getto = SBLL.at(i);
 		}
 	}
+	LeaveCriticalSection(&m_disLock);
 
 	return Getto;
 }

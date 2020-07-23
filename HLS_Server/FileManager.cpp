@@ -30,14 +30,32 @@ FileManager::~FileManager() {
 void FileManager::ParseURL(){
 
 	size_t fpos = ConnectURL.find("[");
+	if(fpos == string::npos)
+		fpos = ConnectURL.find("%5B");
 	size_t epos = ConnectURL.find("]");
-
+	if (epos == string::npos)
+		epos = ConnectURL.find("%5D");
 	m_Dir = ConnectURL.substr(fpos + 1, (fpos - epos) - 1);
-	size_t syntax = m_Dir.find("://");
-	m_Dir.replace(syntax, 3, "_");
-	syntax = m_Dir.find("/");
-	m_Dir.replace(syntax, 1, "_");
-
+	while (1) {
+		size_t syntax = m_Dir.find("://");
+		if(syntax != string::npos)
+			m_Dir.replace(syntax, 3, "_");
+		syntax = m_Dir.find("/");
+		if (syntax != string::npos)
+			m_Dir.replace(syntax, 1, "_");
+		syntax = m_Dir.find(":");
+		if (syntax != string::npos)
+			m_Dir.replace(syntax, 1, "_");
+		syntax = m_Dir.find("\\");
+		if (syntax != string::npos)
+			m_Dir.replace(syntax, 1, "_");
+		syntax = m_Dir.find("?");
+		if (syntax != string::npos)
+			m_Dir.replace(syntax, 1, "_");
+		if (syntax == string::npos) {
+			break;
+		}
+	}
 	return ;
 }
 
@@ -65,18 +83,23 @@ bool FileManager::InitBitrate() {
 }
 
 int FileManager::MakeFolder() {
-	
+
+	int count = 0;
 	if (m_Dir == "") {
 		return -1;
 	}
 
-	cout << m_Dir.c_str() << endl;
+	cout << "CreateFolder - " << m_Dir.c_str() << endl;
 	_mkdir(m_Dir.c_str());
 
-	cout << " Create Dir count : " << MakeFolder() << endl;
+	for(int i = 0 ; i < SegCount ; i++) {
 
-	int count = 0;
-	
+		CreatedDir[i] = const_cast<char*>(m_Dir.c_str());
+		count++;
+	}
+	cout << "CreateFolder - " << m_Dir.c_str() << endl;
+	cout << " Create Dir count : " << count << endl;
+
 	//For ABS
 	//for(int i = 0 ; i < SegCount ; i++) {
 	//

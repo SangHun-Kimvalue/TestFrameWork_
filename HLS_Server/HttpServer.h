@@ -84,10 +84,12 @@ private:
 	unsigned short m_port;
 	HANDLE m_checkEvent;
 	CRITICAL_SECTION m_disLock;
+	CRITICAL_SECTION m_clientLock;
 	std::future<unsigned int> m_checkFuture;
 	//http_listener m_listener;
 	
-	std::map<std::string, SBL*> m_distributions;
+	//std::map<std::string, SBL*> m_SBLList;
+	std::vector<SBL*>* m_SBLList;
 	
 	web::http::experimental::listener::http_listener* m_pListener;
 

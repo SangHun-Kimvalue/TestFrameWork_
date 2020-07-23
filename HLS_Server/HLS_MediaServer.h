@@ -17,13 +17,14 @@ typedef struct BIND_LIST {
 	SegmenterGroup* Seg = nullptr;
 	QQ DataQ = nullptr;
 	FileManager* FileM = nullptr;
+	clock_t Updatetime = clock();
 
 }SBL;
 
 class HLS_MediaServer {			//분배 및 멀티 클라이언트 관리
 
 public:
-	HLS_MediaServer();
+	HLS_MediaServer(CRITICAL_SECTION m_disLock);
 	~HLS_MediaServer();
 
 	//UUID RequestWithoutUUID(CT Type, std::string URL);
@@ -31,13 +32,14 @@ public:
 	bool RequestWithFile(std::string URL, MFT filetype, int resol = 1080);
 
 	bool CreateSet(CT Type, std::string URL, int Interval = 5, int Bitrate = 0);
-	std::string DoWorkSBL(std::string URL);
+	bool DoWorkSBL(std::string URL);
 	bool StopWorkSBL(std::string URL);
 	bool DeleteSet(std::string URL);
 
 	const CLI GetClientInfo(CT Type, std::string URL) const;
 	//bool ChangeBitrate(std::string URL, UUID uuid);
 
+	std::vector<SBL*>* GetSBLList();
 	//라프텔
 private:
 
@@ -48,6 +50,7 @@ private:
 
 private:
 
+	CRITICAL_SECTION m_disLock;
 	std::vector<SBL*> SBLL;
 	SourceManager* SourceM;
 

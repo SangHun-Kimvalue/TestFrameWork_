@@ -167,10 +167,10 @@ void SegmenterGroup::TimeCheck(SegmenterGroup* SG) {
 
 int SegmenterGroup::Run(std::string URL) {
 
-	int Targetindex = ParseBitrateToIndex(URL);
-	if (Targetindex < 0) {
-		return -1;
-	}
+	//int Targetindex = ParseBitrateToIndex(URL);
+	//if (Targetindex < 0) {
+	//	return -1;
+	//}
 
 	int i = 0;
 	while (i < SegmengerCount) {

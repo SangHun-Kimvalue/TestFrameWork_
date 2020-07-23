@@ -8,12 +8,20 @@ HttpServer::HttpServer() {
 
 	bool UseHLS = true;
 	if(UseHLS)
-		MediaS = new HLS_MediaServer();
+		MediaS = new HLS_MediaServer(m_disLock);
+
+	m_SBLList = MediaS->GetSBLList();
 	//ConnectToClient("rtsp://admin:1234@192.168.0.70/video1");
 }
 
 HttpServer::~HttpServer() {
 
+	SetEvent(m_checkEvent);
+	if (m_checkFuture.valid())
+		m_checkFuture.get();
+
+	CloseHandle(m_checkEvent);
+	DeleteCriticalSection(&m_disLock);
 }
 
 std::wstring HttpServer::GetServerIP() {
@@ -113,7 +121,7 @@ void HttpServer::Start() {
 	
 	if (!m_checkFuture.valid())
 	{
-		m_checkFuture = std::async(&HttpServer::WrapCheck, this);
+		//m_checkFuture = std::async(&HttpServer::WrapCheck, this);
 	}
 
 }
@@ -134,15 +142,15 @@ CT HttpServer::ParseURLtoType(std::string URL) {
 		bool LIVE = false;
 		std::wstring temp = CCommonInfo::GetInstance()->ReadIniFile(L"Streamer", L"RTSPTYPE", L"ffmpeg");
 		size_t find = temp.find(L"live");
-		if (find = std::wstring::npos)
+		if (find != std::wstring::npos)
 			LIVE = true;
 
 		Type  =  (LIVE) ? CT_RTSP_LIVE_CLIENT : CT_RTSP_FF_CLIENT;
 		return Type;
 	}
-	Type = (Temp.compare("rtmp") == 0) ? CT_RTMP_CLIENT : CT_NOT_DEFINED;
-	Type = (Temp.compare("local") == 0) ? CT_LOCAL_FILE_CLIENT : CT_NOT_DEFINED;
-	Type = (Temp.compare("hls") == 0) ? CT_HLS_CLIENT : CT_NOT_DEFINED;
+	Type = (Temp.compare("rtmp") == 0) ? CT_RTMP_CLIENT : Type;
+	Type = (Temp.compare("local") == 0) ? CT_LOCAL_FILE_CLIENT : Type;
+	Type = (Temp.compare("hls") == 0) ? CT_HLS_CLIENT : Type;
 
 	return Type;
 }
@@ -225,6 +233,8 @@ MFT HttpServer::ParseURLtoFile(std::string URL, string &FileNumber) {
 
 	if ((Deletepos = URL.find(".m3u8")) != string::npos){
 		FileType = MFT_M3U8;
+		FileNumber = "index";
+		return FileType;
 		//Deletepos = URL.find(".m3u8");
 	}
 	else if ((Deletepos = URL.find(".ts")) != string::npos) {
@@ -247,7 +257,8 @@ MFT HttpServer::ParseURLtoFile(std::string URL, string &FileNumber) {
 		CCommonInfo::GetInstance()->WriteLog("ERROR", "Could not generating File Type - %s", URL.c_str());
 		FileType = MFT_NOT_DEFINED;
 	}
-	if(Deletepos != -1){
+
+	if(Deletepos != -1 && FileType != MFT_M3U8){
 		for (int i = Deletepos; i > Deletepos - 4; i--) {
 			if (URL.at(i) == '/') {
 				FileNumber = URL.substr(i, Deletepos - i);
@@ -336,13 +347,15 @@ bool HttpServer::ResponseFile(MFT FileType, string &FileNumber, web::http::http_
 
 std::string HttpServer::RequestWithURL(std::string URL, string &ConnectURL, string &FileType, string &FileNumber, web::http::http_request msg){
 	
-	CT Type = ParseURLtoType(URL);
+	CT Type = ParseURLtoType(ConnectURL);
 	//int Bitrate = ParseURLtoBitrate(URL);
 	MFT TempMFT = ParseURLtoFile(URL, FileNumber);
-	
+	if (TempMFT == MFT_NOT_DEFINED) {
+		return "";
+	}
 
 	std::string FileURI = "";
-	bool Check = MediaS->CreateSet(Type, URL);
+	bool Check = MediaS->CreateSet(Type, ConnectURL);
 	//std::string FileURI = MediaS->RequestWithUUID(Type, URL);
 	if (Check) {
 		//먼저 Seg랑 클라이언트랑 활성화 시키고 시간 갱신 시켜주고 들어가야함.
@@ -429,11 +442,26 @@ void HttpServer::ParsetoURL(string URL, string &ConnectURL, string &FileType, st
 	size_t urlpos = URL.find("video_url");
 	string temp = URL.substr(urlpos+10);
 	urlpos = temp.find("]");
-	temp.erase(urlpos);
+	if(urlpos != string::npos)
+		temp.erase(urlpos);
+	else {
+		urlpos = temp.find("%5D");
+		if (urlpos != string::npos)
+			temp.erase(urlpos);
+		urlpos = temp.find("5B");
+		if (urlpos != string::npos) {
+			temp.erase(urlpos, 2);
+		}
+	}
 	ConnectURL = temp.c_str();
 
 	size_t filepos = URL.find("]/");
-	temp = URL.substr(filepos + 2);
+	if (filepos != string::npos)
+		temp.erase(filepos);
+	else {
+		filepos = URL.find("%5D");
+	}
+	temp = URL.substr(filepos + 4);
 
 	FileType = temp.c_str();
 
@@ -458,13 +486,14 @@ void HttpServer::HandeHttpGet(web::http::http_request msg) {
 	size_t pos = action.find(L"/hls");
 	if (pos != string::npos){
 
-		ParsePercentEncodingA(action, URL);
-		CCommonInfo::GetInstance()->WriteLog("INFO", "Request recieved - %s ", URL.c_str());
+		std::string URL2 = URL;
+		const char* logtemp = ParsePercentEncodingA(action, URL);
+		CCommonInfo::GetInstance()->WriteLog("INFO", "Request recieved - %s ", logtemp);
 
 		string ConnectURL = "";
 		string FileURL = "";
 		string FileNumber = "";
-		ParsetoURL(URL, ConnectURL, FileURL, FileNumber);
+		ParsetoURL(URL2, ConnectURL, FileURL, FileNumber);
 		
 		if (FileURL.length() < 4) {
 
@@ -481,8 +510,8 @@ void HttpServer::HandeHttpGet(web::http::http_request msg) {
 		std::string Filename = RequestWithURL(URL, ConnectURL, FileURL, FileNumber, msg);
 
 
-		ucout << msg.to_string() << std::endl;
-		msg.reply(status_codes::OK, U("GET"));
+		//ucout << msg.to_string() << std::endl;
+		//msg.reply(status_codes::OK, U("GET"));
 	}
 
 	//MediaS = new HLS_MediaServer();
@@ -518,15 +547,14 @@ void HttpServer::HandeHttpGet(web::http::http_request msg) {
 unsigned int HttpServer::WrapCheck()
 {
 	DWORD dwRet;
-	while (true)
-	{
+	while (true) {
 		dwRet = WaitForSingleObject(m_checkEvent, 10 * 1000);
 		if (dwRet == WAIT_TIMEOUT)
 		{
-			EnterCriticalSection(&m_disLock);
-			auto it = m_distributions.begin();
-			while (it != m_distributions.end())
-			{
+			//EnterCriticalSection(&m_disLock);
+			//auto it = m_SBLList.begin();
+			//while (it != m_SBLList.end())
+			//{
 				//if (it->second->GetClientCount() == 0)
 				//{
 				//	delete it->second;
@@ -534,9 +562,34 @@ unsigned int HttpServer::WrapCheck()
 				//	std::clog << "remove distribution" << std::endl;
 				//	continue;
 				//}
-				++it;
+			//	++it;
+			//}
+			//LeaveCriticalSection(&m_disLock);
+
+			//auto ct = time(NULL);
+			EnterCriticalSection(&m_clientLock);
+			if (m_SBLList->empty() == false) {
+				int size = m_SBLList->size();
+				for (int i = 0; i < size; i++) {
+					auto temp = m_SBLList->at(i);
+					clock_t Now = clock();
+					if ((Now - temp->Updatetime) > 50000) {
+						MediaS->DeleteSet(temp->URL);
+					}
+					temp->Updatetime = Now;
+
+					/*if (difftime(ct, it->second->Seg->GetUpdateTime()) > 15)
+					{
+						std::clog << "remove client:" << it->second->GetSessionID() << std::endl;
+						delete it->second;
+						it = m_SBLList.erase(it);
+						continue;
+					}
+					++it;*/
+
+				}
 			}
-			LeaveCriticalSection(&m_disLock);
+			LeaveCriticalSection(&m_clientLock);
 		}
 		else
 			break;
