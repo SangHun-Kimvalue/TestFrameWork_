@@ -1,9 +1,13 @@
 #include "HLS_MediaServer.h"
+#define ___DEBUG
 
-HLS_MediaServer::HLS_MediaServer() {
+HLS_MediaServer::HLS_MediaServer(CRITICAL_SECTION m_disLock) :m_disLock(m_disLock){
 
 	SourceM = new SourceManager();
 	//FileM = new FileManager();
+
+	SBL* It = new SBL({ "", CT_NOT_DEFINED, nullptr, nullptr, nullptr, clock() });
+	SBLL.push_back(It);
 	
 }
 
@@ -12,76 +16,65 @@ HLS_MediaServer::~HLS_MediaServer() {
 
 }
 
-int HLS_MediaServer::CreateClient(CT Type, UUID &uuid, std::string URL, int Interval) {
+
+std::vector<SBL*>* HLS_MediaServer::GetSBLList() {
+	return &SBLL;
+}
+
+bool HLS_MediaServer::CreateClient(CT Type, std::string URL, int Interval) {
 
 	CLI TempCLI = {};
 	TempCLI.Type = Type;
 	TempCLI.URL = URL;
-	TempCLI.uuid = uuid;
 	TempCLI.Interval = Interval;
 
-	GetClientValue GC = { Type, uuid, URL };
+	GetClientValue GC = { Type, URL };
 
 	//If return 1 == Already had, 0 == Create Success
 	int Check = SourceM->Create_Client(TempCLI);
+	TempCLI = SourceM->GetClientInfo(GC);
 	if (Check == 0) {
 		std::cout << "Create Client Success - URL : " << URL.c_str() << std::endl;
 		SourceM->PrintInfo(GC);
+		return true;
 	}
 	else if (Check == 1) {
 		std::cout << "Already has Client  - URL : " << URL.c_str() << std::endl;
+		return true;
 	}
 	else {
 		std::cout << "Create Client Failed - URL : " << URL.c_str() << std::endl;
-		return -1;
+		return false;
 	}
-
-	TempCLI = SourceM->GetClientInfo(GC);
-	uuid = TempCLI.uuid;
 
 	//CCommonInfo::GetInstance()->WriteLog("INFO", "Success create SBL - %s", URL.c_str());
 
-	return Check;
+	return false;
 }
 
-UUID HLS_MediaServer::RequestWithoutUUID(CT Type, std::string URL) {
+bool HLS_MediaServer::CreateSet(CT Type, std::string URL, int Interval, int Bitrate) {
 
-	UUID ReturnUUID = {};
+	bool Check = false;
+	std::string Filename = "Error";
+	GetClientValue GC = { Type, URL };
+	SBL* AddNewSBL = nullptr;
 
-	int Check = CreateClient(Type, ReturnUUID, URL);
-
-	return ReturnUUID;
-}
-
-//uuid 를 포함한 클라이언트 요청
-std::string HLS_MediaServer::CreateSet(CT Type, std::string URL, UUID uuid, int Interval, int Bitrate) {
-
-	int Check = false;
-	std::string Filename = "";
-	GetClientValue GC = { Type, uuid, URL };
-
-	Check = CreateClient(Type, uuid, URL, Interval);
-	if (Check < -1) {
+	Check = CreateClient(Type, URL/*, Interval*/);
+	if (!Check) {
 		//std::cout << " Error - in Create Set SBL - URL :  " << URL << std::endl;
 		CCommonInfo::GetInstance()->WriteLog("ERROR", " Error - in Create Set SBL - URL : %s", URL.c_str());
-		return "Error";
+		return false;
 	}
-	else if (Check == 0) {
-		CCommonInfo::GetInstance()->WriteLog("ERROR", " Error - Create new Client - URL : %s", URL.c_str());
-		return "Create";
-	}
-	else if (Check == 1) {
+	else{
 
-		SBL* AddNewSBL = nullptr;
-
-		AddNewSBL = Get_SBL(uuid);
+		AddNewSBL = Get_SBL(URL);
 
 		if (AddNewSBL == nullptr) {
 			AddNewSBL = new SBL();
 
 			CLI tempinfo = SourceM->GetClientInfo(GC);
 			GC.Type = tempinfo.Type;
-			GC.uuid = tempinfo.uuid;
+			//GC.uuid = tempinfo.uuid;
 			GC.URL = tempinfo.URL;
 
 			AVCodecID VCo = AV_CODEC_ID_NONE;
@@ -97,44 +90,62 @@ std::string HLS_MediaServer::CreateSet(CT Type, std::string URL, UUID uuid, int 
 
 			AddNewSBL->Type = Type;
 			AddNewSBL->URL = URL;
-			AddNewSBL->Seg = new SegmenterGroup(UseAudio, UseTranscoding, Interval, VCo, ACo);
-			AddNewSBL->ClientUUID = tempinfo.uuid;
-			AddNewSBL->DataQ = SourceM->GetFrameQ(GC).get();
-			AddNewSBL->FileM = new FileManager();
+			//AddNewSBL->ClientUUID = tempinfo.uuid;
+			//AddNewSBL->DataQ = SourceM->GetFrameQ(GC).get();
+			AddNewSBL->DataQ = SourceM->GetFrameQ(GC);
 
-			SBLL.push_back(AddNewSBL);
-
-			//debug_ = nullptr;
+#ifdef __DEBUG
 			debug_ = new Muxer("TestFile.m3u8", AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
+#else
+			//ST SegType, std::string Filename, bool UseAudio, bool UseTranscoding, int Interval, QQ* DataQ, AVCodecID VCo, AVCodecID ACo = AV_CODEC_ID_NONE
+			AddNewSBL->Seg = new SegmenterGroup(ST_FFSW, UseAudio, UseTranscoding, Interval, AddNewSBL->DataQ, VCo, ACo);
+#endif
+			AddNewSBL->FileM = new FileManager(AddNewSBL->URL);
+			char** DirPath = nullptr;
+			DirPath = AddNewSBL->FileM->GetDirPath();
+			AddNewSBL->Seg->SetPath(DirPath);
+			AddNewSBL->Seg->CreateSeg();
 
-			Filename = DoWorkSBL(AddNewSBL->ClientUUID);
+			EnterCriticalSection(&m_disLock);
+			SBLL.push_back(AddNewSBL);
+		
+			//debug_ = nullptr;
+			//debug_ = new FFSegmenter("TestFile.m3u8", ST_FFSW, AddNewSBL->DataQ, UseAudio, Interval, VCo, ACo);
+
+			Check = DoWorkSBL(AddNewSBL->URL);
+			AddNewSBL->Updatetime = clock();
+			LeaveCriticalSection(&m_disLock);
 
 			CCommonInfo::GetInstance()->WriteLog("INFO", "Success create SBL - %s", URL.c_str());
 
-			return Filename;
+			return true;
 		}
 		else {
-			Filename = DoWorkSBL(AddNewSBL->ClientUUID);
+			EnterCriticalSection(&m_disLock);
+			Filename = DoWorkSBL(AddNewSBL->URL);
+			AddNewSBL->Updatetime = clock();
+			LeaveCriticalSection(&m_disLock);
+			return true;
 		}
 
 	}
 	//UUID temp = SourceM->GetUUID(URL);
 
-	return Filename;
+	return false;
 }
 
-std::string HLS_MediaServer::RequestWithUUID(CT Type, std::string URL, UUID uuid, int Bitrate) {
+std::string HLS_MediaServer::RequestWithUUID(CT Type, std::string URL, int Bitrate) {
 
 	std::string m3u8FileURI = "";
-
-	m3u8FileURI = CreateSet(Type, URL, uuid);
+	bool Check = false;
+	Check = CreateSet(Type, URL);
 
 	return m3u8FileURI;
 }
 
-bool HLS_MediaServer::ChangeBitrate(std::string URL, UUID uuid) {
-	return true;
-}
+//bool HLS_MediaServer::ChangeBitrate(std::string URL, UUID uuid) {
+//	return true;
+//}
 
 bool HLS_MediaServer::Request_m3u8(SBL* m_sbl) {
 	
@@ -151,15 +162,15 @@ bool HLS_MediaServer::Request_ts(SBL* m_sbl, int resol) {
 	return true;
 }
 
-bool HLS_MediaServer::RequestWithFile(UUID uuid, MFT filetype, int resol) {
+bool HLS_MediaServer::RequestWithFile(std::string URL, MFT filetype, int resol) {
 	
 	bool Check = false;
 
-	SBL* sbl = Get_SBL(uuid);
+	SBL* sbl = Get_SBL(URL);
 	if (sbl == nullptr) {
-		unsigned char* str = nullptr;
-		UuidToStringA(&uuid, &str);
-		std::cout << "Could not find in SBL list - " << str << std::endl;
+		//unsigned char* str = nullptr;
+		//UuidToStringA(&uuid, &str);
+		//std::cout << "Could not find in SBL list - " << str << std::endl;
 		return false;
 	}
 
@@ -178,66 +189,97 @@ bool HLS_MediaServer::RequestWithFile(UUID uuid, MFT filetype, int resol) {
 
 	return Check;
 }
-
-bool HLS_MediaServer::DeleteSet(std::string URL, UUID uuid) {
 	
-	SBL* Getto = Get_SBL(uuid);
+bool HLS_MediaServer::DeleteSet(std::string URL) {
+	
+	SBL* Getto = Get_SBL(URL);
 	if (Getto == nullptr) {
 		//std::cout << "Not included in list SBL " << std::endl;
 		CCommonInfo::GetInstance()->WriteLog("ERROR", "Not included in list SBL " );
 		return false;
 	}
-
+	EnterCriticalSection(&m_disLock);
+	for (int i = 0; i < SBLL.size(); i++) {
+		if (SBLL.at(i)->URL == URL) {
+			SBLL.erase(SBLL.begin()+i);
+		}
+	}
+	LeaveCriticalSection(&m_disLock);
 	//true면 지우고 false면 참조 감소
-	bool Check = StopWorkSBL(URL, uuid);
-	if (Check) {
-		//Segment 지우는 작업
-		Getto->Seg->~SegmenterGroup();
-		Getto->FileM->~FileManager();
+	bool Check = StopWorkSBL(URL);
 
-		delete Getto;//Getto = nullptr;
+	//Segment 지우는 작업
+	Getto->Seg->Stop();
+	Getto->Seg->~SegmenterGroup();
+	//Getto->FileM->~FileManager();
+	delete Getto;//Getto = nullptr;
 
-		CCommonInfo::GetInstance()->WriteLog("INFO", "Success delete SBL - %s", URL.c_str());
-	}
-	else {
-		//Getto->Seg->DecreaseRef();
-
-	}
+	CCommonInfo::GetInstance()->WriteLog("INFO", "Success delete SBL - %s", URL.c_str());
 
 	return true;
 }
 
-std::string HLS_MediaServer::DoWorkSBL(UUID uuid) {
+const CLI  HLS_MediaServer::GetClientInfo(CT Type, std::string URL) const {
+	GetClientValue GC = { Type, URL };
+	return SourceM->GetClientInfo(GC);
+}
 
-	SBL* Getto = Get_SBL(uuid);
-	GetClientValue GC = { Getto->Type, Getto->ClientUUID, "" };
+bool HLS_MediaServer::DoWorkSBL(std::string URL) {
+
+	SBL* Getto = Get_SBL(URL);
+	GetClientValue GC = { Getto->Type, URL };
 	CLI WorkInfo = SourceM->GetClientInfo(GC);
 
-	int Check = SourceM->DoWorkClient({ WorkInfo.Type, WorkInfo.uuid, WorkInfo.URL });
+	int Check = SourceM->DoWorkClient({ WorkInfo.Type, WorkInfo.URL });
 	if (Check == 1) {
+
+#ifdef __DEBUG
 		debug_->DoWork();
-		CCommonInfo::GetInstance()->WriteLog("INFO", "It Works - %s", WorkInfo.URL.c_str());
+#else
+		Getto->Seg->Run(URL);
+#endif
+		//unsigned char* str;
+		//UuidToStringA(&WorkInfo.uuid, &str);
+		//string str_array(reinterpret_cast<char const *>(str));
+		//std::string url_uuid = WorkInfo.URL.c_str();	
+		//url_uuid = url_uuid + " / ";	
+		//url_uuid  = url_uuid + str_array;
+		CCommonInfo::GetInstance()->WriteLog("INFO", "It Works - %s", URL.c_str());
+		return true;
 	}
-	else if (Check > 1) {
+	/*else if (Check > 1) {
+
+#ifdef __DEBUG
+		debug_->DoWork();
+#else
+		Getto->Seg->Run(URL);
+#endif
 		std::cout << "SBL is already work - " << WorkInfo.URL.c_str() << std::endl;
-	}
+	}*/
+
 	else {
 		CCommonInfo::GetInstance()->WriteLog("ERROR", "Error in DoWork - %s", WorkInfo.URL.c_str());
+		return false;
 	}
 
 	//Getto->Seg->DoWork();
 	//std::string FileURI = Getto->FileM->DoWork();
 
-	return "";
+	return false;
 }
 
-bool HLS_MediaServer::StopWorkSBL(std::string URL, UUID uuid) {
+bool HLS_MediaServer::StopWorkSBL(std::string URL) {
 
+	SBL* Getto = Get_SBL(URL);
+	GetClientValue GC = { CT(0), URL };
+
+#ifdef __DEBUG
 	debug_->StopWork();
+#else
+	int ref = Getto->Seg->Stop();
+#endif
 
-	GetClientValue GC = { CT(0), uuid, URL };
 	int res = SourceM->DeleteClient(GC);
-
 	if (res == 0) {
 		CCommonInfo::GetInstance()->WriteLog("INFO", "Stop SBL Working - %s", URL.c_str());
 		return true;
@@ -251,8 +293,9 @@ bool HLS_MediaServer::StopWorkSBL(std::string URL, UUID uuid) {
 	return false;
 }
 
-SBL* HLS_MediaServer::Get_SBL(UUID uuid) {
+SBL* HLS_MediaServer::Get_SBL(std::string URL) {
 
+	EnterCriticalSection(&m_disLock);
 	SBL* Getto = nullptr;
 	int size = SBLL.size();
 	if (size == 0) {
@@ -260,10 +303,11 @@ SBL* HLS_MediaServer::Get_SBL(UUID uuid) {
 	}
 
 	for (int i = 0; i < size; i++) {
-		if (SBLL.at(i)->ClientUUID == uuid) {
+		if (SBLL.at(i)->URL == URL) {
 			Getto = SBLL.at(i);
 		}
 	}
+	LeaveCriticalSection(&m_disLock);
 
 	return Getto;
 }

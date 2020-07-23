@@ -7,16 +7,16 @@ public:
 	static IDecoder* CreateDecoder(DT Type) {
 
 		switch (Type) {
-		case SW_FFMPEG:
+		case DT_SW_FFMPEG:
 			return new FFmpegDecoder();
 			break;
-		case HW_FFMPEG:
+		case DT_HW_FFMPEG:
 			break;
-		case HW_NVDEC:
+		case DT_HW_NVDEC:
 			break;
-		case HW_INTEL:
+		case DT_HW_INTEL:
 			break;
-		case DECODE_NONE:
+		case DT_DECODE_NONE:
 		default:
 			return nullptr;
 			break;

@@ -2,6 +2,7 @@
 
 #include "FFMPEG_Client.h"
 #include <regex>
+#define TESTTRANS_
 
 std::string GetVideoProfileLevel(std::string sdpstring);
 std::string GetVideoSPSPPS(std::string sdpstring);
@@ -21,13 +22,13 @@ const char* err_pro(int error, const char* msg) {
 
 FFMPEG_Client::FFMPEG_Client(CLI info, int qsize) :m_info(info), Qsize(qsize), Stopped(true),
 IncludedAudio(false), VSI(-1), ASI(-1), Use_Transcoding(false), VDec(nullptr), ADec(nullptr),
-m_DT(DECODE_NONE){
+m_DT(DT_DECODE_NONE){
 
 	m_info.Connected = false;
 	//m_pRecAFrameQ = CreateRecievedFrameQueue(Qsize);
-	m_pRecFrameQ = CreateRecievedFrameQueue(Qsize);
+	m_pRecFrameQ = CreateRecievedFrameQueue(500);
 
-	m_DT = SW_FFMPEG;
+	m_DT = DT_SW_FFMPEG;
 
 }
 
@@ -155,8 +156,22 @@ int FFMPEG_Client::Connect() {
 	}
 	else {
 		m_info.VCodecID = pFormatCtx->streams[VSI]->codecpar->codec_id;
-
+		if (m_info.VCodecID == AV_CODEC_ID_H264) {
+			Use_Transcoding = false;
+		}
+		else {
+			Use_Transcoding = true;
+			//int ret = DecoderSet(VDec, DT_SW_FFMPEG, VSI);
+			
+		}
+		VDec = new FFmpegDecoder();
+		int ret = VDec->Init(VSI, pFormatCtx);
 	}
+#ifdef TESTTRANS
+	Use_Transcoding = true;
+	VDec = new FFmpegDecoder();
+	int tret = VDec->Init(VSI, pFormatCtx);
+#endif
 
 	//Audio Check	---------------------------------------------------------
 	ASI = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
@@ -167,8 +182,16 @@ int FFMPEG_Client::Connect() {
 	}
 	else {
 		m_info.ACodecID = pFormatCtx->streams[ASI]->codecpar->codec_id;
-		ADec = new FFmpegDecoder();
-		int ret = ADec->Init(ASI, pFormatCtx);
+		if (m_info.ACodecID == AV_CODEC_ID_AAC) {
+			Use_Transcoding = false;
+		}
+		else {
+			//int ret = DecoderSet(ADec, DT_SW_FFMPEG, ASI);
+			ADec = new FFmpegDecoder();
+			int ret = ADec->Init(ASI, pFormatCtx);
+			Use_Transcoding = true;
+		}
+		
 	}
 
 	//All Check	---------------------------------------------------------
@@ -254,10 +277,12 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 	int ret = 0;
 	int failcount = 0;
 
-	fc->F_Info.Fps = fc->m_StreamFPS;
+	fc->F_Info.Fps = fc->m_StreamFPS = 24;
 
 	while (!fc->Stopped) {
-
+#ifdef TESTTRANS
+		fc->Use_Transcoding = true;
+#endif
 		MediaFrame* MF = new MediaFrame(fc->Use_Transcoding);
 		int ret = av_read_frame(fc->pFormatCtx, MF->Pkt);
 		if (ret == AVERROR(EAGAIN)) {
@@ -279,34 +304,41 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 			failcount++;
 		}
 		else {
-			int Deret = 0;
-			//Use_Transcoding
-			if (fc->Use_Transcoding) {
-				//(MF->Pkt->stream_index == VSI) ? ret = fc->Decode(MF, fc->VDec, VSI) : ret = fc->Decode(MF, fc->ADec, ASI);
-				
-				if (MF->Pkt->stream_index == fc->VSI) {
-					Deret = fc->Decode(MF, fc->VDec, fc->VSI);
-				}
-				else if (MF->Pkt->stream_index == fc->ASI) {
-					Deret = fc->Decode(MF, fc->ADec, fc->ASI);
-				}
+			int Deret = -1;
+
+			if (MF->Pkt->stream_index == fc->VSI) {
+				Deret = fc->Decode(MF, fc->VDec, fc->VSI);
 			}
-			//Non_Transcoding
+			else if (MF->Pkt->stream_index == fc->ASI) {
+				Deret = fc->Decode(MF, fc->ADec, fc->ASI);
+			}
+
+			if (Deret < 0) {
+				failcount++;
+				delete MF;
+				continue;
+			}
 			else {
+					
 				fc->F_Info.StreamId = MF->Pkt->stream_index;
-				fc->F_Info.Width = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->width;
-				fc->F_Info.Height = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->height;
+				MF->Frm->width = fc->F_Info.Width = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->width;
+				MF->Frm->height = fc->F_Info.Height = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->height;
 				fc->F_Info.Bitrate = (int)fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->bit_rate;
 				fc->F_Info.Samplerate = fc->pFormatCtx->streams[MF->Pkt->stream_index]->codecpar->sample_rate;
 			}
 
 			//all success
 			if (Deret >= 0) {
+			
+				FI info = { fc->F_Info.StreamId, fc->F_Info.Width, fc->F_Info.Height, fc->F_Info.Fps,
+					fc->F_Info.Bitrate, fc->F_Info.Samplerate, MF->Pkt->pts };
 				
+				MF->SetMediaFrame(info);
+
 				failcount = 0;
 				int max_size = fc->m_pRecFrameQ->max_size();
 				if (max_size < fc->m_pRecFrameQ->size()) {
-					fc->m_pRecFrameQ->pop();
+					delete fc->m_pRecFrameQ->pop();
 					fc->m_pRecFrameQ->push_back(MF);
 				}
 				else {
@@ -324,14 +356,7 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 				failcount++;
 				delete MF;
 			}
-			
-			//if (MF->Pkt->stream_index == fc->VSI) {
-			//	fc->m_pRecFrameQ->push_back(MF);
-			//}
-			//else if (MF->Pkt->stream_index == fc->ASI) {
-			//	fc->m_pRecFrameQ->push_back(MF);
-			//}
-			
+				
 		}
 		std::this_thread::sleep_for(duration);
 	}
@@ -339,7 +364,7 @@ int FFMPEG_Client::DoWork(FFMPEG_Client* fc) {
 	return 0;
 }
 
-int FFMPEG_Client::Decode(MediaFrame* MF, IDecoder* Dec, int StreamID) {
+int FFMPEG_Client::Decode(MediaFrame* MF, FFmpegDecoder* Dec, int StreamID) {
 
 	int ret = Dec->Decode(MF);
 	if (ret < 0) {
@@ -360,11 +385,11 @@ int FFMPEG_Client::Decode(MediaFrame* MF, IDecoder* Dec, int StreamID) {
 
 void FFMPEG_Client::PrintClientInfo() {
 	unsigned char* str = nullptr;
-	UuidToStringA(&m_info.uuid, &str);
+//	UuidToStringA(&m_info.uuid, &str);
 
 	std::cout << "Connected - " << (m_info.Connected ? "True" : "False") << std::endl					//Connected 
 
-		<< "UUID - " << str << std::endl						//index 쓸지 uuid 쓸지
+//		<< "UUID - " << str << std::endl						
 
 		<< "Type - " << (m_info.Type == CT_RTSP_FF_CLIENT ? "RTSP_FF_CLIENT" 
 			: m_info.Type == CT_RTSP_LIVE_CLIENT ? "RTSP_LIVE_CLIENT" : "UNKHOWN") << std::endl	
@@ -425,18 +450,20 @@ int FFMPEG_Client::ReleaseClient() {
 }
 
 int FFMPEG_Client::IncreaseRef() {
-	CCommonInfo::GetInstance()->WriteLog("INFO", "IncreaseRef - %s", m_info.URL.c_str());
+	std::string temp = m_info.URL.c_str() + std::to_string(m_info.Ref + 1);
+	CCommonInfo::GetInstance()->WriteLog("INFO", "IncreaseRef - %s", temp.c_str());
 	return ++m_info.Ref;
 }
 
 int FFMPEG_Client::DecreaseRef() {
 
 	if (m_info.Ref <= 0) {
-		CCommonInfo::GetInstance()->WriteLog("INFO", "DecreaseRef - %s", m_info.URL.c_str());
+		CCommonInfo::GetInstance()->WriteLog("INFO", "DecreaseRef - %s : < 0", m_info.URL.c_str());
 		return 0;
 	}
 
-	CCommonInfo::GetInstance()->WriteLog("INFO", "DecreaseRef - %s", m_info.URL.c_str());
+	std::string temp = m_info.URL.c_str() + std::to_string(m_info.Ref - 1);
+	CCommonInfo::GetInstance()->WriteLog("INFO", "DecreaseRef - %s", temp.c_str());
 	return --m_info.Ref;
 }
 
@@ -461,11 +488,13 @@ void FFMPEG_Client::SetCLI(AVCodecID VCo, AVCodecID ACo) {
 	m_info.VCodecID = VCo;
 	m_info.ACodecID = ACo;
 	m_info.Use_Transcoding = (m_info.ACodecID == AV_CODEC_ID_AAC && m_info.VCodecID == AV_CODEC_ID_H264) ? false : true;
-	if (m_info.VCodecID == AV_CODEC_ID_H264 && IncludedAudio == false)	
+	if (m_info.VCodecID == AV_CODEC_ID_H264)	
 		m_info.Use_Transcoding = false;
 	m_info.IncludedAudio = IncludedAudio;
 	//m_info.URL;
-
+#ifdef TESTTRANS
+	m_info.Use_Transcoding = true;
+#endif
 	return;
 
 }
@@ -546,13 +575,14 @@ std::string FFMPEG_Client::MakeSDP() {
 	return SDPString;
 }
 
-int FFMPEG_Client::DecoderSet(IDecoder* Dec, DT DecoderType, int StreamID) {
+int FFMPEG_Client::DecoderSet(FFmpegDecoder* Dec, DT DecoderType, int StreamID) {
 
 	if (Dec != nullptr) {
 		Dec->Release();
 		delete Dec;
 	}
-	Dec = DecoderFactory::CreateDecoder(DecoderType);
+	//Dec = DecoderFactory::CreateDecoder(DecoderType);
+	Dec = new FFmpegDecoder();
 	if (Dec != nullptr)
 		int ret = Dec->Init(StreamID, pFormatCtx);
 	else
@@ -560,14 +590,15 @@ int FFMPEG_Client::DecoderSet(IDecoder* Dec, DT DecoderType, int StreamID) {
 
 }
 
-int FFMPEG_Client::DecoderReset(IDecoder* Dec, DT DecoderType, int StreamID) {
+int FFMPEG_Client::DecoderReset(FFmpegDecoder* Dec, DT DecoderType, int StreamID) {
 	
 	if (Dec != nullptr) {
 		Dec->Release();
 		delete Dec;
 	}
 
-	Dec = DecoderFactory::CreateDecoder(DecoderType);
+	//Dec = DecoderFactory::CreateDecoder(DecoderType);
+	Dec = new FFmpegDecoder();
 	if (Dec != nullptr)
 		int ret = Dec->Init(StreamID, pFormatCtx);
 	else

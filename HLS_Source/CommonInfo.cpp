@@ -25,17 +25,17 @@ CCommonInfo::CCommonInfo()
 		*pnt = L'\0';
 		swprintf_s(m_pIniPath, L"%ls\\config.ini", m_pFullPath);
 		swprintf_s(m_pLogPath, L"%ls\\logs", m_pFullPath);
-		swprintf_s(m_pConverter, L"%ls\\Converter", m_pLogPath);
+		swprintf_s(m_pStreamer, L"%ls\\Streamer", m_pLogPath);
 
 		_wmkdir(m_pLogPath);
-		_wmkdir(m_pConverter);
+		_wmkdir(m_pStreamer);
 
 		pnt = wcsrchr(m_pFullPath, L'\\');
 		*pnt = L'\0';
-		swprintf_s(m_pConverterData, L"%ls\\m_pConverterData", m_pFullPath);
+		swprintf_s(m_pStreamData, L"%ls\\m_pConverterData", m_pFullPath);
 		//swprintf_s(m_pAlertModuleScreenSavePath, L"%ls\\AlertModuleScreenData", m_pFullPath);
 
-		_wmkdir(m_pConverterData);
+		_wmkdir(m_pStreamData);
 		//_wmkdir(m_pAlertModuleScreenSavePath);
 	}
 }
@@ -161,7 +161,7 @@ void CCommonInfo::WriteLog(const wchar_t * title, const wchar_t * format, ...)
 	::OutputDebugStringW(strlog);
 
 	//swprintf_s(snFileName, L"%ls\\Converter %d.log", Converter, time.GetDayOfWeek());
-	swprintf_s(snFileName, L"%ls\\Converter-%s.log", m_pConverter, (const WCHAR *)time.Format(L"%Y-%m-%d"));// time.GetDayOfWeek());
+	swprintf_s(snFileName, L"%ls\\Converter-%s.log", m_pStreamer, (const WCHAR *)time.Format(L"%Y-%m-%d"));// time.GetDayOfWeek());
 
 	FILE *fp;
 	fp = _wfsopen(snFileName, L"at", _SH_DENYNO);
@@ -185,7 +185,7 @@ void CCommonInfo::WriteLog(const char* title, const char* format, const char* st
 void CCommonInfo::WriteLog(const char * Title, const char * Format, const char * str) {
 
 	char buffer[256] = {};
-	sprintf_s(buffer, sizeof(buffer), "Success create SBL - %s", str);
+	sprintf_s(buffer, sizeof(buffer), Format, str);
 
 	CCommonInfo::GetInstance()->WriteLog(Title, buffer);
 }
@@ -223,7 +223,7 @@ void CCommonInfo::WriteLog(const char * Title, const char * Format, ...)
 	::OutputDebugStringW(strlog);
 
 	//swprintf_s(snFileName, L"%ls\\Converter %d.log", Converter, time.GetDayOfWeek());
-	swprintf_s(snFileName, L"%ls\\Converter-%s.log", m_pConverter, (const WCHAR *)time.Format(L"%Y-%m-%d"));// time.GetDayOfWeek());
+	swprintf_s(snFileName, L"%ls\\Converter-%s.log", m_pStreamer, (const WCHAR *)time.Format(L"%Y-%m-%d"));// time.GetDayOfWeek());
 
 	FILE *fp;
 	fp = _wfsopen(snFileName, L"at", _SH_DENYNO);

@@ -3,16 +3,16 @@
 #include "MediaFrame.hpp"
 #include "Utility.hpp"
 
-typedef SharedQueue<MediaFrame*> QQ;
+typedef std::shared_ptr<SharedQueue<MediaFrame*>> QQ;
 class IClient;
 
 #define CT_TYPE_NUMBER ((int)(CT_MAX_COUNT) -1)
 
 typedef enum ClientType		//CT_NOT_DEFINED, CT_RTSP_FF_CLIENT, CT_RTSP_LIVE_CLIENT, CT_LOCAL_FILE_CLIENT, CT_HLS_CLIENT, CT_RTMP_CLIENT, CT_MAX_COUNT
 {
-	CT_NOT_DEFINED, CT_RTSP_FF_CLIENT, CT_RTSP_LIVE_CLIENT
+	 CT_RTSP_FF_CLIENT, CT_RTSP_LIVE_CLIENT
 	, CT_LOCAL_FILE_CLIENT, CT_HLS_CLIENT, CT_RTMP_CLIENT
-	, CT_MAX_COUNT
+	, CT_NOT_DEFINED, CT_MAX_COUNT
 }CT;
 
 static const char* ParseCT(CT Type) {
@@ -36,17 +36,16 @@ typedef enum TransportType
 	TT_UNKNOWN, TT_TCP, TT_UDP, TT_HTTP, TT_TS
 }TT;
 
-typedef struct LLIST {
+typedef struct TYPELIST {
 	const CT Type;
 	LinkedList<IClient*>* List;
-	LLIST(CT type, LinkedList<IClient*>* list) :Type(type), List(list) {}
+	TYPELIST(CT type, LinkedList<IClient*>* list) :Type(type), List(list) {}
 }TL;
 
 typedef struct ClientInfomation {
 
 	CT Type = CT_NOT_DEFINED;
 	TT TransportType = TT_TCP;
-	UUID uuid = { 0,0,0,0 };
 	std::string URL;
 
 	AVCodecID VCodecID;
@@ -58,15 +57,15 @@ typedef struct ClientInfomation {
 
 	bool Connected = false;
 	bool IncludedAudio = false;
-	
+
 	bool Use_Transcoding = false;		//false = Not Trans, true = Need Trans
 
 	ClientInfomation() {}
-	ClientInfomation(CT m_CT, TT m_TT, UUID m_uuid, std::string m_URL,
+	ClientInfomation(CT m_CT, TT m_TT, std::string m_URL,
 		AVCodecID m_VCodecID = AV_CODEC_ID_NONE, AVCodecID m_ACodecID = AV_CODEC_ID_NONE,
 		int m_Ref = 0, int m_Interval = 5, int m_Index = 0,
 		bool m_Connected = false, bool m_IncludedAudio = false, bool m_Use_Transcoding = false)
-		: Type(m_CT), TransportType(m_TT), uuid(m_uuid), URL(m_URL),
+		: Type(m_CT), TransportType(m_TT), URL(m_URL),
 		VCodecID(m_VCodecID), ACodecID(m_ACodecID), Ref(m_Ref), Interval(m_Interval), Index(m_Index),
 		Connected(m_Connected), IncludedAudio(m_IncludedAudio), Use_Transcoding(m_Use_Transcoding)
 	{}
@@ -78,11 +77,11 @@ typedef struct ClientInfomation {
 
 typedef struct GetClientValue {	//CT Type, UUID uuid, std::string URL
 	CT Type = CT_NOT_DEFINED;
-	UUID uuid = {};
+	//UUID uuid = {};
 	std::string URL = "";
 
-	GetClientValue(CT mtype = CT_NOT_DEFINED, UUID muuid = {}, std::string mURL = "") :
-		Type(mtype), uuid(muuid), URL(mURL) {}
+	GetClientValue(CT mtype = CT_NOT_DEFINED/*, UUID muuid = {}*/, std::string mURL = "") :
+		Type(mtype),/* uuid(muuid),*/ URL(mURL) {}
 }GCV;
 #endif
 

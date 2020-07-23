@@ -75,12 +75,6 @@
     <ClCompile Include="FFSegmenter.cpp">
       <Filter>소스 파일\Media Server\Media\Segmenter</Filter>
     </ClCompile>
-    <ClCompile Include="Muxer.cpp">
-      <Filter>소스 파일\Media Server\Media\Segmenter</Filter>
-    </ClCompile>
-    <ClCompile Include="Transcode.cpp">
-      <Filter>소스 파일\Media Server\Media\Segmenter</Filter>
-    </ClCompile>
     <ClCompile Include="HLS_MediaServer.cpp">
       <Filter>소스 파일\Media Server\Media</Filter>
     </ClCompile>
@@ -101,19 +95,10 @@
     <ClInclude Include="SourceManager.h">
       <Filter>소스 파일\Media Server\Media</Filter>
     </ClInclude>
-    <ClInclude Include="HLS_Server.hpp">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
     <ClInclude Include="SegmenterGroup.h">
       <Filter>소스 파일\Media Server\Media\Segmenter</Filter>
     </ClInclude>
     <ClInclude Include="FFSegmenter.h">
-      <Filter>소스 파일\Media Server\Media\Segmenter</Filter>
-    </ClInclude>
-    <ClInclude Include="Muxer.h">
-      <Filter>소스 파일\Media Server\Media\Segmenter</Filter>
-    </ClInclude>
-    <ClInclude Include="Transcode.h">
       <Filter>소스 파일\Media Server\Media\Segmenter</Filter>
     </ClInclude>
     <ClInclude Include="ISegmenter.hpp">

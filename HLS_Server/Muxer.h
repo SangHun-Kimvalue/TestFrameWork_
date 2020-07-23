@@ -1,14 +1,43 @@
 #pragma once
 #include "ClientFormat.h"
-#include "Transcode.h"
+//#include "Transcode.h"
+
+extern "C" {
+#include <libavutil/avassert.h>
+#include <libavutil/channel_layout.h>
+#include <libavutil/opt.h>
+#include <libavutil/mathematics.h>
+#include <libavutil/timestamp.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#include <libswresample/swresample.h>
+}
 
 #define STREAM_FRAME_RATE 30
+// a wrapper around a single output AVStream
+typedef struct OutputStream {
+	AVStream *st;
+	AVCodecContext *enc;
+	AVCodecContext *dec;
+
+	/* pts of the next frame that will be generated */
+	int64_t next_pts;
+	int samples_count;
+
+	AVFrame *frame;
+	AVFrame *tmp_frame;
+
+	float t, tincr, tincr2;
+
+	struct SwsContext *sws_ctx;
+	struct SwrContext *swr_ctx;
+} OutputStream;
 
 class Muxer
 {
 public:
 	Muxer() : Filename(""), UseAudio(false), Interval(5), VCo(AV_CODEC_ID_NONE), ACo(AV_CODEC_ID_NONE), DataQ(nullptr), Stopped(false) {}
-	Muxer(std::string Filename ,QQ* DataQ, bool UseAudio, int Interval, 
+	Muxer(std::string Filename ,QQ DataQ, bool UseAudio, int Interval, 
 		AVCodecID VCo, AVCodecID ACo = AV_CODEC_ID_NONE)
 		:UseAudio(UseAudio), Interval(Interval),
 		VCo(VCo), ACo(ACo), DataQ(DataQ), Stopped(false), Filename(Filename) {
@@ -54,7 +83,7 @@ private:
 private:
 
 	AVDictionary *avdic = nullptr;
-	QQ* DataQ;
+	QQ DataQ;
 	AVOutputFormat *fmt;
 	AVFormatContext *pOutFormatCtx;
 	OutputStream video_st = { 0 }, audio_st = { 0 };

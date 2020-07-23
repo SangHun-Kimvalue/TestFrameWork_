@@ -3,102 +3,127 @@
 
 HttpServer::HttpServer() {
 
+	InitializeCriticalSection(&m_disLock);
 	m_checkEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-	svr;
-	if (!svr.is_valid()) {
-		cout << "server has an error...\n" << endl;
-		return ;
-	}
+	bool UseHLS = true;
+	if(UseHLS)
+		MediaS = new HLS_MediaServer(m_disLock);
 
-	MediaS = new HLS_MediaServer();
-	std::string* URL = new std::string("rtsp://admin:1234@192.168.0.73/video1");
-	std::string* URLWithID = new std::string("rtsp://admin:1234@192.168.0.73/video1.m3u8?id=550e8400-e29b-41d4-a716-446655440000");
-	std::string* URLWithID2 = new std::string("rtsp://admin:1234@192.168.0.73/video1.m3u8?1080_?id=550e8400-e29b-41d4-a716-446655440000");
-	
-	std::string URL2(*URL);
-
-	unsigned char * str = nullptr;
-
-
-	UUID ClientUUID = RequestWithoutUUID(*URL);
-	std::string Filename = RequestWithUUID(URLWithID);
-
-	clock_t Start = clock();
-	clock_t End = clock();
-
-	RequestWithoutUUID(*URL);
-	RequestWithUUID(URLWithID2);
-
-
-	while (1) {
-		Sleep(1);
-
-		End = clock();
-		
-		if ((End - Start) > 5000) {
-
-			bool Check = MediaS->DeleteSet(URL->c_str(), ClientUUID);
-			break;
-		}
-	}
-
-	MediaS->DeleteSet(URL->c_str(), ClientUUID);
+	m_SBLList = MediaS->GetSBLList();
 	//ConnectToClient("rtsp://admin:1234@192.168.0.70/video1");
 }
 
 HttpServer::~HttpServer() {
 
+	SetEvent(m_checkEvent);
+	if (m_checkFuture.valid())
+		m_checkFuture.get();
+
+	CloseHandle(m_checkEvent);
+	DeleteCriticalSection(&m_disLock);
 }
 
-//std::wstring GetServerIP() {
-//
-//	char	m_hostName[80];
-//	WSAData wsa_data;
-//	if (WSAStartup(MAKEWORD(1, 1), &wsa_data) != 0) {
-//		CCommonInfo::GetInstance()->WriteLog("ERROR", "Error in Initialize Winsock Fail \n");
-//
-//		return;
-//	}
-//
-//	if (gethostname(m_hostName, sizeof(m_hostName)) == SOCKET_ERROR) {
-//		return;
-//	}
-//	struct hostent *ent = gethostbyname(m_hostName);
-//	struct in_addr ip_addr = *(struct in_addr *)(ent->h_addr);
-//
-//	WSACleanup();
-//	std::string geturl = std::string(inet_ntoa(ip_addr));
-//
-//	std::wstring temp = L"";
-//	temp.assign(geturl.begin(), geturl.end());
-//
-//	return temp;
-//}
+std::wstring HttpServer::GetServerIP() {
+
+	std::wstring whostname = CCommonInfo::GetInstance()->ReadIniFile(L"Streamer", L"SERVERIP", L"127.0.0.1");
+	std::string ahostname = "";
+
+#define INFO_BUFFER_SIZE 32767
+	TCHAR  infoBuf[INFO_BUFFER_SIZE];
+	DWORD  bufCharCount = INFO_BUFFER_SIZE;
+
+	// Get and display the name of the computer.
+	if (!GetComputerName(infoBuf, &bufCharCount))
+		wprintf(TEXT("GetComputerName"));
+	wprintf(TEXT("\nComputer name:      %s"), infoBuf);
+
+	//// Get and display the user name.
+	//if (!GetUserName(infoBuf, &bufCharCount))
+	//	wprintf(TEXT("GetUserName"));
+	//wprintf(TEXT("\nUser name:          %s"), infoBuf);
+	whostname = infoBuf;
+	ahostname.assign(whostname.begin(), whostname.end());
+	char szPath[128] = "";
+	WSADATA wsaData;
+	WSAStartup(MAKEWORD(2, 2), &wsaData);
+	gethostname(szPath, sizeof(szPath));
+	printf("%s", szPath);
+	struct addrinfo hints, *res;
+	struct in_addr addr;
+	int err;
+	char buf[20] = {};
+	WSAData data;
+	WSAStartup(MAKEWORD(2, 0), &data);
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_family = AF_INET;
+	
+	if ((err = getaddrinfo(ahostname.c_str(), NULL, &hints, &res)) != 0) {
+		printf("error in Getaddrinfo (ServerIP) - %d\n", err);
+		CCommonInfo::GetInstance()->WriteLog("ERROR", "error in Getaddrinfo(ServerIP) - %d\n", err);
+		return L"";
+	}
+
+	addr.S_un = ((struct sockaddr_in *)(res->ai_addr))->sin_addr.S_un;
+	inet_ntop(AF_INET, &addr.s_addr, buf, sizeof(buf));
+
+	std::cout << "ServerIP Get - " << buf << std::endl;
+	CCommonInfo::GetInstance()->WriteLog("INFO", "Server IP Find - %s", buf);
+
+	freeaddrinfo(res);
+	WSACleanup();
+
+	std::wstring WServerIP = L"";
+	std::string ServerIP = buf;
+	
+	WServerIP.assign(ServerIP.begin(), ServerIP.end());
+	
+	return WServerIP;
+}
 
 void HttpServer::Start() {
 	
-	////m_ip = GetServerIP();
-	////m_port = 80;
-	//
-	//m_pListener = new web::http::experimental::listener::http_listener(m_uri);
-	//
-	//try
-	//{
-	//	m_pListener->support(web::http::methods::GET, std::bind(&HttpServer::HandeHttpGet, this, std::placeholders::_1));
-	//	m_pListener->open().wait();
-	//	ucout << L"start lisen on " << m_pListener->uri().to_string() << std::endl;
-	//}
-	//catch (const std::exception& e)
-	//{
-	//	std::cout << e.what() << std::endl;
+	m_ip = GetServerIP();
+	//m_ip = L"0.0.0.0";
+	uri_builder mmuri(m_ip);
+	auto addr = mmuri.to_uri().to_string();
+	m_port = (unsigned int)CCommonInfo::GetInstance()->ReadIniFile(L"Streamer", L"SERVERPORT", 8077);
+	m_uri = m_ip + L":" + std::to_wstring(m_port);
+	
+	//m_ip = L"localhost";
+	//m_port = 7878;
+	//if (!m_pCfg->LoadConfig(U("config.json")))
 	//	return;
-	//}
 	//
-	//if (!m_checkFuture.valid())
-	//{
-	//	m_checkFuture = std::async(&HttpServer::WrapCheck, this);
-	//}
+	//m_ip = m_pCfg->_ip;
+	//m_port = m_pCfg->_port;
+
+	WCHAR uri[MAX_PATH];
+	swprintf_s(uri, MAX_PATH, L"http://%ws:%hu/", m_ip.c_str(), m_port);
+	m_uri = uri;
+
+	m_pListener = new web::http::experimental::listener::http_listener(m_uri);
+	
+	try
+	{
+		m_pListener->support(web::http::methods::GET, std::bind(&HttpServer::HandeHttpGet, this, std::placeholders::_1));
+		m_pListener->open().wait();
+		//open().wait();
+		ucout << L"start lisen on " << m_pListener->uri().to_string() << std::endl;
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+		return;
+	}
+	
+	if (!m_checkFuture.valid())
+	{
+		//m_checkFuture = std::async(&HttpServer::WrapCheck, this);
+	}
+
 }
 
 CT HttpServer::ParseURLtoType(std::string URL) {
@@ -108,54 +133,35 @@ CT HttpServer::ParseURLtoType(std::string URL) {
 	std::string Temp = "";
 
 	pos = URL.find("://", 0);
+	if (pos == string::npos) {
+		return CT_NOT_DEFINED;
+	}
 	Temp = URL.substr(0, pos);
 
 	if (Temp.compare("rtsp") == 0) {
+		bool LIVE = false;
+		std::wstring temp = CCommonInfo::GetInstance()->ReadIniFile(L"Streamer", L"RTSPTYPE", L"ffmpeg");
+		size_t find = temp.find(L"live");
+		if (find != std::wstring::npos)
+			LIVE = true;
 
-		bool LIVE = (bool)CCommonInfo::GetInstance()->ReadIniFile(L"Converter", L"RTSPTYPE", 0);
 		Type  =  (LIVE) ? CT_RTSP_LIVE_CLIENT : CT_RTSP_FF_CLIENT;
 		return Type;
 	}
-	Type = (Temp.compare("rtmp") == 0) ? CT_RTMP_CLIENT : CT_NOT_DEFINED;
-	Type = (Temp.compare("local") == 0) ? CT_LOCAL_FILE_CLIENT : CT_NOT_DEFINED;
-	Type = (Temp.compare("hls") == 0) ? CT_HLS_CLIENT : CT_NOT_DEFINED;
+	Type = (Temp.compare("rtmp") == 0) ? CT_RTMP_CLIENT : Type;
+	Type = (Temp.compare("local") == 0) ? CT_LOCAL_FILE_CLIENT : Type;
+	Type = (Temp.compare("hls") == 0) ? CT_HLS_CLIENT : Type;
 
 	return Type;
 }
 
-UUID HttpServer::RequestWithoutUUID(std::string URL) {
-	//CLI CLI_temp = {};		//private 필요
-	CT Type = ParseURLtoType(URL);
-
-	//CLI_temp.Type = CT_RTSP_FF_CLIENT;
-	//CLI_temp.URL = URL;
-	//CLI_temp.Index = 0;
-	//CLI_temp.TransportType = TT_TCP;
-	//UuidCreate(&CLI_temp.uuid);
-	//CLI_temp.Interval = 10;
-
-	UUID Responseuuid = MediaS->RequestWithoutUUID(Type, URL);
-	//MediaS->CreateClient(CT_RTSP_FF_CLIENT, URL);
-
-	//unsigned char * str = nullptr;
-	//UuidToStringA(&Responseuuid, &str);
-
-	//std::string s((char*)str);
-
-	//RpcStringFreeA(&str);
-	//std::cout << s.c_str() << std::endl;
-
-	return Responseuuid;
-}
-
-//UUID 제거
 UUID HttpServer::ParseURLtoUUID(std::string *URL) {
 
 	UUID uuid = {};		//8 - 4 - 4 - 4 - 12
 	size_t pos = 0;
 	std::string UUIDTemp = "";
 
-	pos = URL->find("?id=", 0);
+	pos = URL->find("uuid[", 0);
 	if (pos == 0){}
 
 		if (pos == string::npos) {
@@ -163,12 +169,11 @@ UUID HttpServer::ParseURLtoUUID(std::string *URL) {
 	}
 
 	UUIDTemp = URL->substr(pos);
-	UUIDTemp.erase(0, 4);
-	URL->erase(pos);
-
-	//pos = UUIDTemp.find("-", 0);
-	//std::string FirstSection = UUIDTemp.substr(0, pos).c_str();
-				
+	UUIDTemp.erase(0, 5);
+	
+	//uuid[550e8400-e29b-41d4-a716-446655440000]
+	URL->erase(pos, 42);
+	
 	unsigned long p0;
 	int p1, p2, p3, p4, p5, p6, p7, p8, p9, p10;
 
@@ -195,22 +200,21 @@ UUID HttpServer::ParseURLtoUUID(std::string *URL) {
 	}
 }
 
-//Bitrate 제거
-int HttpServer::ParseURLtoBitrate(std::string *URL) {
+int HttpServer::ParseURLtoBitrate(std::string URL) {
 	
 	std::string FileTemp = "";
 	size_t Deletepos = 0;
 	int Bitrate = 0;
 
-	if ((Deletepos = URL->find("1080_")) != string::npos) {
+	if ((Deletepos = URL.find("1080_")) != string::npos) {
 		Bitrate = 1080;
 		//Deletepos = URL->find("1080_");
-		URL->erase(Deletepos, 5);
+		//URL.erase(Deletepos, 5);
 	}
-	else if ((Deletepos = URL->find("720_")) != string::npos) {
+	else if ((Deletepos = URL.find("720_")) != string::npos) {
 		Bitrate = 720;
 		//Deletepos = URL->find("720_");
-		URL->erase(Deletepos, 4);
+		//URL.erase(Deletepos, 4);
 	}
 	//else if ((Deletepos = URL->find("480_")) != string::npos) {
 	//	Bitrate = 480;
@@ -221,76 +225,322 @@ int HttpServer::ParseURLtoBitrate(std::string *URL) {
 	return Bitrate;
 }
 
-//FileType 제거
-MFT HttpServer::ParseURLtoFile(std::string *URL) {
+MFT HttpServer::ParseURLtoFile(std::string URL, string &FileNumber) {
 
 	std::string FileTemp = "";
 	MFT FileType = MFT_NOT_DEFINED;
-	size_t Deletepos = 0;
+	size_t Deletepos = -1;
 
-	if ((Deletepos = URL->find(".m3u8")) != string::npos){
+	if ((Deletepos = URL.find(".m3u8")) != string::npos){
 		FileType = MFT_M3U8;
-		Deletepos = URL->find(".m3u8");
+		FileNumber = "index";
+		return FileType;
+		//Deletepos = URL.find(".m3u8");
 	}
-	else if ((Deletepos = URL->find(".ts")) != string::npos) {
+	else if ((Deletepos = URL.find(".ts")) != string::npos) {
 		FileType = MFT_TS;
 		//Deletepos = URL->find(".ts", 0);
 	}
-	else if ((Deletepos = URL->find(".avi")) != string::npos) {
+	else if ((Deletepos = URL.find(".avi")) != string::npos) {
 		FileType = MFT_AVI;
 		//Deletepos = URL->find(".avi", 0);
 	}
-	else if ((Deletepos = URL->find(".mkv")) != string::npos) {
+	else if ((Deletepos = URL.find(".mkv")) != string::npos) {
 		FileType = MFT_MKV;
 		//Deletepos = URL->find(".mkv", 0);
 	}
-	else if ((Deletepos = URL->find(".mp4")) != string::npos) {
+	else if ((Deletepos = URL.find(".mp4")) != string::npos) {
 		FileType = MFT_MP4;
 		//Deletepos = URL->find(".mp4", 0);
 	}
 	else {
-		CCommonInfo::GetInstance()->WriteLog("ERROR", "Could not generating File Type - %s", URL->c_str());
+		CCommonInfo::GetInstance()->WriteLog("ERROR", "Could not generating File Type - %s", URL.c_str());
 		FileType = MFT_NOT_DEFINED;
 	}
 
-	if (FileType != MFT_NOT_DEFINED) {
-
-		URL->erase(Deletepos);
+	if(Deletepos != -1 && FileType != MFT_M3U8){
+		for (int i = Deletepos; i > Deletepos - 4; i--) {
+			if (URL.at(i) == '/') {
+				FileNumber = URL.substr(i, Deletepos - i);
+				if (FileNumber == "") {
+					return FileType = MFT_NOT_DEFINED;
+				}
+			}
+		}
 	}
+
+	//if (FileType != MFT_NOT_DEFINED) {
+	//
+	//	URL->erase(Deletepos);
+	//}
 
 	return FileType;
 }
 
-std::string HttpServer::RequestWithUUID(std::string* URL){
+bool HttpServer::ResponseFile(MFT FileType, string &FileNumber, web::http::http_request msg) {
 	
-	CT Type = ParseURLtoType(*URL);
+	if (FileType == MFT_M3U8) {
 
-	UUID uuid = ParseURLtoUUID(URL);
-	int Bitrate = ParseURLtoBitrate(URL);
-	MFT TempMFT = ParseURLtoFile(URL);
+		std::string path = FileNumber + ".m3u8";
+
+		auto fullPath = utility::conversions::usascii_to_utf16(path);
+		try
+		{
+			concurrency::streams::fstream::open_istream(fullPath, std::ios::in | std::ios::binary).then(
+				[=](concurrency::streams::istream is) {
+
+				msg.reply(web::http::status_codes::OK, is, appMpegUrl);
+
+			}
+			).get();
+		}
+		catch (const std::exception& e)
+		{
+			std::vector<std::pair<utility::string_t, web::json::value>> kv;
+			kv.push_back({ U("info"),web::json::value::string(U("m3u8 not already ok")) });
+			web::json::value v = web::json::value::object(kv);
+
+			msg.reply(web::http::status_codes::RequestTimeout, v);
+			return false;
+		}
+	}
+	else if (FileType == MFT_TS) {
+
+		std::string path = FileNumber + ".ts";
+
+		auto fullPath = utility::conversions::usascii_to_utf16(path);
+		try
+		{
+			concurrency::streams::fstream::open_istream(fullPath, std::ios::in | std::ios::binary).then(
+				[=](concurrency::streams::istream is) {
+
+				msg.reply(web::http::status_codes::OK, is, videoMP2T);
+
+			}
+			).get();
+		}
+		catch (const std::exception& e)
+		{
+			std::vector<std::pair<utility::string_t, web::json::value>> kv;
+			kv.push_back({ U("error"),web::json::value::string(U("request this file some error happened")) });
+			web::json::value v = web::json::value::object(kv);
+			msg.headers().add(U("Connection"), U("close"));
+			msg.reply(web::http::status_codes::NotFound, v);
+			std::wcout << e.what() << "ts file exception" << std::endl;
+			return false;
+		}
+	}
+	if (FileType == MFT_NOT_DEFINED) {
+
+		std::vector<std::pair<utility::string_t, web::json::value>> kv;
+		kv.push_back({ U("error"),web::json::value::string(U("request this file some error happened")) });
+		web::json::value v = web::json::value::object(kv);
+		msg.headers().add(U("Connection"), U("close"));
+		msg.reply(web::http::status_codes::NotFound, v);
+		ucout << L"Error not include file - " << msg.to_string() << std::endl;
+
+		return false;
+	}
+
+	return true;
+}
+
+std::string HttpServer::RequestWithURL(std::string URL, string &ConnectURL, string &FileType, string &FileNumber, web::http::http_request msg){
+	
+	CT Type = ParseURLtoType(ConnectURL);
+	//int Bitrate = ParseURLtoBitrate(URL);
+	MFT TempMFT = ParseURLtoFile(URL, FileNumber);
 	if (TempMFT == MFT_NOT_DEFINED) {
+		return "";
 	}
 
-	std::string FileURI = MediaS->RequestWithUUID(Type, *URL, uuid);
-	size_t Error = FileURI.find("Error");
-	if (Error == std::string::npos) {
-		return "Error - In Create SBL Set";
-	}
-	size_t Create = FileURI.find("Create");
-	if (Create == std::string::npos) {
-		return "Error - Create new Client";
-	}
-	else {
-		return FileURI;
-	}
-	
-	//else {
-	//	bool Check = MediaS->RequestWithFile(uuid, TempMFT, Bitrate);
+	std::string FileURI = "";
+	bool Check = MediaS->CreateSet(Type, ConnectURL);
+	//std::string FileURI = MediaS->RequestWithUUID(Type, URL);
+	//if (Check) {
+	//	//먼저 Seg랑 클라이언트랑 활성화 시키고 시간 갱신 시켜주고 들어가야함.
+	//	Check = ResponseFile(TempMFT, FileNumber, msg);
 	//}
+
+}
+
+void HttpServer::handle_error(pplx::task<void>& t)
+{
+	try
+	{
+		t.get();
+	}
+	catch (...)
+	{
+		CCommonInfo::GetInstance()->WriteLog("ERROR ", "UNKOWN ERROR");
+		// Ignore the error, Log it if a logger is available 
+	}
+}	
+
+bool HttpServer::CheckClientExist(std::string URL, CT Type) {
+
+	CLI temp = {};
+	temp = MediaS->GetClientInfo(Type, URL);
+	if (temp.Type == CT_NOT_DEFINED) {
+		return true;
+	}
+	else
+		return false;
+}
+
+//bool HttpServer::CreateClient(CT Type, std::string URL) {
+//	
+//	bool Check = CheckClientExist(URL, Type);
+//	if (Check) {
+//		int intcheck = MediaS->CreateSet((CT)0, URL);
+//		if (intcheck >= 0) {
+//			return true;
+//		}
+//		else {
+//			std::cout << "Create Client Failed - URL : " << URL.c_str() << std::endl;
+//			CCommonInfo::GetInstance()->WriteLog("ERROR", "Create Client is Failed - %s", URL.c_str());
+//			return false;
+//		}
+//	}
+//	else {
+//		return false;
+//	}
+//
+//}
+
+const char* HttpServer::ParsePercentEncodingA(wstring &URL, string &Temp) {
+	
+	// { = %7B    /   } = %7D
+	// [ \ %5B    /	  ] = %5D
+
+	size_t fpos5 = URL.find(L"%5B");
+	if(fpos5 != string::npos)
+		URL.replace(fpos5, 3, L"[");
+	
+	size_t epos5 = URL.find(L"%5D");
+	if (epos5 != string::npos)
+		URL.replace(epos5, 3, L"]");
+
+	size_t fpos7 = URL.find(L"%7B");
+	if (fpos7 != string::npos)
+		URL.replace(fpos5, 1, L"{");
+
+	size_t epos7 = URL.find(L"%7D");
+	if (epos7 != string::npos)
+		URL.replace(epos5, 1, L"{");
+
+	Temp = "";
+	Temp.assign(URL.begin(), URL.end());
+
+	std::cout << "Parse string - " << Temp.c_str() << std::endl;
+
+	return Temp.c_str();
+}
+
+void HttpServer::ParsetoURL(string URL, string &ConnectURL, string &FileType, string &Filename) {
+
+	size_t urlpos = URL.find("video_url");
+	string temp = URL.substr(urlpos+10);
+	urlpos = temp.find("]");
+	if(urlpos != string::npos)
+		temp.erase(urlpos);
+	else {
+		urlpos = temp.find("%5D");
+		if (urlpos != string::npos)
+			temp.erase(urlpos);
+		urlpos = temp.find("5B");
+		if (urlpos != string::npos) {
+			temp.erase(urlpos, 2);
+		}
+	}
+	ConnectURL = temp.c_str();
+
+	size_t filepos = URL.find("]/");
+	if (filepos != string::npos)
+		temp.erase(filepos);
+	else {
+		filepos = URL.find("%5D");
+	}
+	temp = URL.substr(filepos + 4);
+
+	FileType = temp.c_str();
+
+	return;
 }
 
 void HttpServer::HandeHttpGet(web::http::http_request msg) {
 
+
+	//std::string* URL = new std::string("rtsp://admin:1234@192.168.0.73/video1");
+	//std::string* URLWithID = new std::string("rtsp://admin:1234@192.168.0.73/video1.m3u8?id=550e8400-e29b-41d4-a716-446655440000");
+	//std::string* URLWithID2 = new std::string("rtsp://admin:1234@192.168.0.73/video1.m3u8?1080_?id=550e8400-e29b-41d4-a716-446655440000");
+	//std::string URL2(*URL);
+	//unsigned char * str = nullptr;
+
+	std::string URL = utility::conversions::to_utf8string(msg.relative_uri().to_string());
+	std::wstring action = msg.absolute_uri().path();
+
+	std::wcout << action.c_str() << std::endl;
+	
+
+	size_t pos = action.find(L"/hls");
+	if (pos != string::npos){
+
+		std::string URL2 = URL;
+		const char* logtemp = ParsePercentEncodingA(action, URL);
+		CCommonInfo::GetInstance()->WriteLog("INFO", "Request recieved - %s ", logtemp);
+
+		string ConnectURL = "";
+		string FileURL = "";
+		string FileNumber = "";
+		ParsetoURL(URL2, ConnectURL, FileURL, FileNumber);
+		
+		if (FileURL.length() < 4) {
+
+			std::vector<std::pair<utility::string_t, web::json::value>> kv;
+			kv.push_back({ U("error"),web::json::value::string(U("request this file some error happened")) });
+			web::json::value v = web::json::value::object(kv);
+			msg.headers().add(U("Connection"), U("close"));
+			msg.reply(web::http::status_codes::NotFound, v);
+			ucout << L"Error not include file - "<< msg.to_string() << std::endl;
+			return;
+		}
+
+		bool Check = false;
+		std::string Filename = RequestWithURL(URL, ConnectURL, FileURL, FileNumber, msg);
+
+
+		ucout << msg.to_string() << std::endl;
+		msg.reply(status_codes::OK, U("GET"));
+		return;
+	}
+
+	//MediaS = new HLS_MediaServer();
+	//UUID ClientUUID = RequestWithoutUUID(*URL);
+	//std::string Filename = RequestWithUUID(URLWithID);
+	//
+	//clock_t Start = clock();
+	//clock_t End = clock();
+	//
+	//RequestWithoutUUID(*URL);
+	////RequestWithUUID(URLWithID2);
+	//
+	//while (1) {
+	//	Sleep(1);
+	//
+	//	End = clock();
+	//
+	//	if ((End - Start) > 10000) {
+	//
+	//		//bool Check = MediaS->DeleteSet(URL->c_str(), ClientUUID);
+	//		break;
+	//	}
+	//}
+
+	//MediaS->DeleteSet(URL->c_str(), ClientUUID);
+
+	//std::string g;
+	//cin >> g;	getchar();
 
 	return;
 }
@@ -298,15 +548,14 @@ void HttpServer::HandeHttpGet(web::http::http_request msg) {
 unsigned int HttpServer::WrapCheck()
 {
 	DWORD dwRet;
-	while (true)
-	{
+	while (true) {
 		dwRet = WaitForSingleObject(m_checkEvent, 10 * 1000);
 		if (dwRet == WAIT_TIMEOUT)
 		{
-			EnterCriticalSection(&m_disLock);
-			auto it = m_distributions.begin();
-			while (it != m_distributions.end())
-			{
+			//EnterCriticalSection(&m_disLock);
+			//auto it = m_SBLList.begin();
+			//while (it != m_SBLList.end())
+			//{
 				//if (it->second->GetClientCount() == 0)
 				//{
 				//	delete it->second;
@@ -314,9 +563,34 @@ unsigned int HttpServer::WrapCheck()
 				//	std::clog << "remove distribution" << std::endl;
 				//	continue;
 				//}
-				++it;
+			//	++it;
+			//}
+			//LeaveCriticalSection(&m_disLock);
+
+			//auto ct = time(NULL);
+			EnterCriticalSection(&m_clientLock);
+			if (m_SBLList->empty() == false) {
+				int size = m_SBLList->size();
+				for (int i = 0; i < size; i++) {
+					auto temp = m_SBLList->at(i);
+					clock_t Now = clock();
+					if ((Now - temp->Updatetime) > 50000) {
+						MediaS->DeleteSet(temp->URL);
+					}
+					temp->Updatetime = Now;
+
+					/*if (difftime(ct, it->second->Seg->GetUpdateTime()) > 15)
+					{
+						std::clog << "remove client:" << it->second->GetSessionID() << std::endl;
+						delete it->second;
+						it = m_SBLList.erase(it);
+						continue;
+					}
+					++it;*/
+
+				}
 			}
-			LeaveCriticalSection(&m_disLock);
+			LeaveCriticalSection(&m_clientLock);
 		}
 		else
 			break;
@@ -324,47 +598,41 @@ unsigned int HttpServer::WrapCheck()
 	return 0;
 }
 
-int HttpServer::ConnectToClient(std::string URL) {
-
-	//CLI CLI_temp = {};		//private 필요
-	CT Type;
-	size_t pos = 0;
-	std::string Temp = "";
-
-	pos = URL.find("://", pos);
-	Temp = URL.substr(0, pos);
-
-	if (Temp.compare("rtsp") == 0) {
-		Type = CT_RTSP_FF_CLIENT;
-	}
-
-	//CLI_temp.Type = CT_RTSP_FF_CLIENT;
-	//CLI_temp.URL = URL;
-	//CLI_temp.Index = 0;
-	//CLI_temp.TransportType = TT_TCP;
-	//UuidCreate(&CLI_temp.uuid);
-	//CLI_temp.Interval = 10;
-		
-	UUID Responseuuid = MediaS->RequestWithoutUUID(Type, URL);
-	//MediaS->CreateClient(CT_RTSP_FF_CLIENT, URL);
-
-	unsigned char * str = nullptr;
-	UuidToStringA(&Responseuuid, &str);
-
-	std::string s((char*)str);
-
-	RpcStringFreeA(&str);
-	std::cout << s.c_str() << std::endl;
-
-	return 0;
+void response() {
+	//std::wstring  strName = L"c:\\Temp\\" + action;// TestAlert - 1550057065.jpg";
+	//
+	//concurrency::streams::file_stream<unsigned char>::open_istream(strName).then([=]
+	//(pplx::task<concurrency::streams::basic_istream<unsigned char>>  prevTask) {
+	//	try {
+	//		auto fileStream = prevTask.get(); // got ready file stream
+	//		http_response resp;             // prepare response with OK status
+	//		resp.set_body(fileStream);
+	//		resp.set_status_code(status_codes::OK);
+	//		resp.headers().set_content_type(U("image/jpeg"));
+	//		return message.reply(resp).then([fileStream, message, strName](pplx::task<void> prevResp) {
+	//			try {
+	//				fileStream.close();
+	//				//INFO("GET: " + strName + " file send to client");
+	//				if (prevResp.is_done())message.reply(status_codes::OK);
+	//			}
+	//			catch (const std::system_error& e) {
+	//				//ERR("GET: file stream err");
+	//				//ERR(e.what());
+	//				message.reply(status_codes::BadRequest);
+	//			}
+	//		});
+	//
+	//	}
+	//	catch (const std::system_error& e) {
+	//		//ERR("GET: task err");
+	//		//ERR(e.what());
+	//		return pplx::task_from_result();
+	//	}
+	//}).wait();
 }
-
-
 
 //void HttpServer::Load_Init();
 //bool HttpServer::URL_Parse();
-
-
 //#include <chrono>
 //#include <cstdio>
 //#include <httplib.h>

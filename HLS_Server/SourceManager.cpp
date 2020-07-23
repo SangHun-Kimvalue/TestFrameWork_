@@ -20,7 +20,7 @@ int SourceManager::Create_Client(GetClientValue GC) {
 
 //구조체로 생성
 int SourceManager::Create_Client(CLI CLI_Input) {
-	return  Create_Client(CLI_Input.TransportType, { CLI_Input.Type, CLI_Input.uuid, CLI_Input.URL});
+	return  Create_Client(CLI_Input.TransportType, { CLI_Input.Type, CLI_Input.URL});
 }
 
 //디폴트로 생성
@@ -28,7 +28,7 @@ int SourceManager::Create_Client(TT TransportType, GetClientValue GC) {
 
 	auto CC = Check_Client(GC);
 	if (!CC) {
-		CLI CLI_temp = { GC.Type , TransportType, GC.uuid, GC.URL };
+		CLI CLI_temp = { GC.Type , TransportType, GC.URL };
 		//CT ClientType, TT TransportType, VCodec,   ACodec,   URL,  Reference, interval, uuid, int index, Connect, UseAudio, Transcoding
 		
 		int res = CM_CreateClient(ClientM, CLI_temp);
@@ -117,22 +117,8 @@ const CLI SourceManager::GetClientInfo(GetClientValue GC) const {
 	return CM_GetClient_Info(ClientM, GC);
 }
 
-std::shared_ptr<QQ> SourceManager::GetFrameQ(GetClientValue GC) {
+QQ SourceManager::GetFrameQ(GetClientValue GC) {
 	return CM_GetFrameQ(ClientM, GC);
-}
-
-UUID SourceManager::GetUUID(std::string URL) {
-
-	auto info = CM_GetClient_Info(ClientM, { (CT)0, {0,}, URL });
-	const char* m_url = info.URL.c_str();
-	if (strcmp(m_url, URL.c_str()) == 0) {
-		return info.uuid;
-	}
-	else {
-		return {};
-	}
-		
-	return {};
 }
 
 

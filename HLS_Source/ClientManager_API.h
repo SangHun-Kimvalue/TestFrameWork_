@@ -38,5 +38,5 @@ extern "C"
 	//수정 필요
 	//SOURCEMANAGER_API int __stdcall CM_SetParam(ClientManager * pManager, GetClientValue GC);
 
-	SOURCEMANAGER_API std::shared_ptr<QQ> __stdcall CM_GetFrameQ(ClientManager * pManager, GetClientValue GC);
+	SOURCEMANAGER_API QQ __stdcall CM_GetFrameQ(ClientManager * pManager, GetClientValue GC);
 }

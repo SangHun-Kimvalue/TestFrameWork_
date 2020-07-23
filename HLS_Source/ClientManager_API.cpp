@@ -68,7 +68,7 @@ extern "C"
 	//	return false;
 	//}
 
-	SOURCEMANAGER_API std::shared_ptr<QQ> __stdcall CM_GetFrameQ(ClientManager * pManager, GetClientValue GC)
+	SOURCEMANAGER_API QQ __stdcall CM_GetFrameQ(ClientManager * pManager, GetClientValue GC)
 	{
 		return pManager->GetFrameQ(GC);
 	}

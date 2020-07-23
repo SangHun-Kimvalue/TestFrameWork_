@@ -1,23 +1,45 @@
 #pragma once
 
-#include "ISegmenter.hpp"
+#include "FFSegmenter.h"
 #include "ClientFormat.h"
+#include <ppl.h>
+#include <thread>
+#include <Windows.h>
+
+using namespace concurrency;
+
+#define SegmengerCount 1
 
 class SegmenterGroup
 {
 public:
 
-	SegmenterGroup() :UseAudio(false), UseTranscoding(false), Interval(5), VCo(AV_CODEC_ID_NONE), ACo(AV_CODEC_ID_NONE), Ref(0)
-	{}
-	SegmenterGroup(bool UseAudio, bool UseTranscoding, int Interval, AVCodecID VCo, AVCodecID ACo = AV_CODEC_ID_NONE)
-	:UseAudio(UseAudio), UseTranscoding(UseTranscoding), Interval(Interval), VCo(VCo), ACo(ACo), Ref(0){}
-	~SegmenterGroup() {}
+	SegmenterGroup();
+	SegmenterGroup(ST SegType, bool UseAudio, bool UseTranscoding, int Interval,
+		QQ DataQ, AVCodecID VCo, AVCodecID ACo = AV_CODEC_ID_NONE);
+	~SegmenterGroup();
 
-	bool CreateSeg() {}
-	bool ChangeRunningSeg();
+	bool CreateSeg();
+	//bool ChangeRunningSeg(int Bitrate);
+	int Run(std::string URL);
+	int Stop();
 
-	std::vector<ISegmenter*> Seg[2] = {};
+	bool SetPath(char** Path);
+
+public:
+
+	ISegmenter* Seg[2] = {};
 	QQ* FrameQ;
+	ST SegType = ST_NOT_DEFINE;
+	const int SegCount = SegmengerCount;
+
+private:
+
+	int ParseBitrateToIndex(std::string URL);
+	ISegmenter* SetType(ST SegType, std::string Filename, int i);
+	void DoWork(SegmenterGroup* SG);
+	void Notify(std::shared_ptr<MediaFrame>);
+	void TimeCheck(SegmenterGroup* SG);
 
 private:
 
@@ -25,8 +47,21 @@ private:
 	const AVCodecID ACo;
 	const bool UseAudio ,UseTranscoding ;
 	const int Interval;
-	int Ref;
-	int RunningSegIndex;
+	std::string Filename;
 
+	std::thread Nofitythr;
+	std::thread TimeCheckthr;
+
+	clock_t loopTime;
+	clock_t CheckTime;
+
+	char* PathDir[SegmengerCount];
+
+	int RunningSegIndex;
+	QQ DataQ = nullptr;
+
+	bool Running = false;
+	int Runindex = 0;
+	
 };
 

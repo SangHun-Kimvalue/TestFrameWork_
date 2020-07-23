@@ -99,7 +99,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>D:\Visual_Local_Repo\Libs\Casablanca\win64\lib;D:\Visual_Local_Repo\Libs\ffmpeg\4_1_1\win64\lib;D:\Visual_Local_Repo\Libs\sndfile\Win64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>avcodec.lib;avdevice.lib;avformat.lib;avutil.lib;swscale.lib;swresample.lib;avfilter.lib;postproc.lib;libsndfile-1.lib;cpprest141_2_10.lib;cpprest141d_2_10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec.lib;avdevice.lib;avformat.lib;avutil.lib;swscale.lib;swresample.lib;avfilter.lib;postproc.lib;libsndfile-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>IF NOT EXIST "$(SolutionDir)Libs\HLS_Source" MKDIR "$(SolutionDir)Libs\HLS_Source"

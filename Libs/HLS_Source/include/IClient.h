@@ -6,7 +6,7 @@ class IClient {
 
 public:
 
-	std::shared_ptr<QQ> m_pRecFrameQ = nullptr;
+	QQ m_pRecFrameQ = nullptr;
 	//std::shared_ptr<QQ> m_pRecAFrameQ;
 
 	virtual ~IClient() { m_pRecFrameQ->clear();/* m_pRecAFrameQ->clear(); */ };
@@ -22,8 +22,8 @@ public:
 	virtual int DecreaseRef() = 0;
 
 
-	virtual std::shared_ptr<QQ> CreateRecievedFrameQueue(int max_size) { return std::make_shared<QQ>(max_size); }
-	virtual std::shared_ptr<QQ> GetQptr() { return m_pRecFrameQ; }
+	virtual QQ CreateRecievedFrameQueue(int max_size) { return std::make_shared<SharedQueue<MediaFrame*>>(max_size); }
+	virtual QQ GetQptr() { return m_pRecFrameQ; }
 	//virtual std::shared_ptr<QQ> GetAQptr() { return m_pRecAFrameQ; }
 
 };

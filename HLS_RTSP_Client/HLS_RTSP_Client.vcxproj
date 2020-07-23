@@ -99,10 +99,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalLibraryDirectories>D:\Visual_Local_Repo\Libs\Casablanca\win64\lib;D:\Visual_Local_Repo\Libs\ffmpeg\4_1_1\win64\lib;D:\Visual_Local_Repo\Libs\sndfile\Win64\lib;..\Libs\live555\live_x64\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>avcodec.lib;avdevice.lib;avformat.lib;avutil.lib;swscale.lib;swresample.lib;avfilter.lib;postproc.lib;libsndfile-1.lib;cpprest141_2_10.lib;cpprest141d_2_10.lib;BasicUsageEnvironment.lib;groupsock.lib;liveMedia.lib;UsageEnvironment.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>avcodec.lib;avdevice.lib;avformat.lib;avutil.lib;swscale.lib;swresample.lib;avfilter.lib;postproc.lib;libsndfile-1.lib;BasicUsageEnvironment.lib;groupsock.lib;liveMedia.lib;UsageEnvironment.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(TargetDir)FFMPEG_ClientD.dll $(SolutionDir)Libs\HLS_Source\include</Command>
+      <Command>copy $(TargetDir)FFMPEG_ClientD.dll $(SolutionDir)Libs\HLS_Source\include
+copy $(ProjectDir)FFDecoder.h $(SolutionDir)Libs\HLS_Source\include
+copy $(ProjectDir)FFDecoder.cpp $(SolutionDir)Libs\HLS_Source\include</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -226,7 +228,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="MediaFrameQ.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

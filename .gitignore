@@ -86,3 +86,8 @@ x64
 /DllTest/x64
 /OCR_Tets/x64
 /HLS_Server/rtsp_admin_1234@192.168.00.ts
+*.ts
+*.m3u8
+/HLS_Server/config.json
+/HLS_Server/Config.h
+/HLS_Server/Config.cpp

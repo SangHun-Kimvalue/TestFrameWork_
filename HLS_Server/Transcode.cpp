@@ -1,6 +1,6 @@
 #include "Transcode.h"
 
-const char* error_pro(int error, const char* msg) {
+const char* eerror_pro(int error, const char* msg) {
 
 	char errstr[256] = "";
 
@@ -320,32 +320,31 @@ static void close_stream(AVFormatContext *oc, OutputStream *ost)
 /**************************************************************/
 /* media file output */
 
-int Transcoder::init() {
+int Transcoder::init(std::string Filename) {
 
-	filename = "playlist.m3u8";
+	filename = Filename.c_str();
 
 	AVDictionary *dicts = NULL;
-	int rc = av_dict_set(&dicts, "rtsp_transport", "tcp", 0); // default udp. Set tcp interleaved mode
-	if (rc < 0)
-	{
-		return EXIT_FAILURE;
-	}
-
-	if (avformat_open_input(&ctx, "rtsp://admin:1234@192.168.0.73/video1", NULL, &dicts) != 0) {
-		return EXIT_FAILURE;
-	}
+	//int rc = av_dict_set(&dicts, "rtsp_transport", "tcp", 0); // default udp. Set tcp interleaved mode
+	//if (rc < 0)
+	//{
+	//	return EXIT_FAILURE;
+	//}
+	//
+	//if (avformat_open_input(&ctx, "rtsp://admin:1234@192.168.0.73/video1", NULL, &dicts) != 0) {
+	//	return EXIT_FAILURE;
+	//}
 
 	/* allocate the output media context */
+	//avformat_alloc_output_context2(&oc, NULL, "hls", "playlist.m3u8"); // apple hls. If you just want to segment file use "segment"
+	//if (!oc) {
+	//	printf("Could not deduce output format from file extension: using MPEG.\n");
+	//	avformat_alloc_output_context2(&oc, NULL, "mpeg", filename);
+	//}
+	//if (!oc)
+	//	return 1;
 
-	avformat_alloc_output_context2(&oc, NULL, "hls", "playlist.m3u8"); // apple hls. If you just want to segment file use "segment"
-	if (!oc) {
-		printf("Could not deduce output format from file extension: using MPEG.\n");
-		avformat_alloc_output_context2(&oc, NULL, "mpeg", filename);
-	}
-	if (!oc)
-		return 1;
-
-	fmt = oc->oformat;
+	//fmt = oc->oformat;
 
 	/* Add the audio and video streams using the default format codecs
 	 * and initialize the codecs. */
